@@ -7,6 +7,10 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 
+const fs = require("fs");
+const privateKey = fs.readFileSync(".secret").toString();
+const projectID = "01cc7e5cd63842bea357496477055f04";
+
 dotenv.config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -22,22 +26,20 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
+//hard hat is our local network
+//mumbai is our test network. Chain ID is something used with the hardhat documentation so just it need it there for it to work
 const config: HardhatUserConfig = {
   solidity: "0.8.4",
   networks: {
-    ropsten: {
-      url: process.env.ROPSTEN_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    hardat: {
+      chainId: 1337,
     },
-  },
-  gasReporter: {
-    enabled: process.env.REPORT_GAS !== undefined,
-    currency: "USD",
-  },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    mumbai: {
+      url: `https://polygon-mumbai.infura.io/v3/${projectID}`,
+      accounts: [privateKey],
+    },
   },
 };
 
+//TODO - Store projectID as an envvar
 export default config;
