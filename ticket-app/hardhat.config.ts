@@ -1,5 +1,3 @@
-import * as dotenv from "dotenv";
-
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
@@ -10,8 +8,6 @@ import "solidity-coverage";
 const fs = require("fs");
 const privateKey = fs.readFileSync(".secret").toString();
 const projectID = "01cc7e5cd63842bea357496477055f04";
-
-dotenv.config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
