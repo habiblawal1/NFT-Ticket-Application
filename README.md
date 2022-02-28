@@ -7,3 +7,6 @@ Not all contracts support ERC1155 tokens, so in order for a contract to be able 
 ## ERC165
 
 Its used to see if another contract that you are talking to implements a certain interface. Again its another must have requirement for the conctract to be able to receive ERC1155 tokens.
+
+//TODO
+How do I solve issue if multiple users hacking the system by creating loads of duplicate events - I guess by showing eventID which can't be duplicated

@@ -23,6 +23,8 @@ contract NFT is ERC1155 {
 
         //use eventID for the metadata
 
+        //TODO - Add a check to see token creator owns the event, but then again i can just check this on market contract and not allow listing if token owner doesn't match event owner - ok i'll do this lols
+
         _mint(msg.sender, newItemId, amount, "");
         setApprovalForAll(contractAddress, true);
         return newItemId;

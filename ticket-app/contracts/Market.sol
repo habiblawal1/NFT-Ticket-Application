@@ -1,24 +1,35 @@
 // SPDX-License-Identifier: MIT
+ pragma solidity ^0.8.3;
+
 
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 import "hardhat/console.sol";
 
 contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
   using Counters for Counters.Counter;
-  Counters.Counter private _itemIds;
-  Counters.Counter private _itemsSold;
+  Counters.Counter private _ticketIds;
+  Counters.Counter private _eventIds;
 
+  //Used by tutorial as an address to receive listing fees - can't charge people as this is a FYP project unfortunately
   address payable owner;
-  uint256 listingPrice = 0.025 ether;
 
-  constructor() {
-    owner = payable(msg.sender);
+  struct MarketEvent {
+    uint eventId;
+    string name;
+    string description;
+    string imageUri;
+    string location;
+    uint64 eventStartDate;
+    address owner;
+    uint[] tickets;
   }
 
-  struct MarketItem {
-    uint itemId;
+  struct MarketTicket {
+    uint ticketId;
+    uint eventId;
     address nftContract;
     uint256 tokenId;
     address payable seller;
@@ -26,11 +37,24 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     uint256 price;
     bool sold;
   }
+  
+  mapping(uint256 => MarketEvent) private idToMarketEvent;
+  mapping(uint256 => MarketTicket) private idToMarketTicket;
 
-  mapping(uint256 => MarketItem) private idToMarketItem;
+  event MarketEventCreated (
+    uint indexed eventId,
+    string name,
+    string description,
+    string imageUri,
+    string location,
+    uint64 eventStartDate,
+    address owner,
+    uint[] tickets
+  );
 
-  event MarketItemCreated (
-    uint indexed itemId,
+  event MarketTicketCreated (
+    uint indexed ticketId,
+    uint indexed eventId,
     address indexed nftContract,
     uint256 indexed tokenId,
     address seller,
@@ -39,130 +63,79 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     bool sold
   );
 
-  /* Returns the listing price of the contract */
-  function getListingPrice() public view returns (uint256) {
-    return listingPrice;
-  }
+   /* Places an item for sale on the marketplace */
+  function createEvent(
+    string name,
+    string description,
+    string imageUri,
+    string location,
+    uint64 eventStartDate
+  ) public nonReentrant {
+      // check if thic fucntion caller is not an zero address account
+    require(msg.sender != address(0));
+    _eventIds.increment();
+    // check if a token exists with the above token id => incremented counter
+    require(!_exists(_eventIds));
+    uint256 eventId = _eventIds.current();
+
+    uint[] eventTickets;
   
-  /* Places an item for sale on the marketplace */
-  function createMarketItem(
-    address nftContract,
-    uint256 tokenId,
-    uint256 price
-  ) public payable nonReentrant {
-    require(price > 0, "Price must be at least 1 wei");
-    require(msg.value == listingPrice, "Price must be equal to listing price");
-
-    _itemIds.increment();
-    uint256 itemId = _itemIds.current();
-  
-    idToMarketItem[itemId] =  MarketItem(
-      itemId,
-      nftContract,
-      tokenId,
-      payable(msg.sender),
-      payable(address(0)),
-      price,
-      false
-    );
-
-    IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
-
-    emit MarketItemCreated(
-      itemId,
-      nftContract,
-      tokenId,
+    idToMarketEvent[eventId] =  MarketEvent(
+      eventId,
+      name,
+      description,
+      imageUri,
+      location,
+      eventStartDate,
       msg.sender,
-      address(0),
-      price,
-      false
+      eventTickets
+    );
+
+    emit MarketEventCreated(
+      eventId,
+      name,
+      description,
+      imageUri,
+      location,
+      eventStartDate,
+      msg.sender,
+      eventTickets
     );
   }
 
-  /* Creates the sale of a marketplace item */
-  /* Transfers ownership of the item, as well as funds between parties */
-  function createMarketSale(
-    address nftContract,
-    uint256 itemId
-    ) public payable nonReentrant {
-    uint price = idToMarketItem[itemId].price;
-    uint tokenId = idToMarketItem[itemId].tokenId;
-    require(msg.value == price, "Please submit the asking price in order to complete the purchase");
-
-    idToMarketItem[itemId].seller.transfer(msg.value);
-    IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
-    idToMarketItem[itemId].owner = payable(msg.sender);
-    idToMarketItem[itemId].sold = true;
-    _itemsSold.increment();
-    payable(owner).transfer(listingPrice);
-  }
-
-  /* Returns all unsold market items */
-  function fetchMarketItems() public view returns (MarketItem[] memory) {
-    uint itemCount = _itemIds.current();
-    uint unsoldItemCount = _itemIds.current() - _itemsSold.current();
+  /* Getters */
+  /// @title A title that should describe the contract/interface
+  /// @author The name of the author
+  /// @notice Explain to an end user what this does
+  /// @dev Explain to a developer any extra details
+  
+  /* Returns only events that a user has created */
+  function getMyEvents() public view returns (MarketEvent[] memory) {
+    uint totalEventCount = _eventIds.current();
+    uint eventCount = 0;
     uint currentIndex = 0;
 
-    MarketItem[] memory items = new MarketItem[](unsoldItemCount);
-    for (uint i = 0; i < itemCount; i++) {
-      if (idToMarketItem[i + 1].owner == address(0)) {
+    for (uint i = 0; i < totalEventCount; i++) {
+      if (idToMarketEvent[i + 1].owner == msg.sender) {
+        eventCount += 1;
+      }
+    }
+
+    MarketEvent[] memory userEvents = new MarketEvent[](eventCount);
+    for (uint i = 0; i < totalEventCount; i++) {
+      if (idToMarketEvent[i + 1].owner == msg.sender) {
         uint currentId = i + 1;
-        MarketItem storage currentItem = idToMarketItem[currentId];
-        items[currentIndex] = currentItem;
+        MarketEvent storage currentEvent = idToMarketEvent[currentId];
+        userEvents[currentIndex] = currentEvent;
         currentIndex += 1;
       }
     }
-    return items;
+    return userEvents;
   }
 
-  /* Returns onlyl items that a user has purchased */
-  function fetchMyNFTs() public view returns (MarketItem[] memory) {
-    uint totalItemCount = _itemIds.current();
-    uint itemCount = 0;
-    uint currentIndex = 0;
+  
 
-    for (uint i = 0; i < totalItemCount; i++) {
-      if (idToMarketItem[i + 1].owner == msg.sender) {
-        itemCount += 1;
-      }
-    }
-
-    MarketItem[] memory items = new MarketItem[](itemCount);
-    for (uint i = 0; i < totalItemCount; i++) {
-      if (idToMarketItem[i + 1].owner == msg.sender) {
-        uint currentId = i + 1;
-        MarketItem storage currentItem = idToMarketItem[currentId];
-        items[currentIndex] = currentItem;
-        currentIndex += 1;
-      }
-    }
-    return items;
-  }
-
-  /* Returns only items a user has created */
-  function fetchItemsCreated() public view returns (MarketItem[] memory) {
-    uint totalItemCount = _itemIds.current();
-    uint itemCount = 0;
-    uint currentIndex = 0;
-
-    for (uint i = 0; i < totalItemCount; i++) {
-      if (idToMarketItem[i + 1].seller == msg.sender) {
-        itemCount += 1;
-      }
-    }
-
-    MarketItem[] memory items = new MarketItem[](itemCount);
-    for (uint i = 0; i < totalItemCount; i++) {
-      if (idToMarketItem[i + 1].seller == msg.sender) {
-        uint currentId = i + 1;
-        MarketItem storage currentItem = idToMarketItem[currentId];
-        items[currentIndex] = currentItem;
-        currentIndex += 1;
-      }
-    }
-    return items;
-  }
-
+  //Required functions to receive ERC1155 tokens
   function onERC1155Received(address operator, address from, uint256 id, uint256 value, bytes calldata data) override external returns (bytes4) {
       return bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"));
   }
@@ -194,13 +167,18 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     Then our code will pass these details to the marketplace contract which keeps track of the nftcontract in order to transfer the nft to the market address, and to know the token id and creator
     NFT is minted first, then we go to the market and create the market ticket
 
+    To store tickets and events I can loop through map each time, then check if each index is free. Think I need to give users the option to burn tickets. Maybe
+    also find a way to delete all unpurchased events after data of event passes
+
+    To get events tickets availiable just loop through each ticketID in the event's ticket array, than add to a counter the balance the marketplace has of that token/ticket
+
     EVENT CONTRACT
     He has an array of tickets which has a datatype of things like price etc. Then when someoen buys a ticket, a new ticket type is created and given the id of its place in the array,
     and then a new NFT is minted and its tokenID is the place in the array of the ticket, and the minted owner of the nft is the purchaser
 
     OTHER GUYS CONTRACT
     Each NFT has its own script associated with it, so when someone creates a token, they are also creating a new NFT contract
-    He has a mapping of ids->marketItem to store all the market items in the market. Each item as its own market item id and a seperate token ID
+    He has a mapping of ids->MarketTicket to store all the market items in the market. Each item as its own market item id and a seperate token ID
     TokenID is given with a counter within the nft contract
 
     As user has access to the NFT contract and can mint the NFT, 
