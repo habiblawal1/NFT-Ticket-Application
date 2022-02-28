@@ -1,9 +1,4 @@
-// SPDX-License-Identifier: MIT
-
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-
-import "hardhat/console.sol";
+ 
 
 contract NFT is ERC1155 {
     using Counters for Counters.Counter;
@@ -30,7 +25,7 @@ contract NFT is ERC1155 {
     function uri(uint256 tokenID) override public view returns (string memory) {
         return(
             string(abi.encodePacked(
-                "URI",
+                "URL",
                 Strings.toString(tokenID),
                 ".json"
             ))

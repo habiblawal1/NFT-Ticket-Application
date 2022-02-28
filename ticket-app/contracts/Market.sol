@@ -1,4 +1,180 @@
+// SPDX-License-Identifier: MIT
 
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+
+import "hardhat/console.sol";
+
+contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
+  using Counters for Counters.Counter;
+  Counters.Counter private _itemIds;
+  Counters.Counter private _itemsSold;
+
+  address payable owner;
+  uint256 listingPrice = 0.025 ether;
+
+  constructor() {
+    owner = payable(msg.sender);
+  }
+
+  struct MarketItem {
+    uint itemId;
+    address nftContract;
+    uint256 tokenId;
+    address payable seller;
+    address payable owner;
+    uint256 price;
+    bool sold;
+  }
+
+  mapping(uint256 => MarketItem) private idToMarketItem;
+
+  event MarketItemCreated (
+    uint indexed itemId,
+    address indexed nftContract,
+    uint256 indexed tokenId,
+    address seller,
+    address owner,
+    uint256 price,
+    bool sold
+  );
+
+  /* Returns the listing price of the contract */
+  function getListingPrice() public view returns (uint256) {
+    return listingPrice;
+  }
+  
+  /* Places an item for sale on the marketplace */
+  function createMarketItem(
+    address nftContract,
+    uint256 tokenId,
+    uint256 price
+  ) public payable nonReentrant {
+    require(price > 0, "Price must be at least 1 wei");
+    require(msg.value == listingPrice, "Price must be equal to listing price");
+
+    _itemIds.increment();
+    uint256 itemId = _itemIds.current();
+  
+    idToMarketItem[itemId] =  MarketItem(
+      itemId,
+      nftContract,
+      tokenId,
+      payable(msg.sender),
+      payable(address(0)),
+      price,
+      false
+    );
+
+    IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
+
+    emit MarketItemCreated(
+      itemId,
+      nftContract,
+      tokenId,
+      msg.sender,
+      address(0),
+      price,
+      false
+    );
+  }
+
+  /* Creates the sale of a marketplace item */
+  /* Transfers ownership of the item, as well as funds between parties */
+  function createMarketSale(
+    address nftContract,
+    uint256 itemId
+    ) public payable nonReentrant {
+    uint price = idToMarketItem[itemId].price;
+    uint tokenId = idToMarketItem[itemId].tokenId;
+    require(msg.value == price, "Please submit the asking price in order to complete the purchase");
+
+    idToMarketItem[itemId].seller.transfer(msg.value);
+    IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+    idToMarketItem[itemId].owner = payable(msg.sender);
+    idToMarketItem[itemId].sold = true;
+    _itemsSold.increment();
+    payable(owner).transfer(listingPrice);
+  }
+
+  /* Returns all unsold market items */
+  function fetchMarketItems() public view returns (MarketItem[] memory) {
+    uint itemCount = _itemIds.current();
+    uint unsoldItemCount = _itemIds.current() - _itemsSold.current();
+    uint currentIndex = 0;
+
+    MarketItem[] memory items = new MarketItem[](unsoldItemCount);
+    for (uint i = 0; i < itemCount; i++) {
+      if (idToMarketItem[i + 1].owner == address(0)) {
+        uint currentId = i + 1;
+        MarketItem storage currentItem = idToMarketItem[currentId];
+        items[currentIndex] = currentItem;
+        currentIndex += 1;
+      }
+    }
+    return items;
+  }
+
+  /* Returns onlyl items that a user has purchased */
+  function fetchMyNFTs() public view returns (MarketItem[] memory) {
+    uint totalItemCount = _itemIds.current();
+    uint itemCount = 0;
+    uint currentIndex = 0;
+
+    for (uint i = 0; i < totalItemCount; i++) {
+      if (idToMarketItem[i + 1].owner == msg.sender) {
+        itemCount += 1;
+      }
+    }
+
+    MarketItem[] memory items = new MarketItem[](itemCount);
+    for (uint i = 0; i < totalItemCount; i++) {
+      if (idToMarketItem[i + 1].owner == msg.sender) {
+        uint currentId = i + 1;
+        MarketItem storage currentItem = idToMarketItem[currentId];
+        items[currentIndex] = currentItem;
+        currentIndex += 1;
+      }
+    }
+    return items;
+  }
+
+  /* Returns only items a user has created */
+  function fetchItemsCreated() public view returns (MarketItem[] memory) {
+    uint totalItemCount = _itemIds.current();
+    uint itemCount = 0;
+    uint currentIndex = 0;
+
+    for (uint i = 0; i < totalItemCount; i++) {
+      if (idToMarketItem[i + 1].seller == msg.sender) {
+        itemCount += 1;
+      }
+    }
+
+    MarketItem[] memory items = new MarketItem[](itemCount);
+    for (uint i = 0; i < totalItemCount; i++) {
+      if (idToMarketItem[i + 1].seller == msg.sender) {
+        uint currentId = i + 1;
+        MarketItem storage currentItem = idToMarketItem[currentId];
+        items[currentIndex] = currentItem;
+        currentIndex += 1;
+      }
+    }
+    return items;
+  }
+
+  function onERC1155Received(address operator, address from, uint256 id, uint256 value, bytes calldata data) override external returns (bytes4) {
+      return bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"));
+  }
+  
+  function onERC1155BatchReceived(address operator, address from, uint256[] ids, uint256[] values, bytes calldata data) override external returns (bytes4) {
+      bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"));
+  }
+
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+      return super.supportsInterface(interfaceId);
+  }
+}
 
 
 /**
@@ -32,13 +208,7 @@
     We also return the token id so that in the front end we can do stuff with the token id such as put it for sale
 
     So to list an item on the market, a user will interact with the front ent and he mints the nft, then we transfer that nft from the user to the marketplace
+
+    balanceOf checks the quantity of a specific token that a contract has x
  */
 
-
-
- IF(SS){
-     A =BBB
-     X=5
- }ELSE{
-     X=5
- }
