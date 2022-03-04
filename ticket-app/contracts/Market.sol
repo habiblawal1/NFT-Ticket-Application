@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
  pragma solidity ^0.8.3;
 
-
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
@@ -35,6 +34,8 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     address payable seller;
     address payable owner;
     uint256 price;
+    uint256 purchaseLimit;
+    uint256 totalSupply;
     bool sold;
   }
   
@@ -60,6 +61,8 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     address seller,
     address owner,
     uint256 price,
+    uint256 purchaseLimit,
+    uint256 totalSupply,
     bool sold
   );
 
@@ -73,6 +76,7 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
   ) public nonReentrant {
       // check if thic fucntion caller is not an zero address account
     require(msg.sender != address(0));
+    require((uint64(now) < eventStartDate), "Date has already passed");
     _eventIds.increment();
     // check if a token exists with the above token id => incremented counter
     require(!_exists(_eventIds));
@@ -103,6 +107,79 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     );
   }
 
+   /* Places a ticket for sale on the marketplace */
+  function createTicket(
+    uint256 eventId,
+    uint256 amount,
+    address nftContract,
+    uint256 tokenId,
+    uint256 purchaseLimit,
+    uint256 totalSupply,
+    uint256 price
+  ) public payable nonReentrant {
+    require(price > 0, "Price must be at least 1 wei");
+
+    //check user owns NFT before listing it on the market
+    require(IERC1155(nftContract).balanceOf(msg.sender, tokenId)>= amount, "You do not own the NFT ticket you are trying to list");
+    //check msg sender owns event
+    require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
+    //Check event has not already passed
+    require((uint64(now) < idToMarketEvent[eventId].eventStartDate), "Event has already passed");
+
+    _ticketIds.increment();
+    uint256 ticketId = _ticketIds.current();
+  
+    idToMarketTicket[ticketId] =  MarketTicket(
+      ticketId,
+      eventId,
+      nftContract,
+      tokenId,
+      payable(msg.sender),
+      payable(address(0)),
+      price,
+      purchaseLimit,
+      totalSupply,
+      false
+    );
+
+    IERC1155(nftContract).transferFrom(msg.sender, address(this), tokenId, amount);
+
+    emit MarketTicketCreated(
+      ticketId,
+      eventId,
+      nftContract,
+      tokenId,
+      msg.sender,
+      address(0),
+      price,
+      purchaseLimit,
+      totalSupply,
+      false
+    );
+  }
+
+  function buyTicket(
+    address nftContract,
+    uint256 ticketId,
+    uint256 amount
+    ) public payable nonReentrant {
+    uint price = idToMarketTicket[ticketId].price;
+    uint tokenId = idToMarketTicket[ticketId].tokenId;
+    uint limit = idToMarketTicket[ticketId].purchaseLimit;
+    require(amount <= IERC1155(nftContract).balanceOf(address(this), tokenId), "You've requested to buy more tickets that are remaining on the marketplace");
+    require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, tokenId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
+    require(msg.value == price * amount, "Not enough money sent");
+    require((uint64(now) < idToMarketEvent[idToMarketTicket[ticketId]].eventStartDate), "Event has already passed");
+
+    //TODO make sure the event hasn't started
+    idToMarketTicket[ticketId].seller.transfer(msg.value);
+    IERC1155(nftContract).transferFrom(address(this), msg.sender, tokenId, amount);
+    idToMarketTicket[itemId].owner = payable(msg.sender);
+    idToMarketTicket[itemId].sold = true;
+  }
+
+
+
   /* Getters */
   /// @title A title that should describe the contract/interface
   /// @author The name of the author
@@ -131,6 +208,53 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
       }
     }
     return userEvents;
+  }
+
+   function getAllEvents() public view returns (MarketEvent[] memory) {
+    uint totalEventCount = _eventIds.current();
+    uint eventCount = 0;
+    uint currentIndex = 0;
+
+    for (uint i = 0; i < totalEventCount; i++) {
+      if ((uint64(now) < idToMarketEvent[eventId].eventStartDate)) {
+        eventCount += 1;
+      }
+    }
+    MarketEvent[] memory userEvents = new MarketEvent[](eventCount);
+    for (uint i = 0; i < totalEventCount; i++) {
+      if ((uint64(now) < idToMarketEvent[eventId].eventStartDate)) {
+        uint currentId = i + 1;
+        MarketEvent storage currentEvent = idToMarketEvent[currentId];
+        userEvents[currentIndex] = currentEvent;
+        currentIndex += 1;
+      }
+    }
+    return userEvents;
+   }
+
+   function getMyTickets() public view returns (MarketTicket[] memory) {
+    uint totalTicketCount = _ticketIds.current();
+    uint ticketCount = 0;
+    uint currentIndex = 0;
+
+    for (uint i = 0; i < totalTicketCount; i++) {
+      if (idToMarketTicket[i + 1].owner == msg.sender) {
+        ticketCount += 1;
+      }
+    }
+
+    //TODO - How to store a user's tickets
+
+    MarketTicket[] memory userTickets = new MarketTicket[](ticketCount);
+    for (uint i = 0; i < totalTicketCount; i++) {
+      if (idToMarketTicket[i + 1].owner == msg.sender) {
+        uint currentId = i + 1;
+        MarketTicket storage currentTicket = idToMarketTicket[currentId];
+        userTickets[currentIndex] = currentTicket;
+        currentIndex += 1;
+      }
+    }
+    return userTickets;
   }
 
   
@@ -167,8 +291,11 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     Then our code will pass these details to the marketplace contract which keeps track of the nftcontract in order to transfer the nft to the market address, and to know the token id and creator
     NFT is minted first, then we go to the market and create the market ticket
 
+    STORE EVENTS
     To store tickets and events I can loop through map each time, then check if each index is free. Think I need to give users the option to burn tickets. Maybe
     also find a way to delete all unpurchased events after data of event passes
+    I think its best to remove any events the day after it has occured, but I could still keep the ticket type. Mainly because its very inefficient 
+    to loop through a long list of events to see which ones are still happening or not
 
     To get events tickets availiable just loop through each ticketID in the event's ticket array, than add to a counter the balance the marketplace has of that token/ticket
 
