@@ -7,13 +7,16 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 import "hardhat/console.sol";
 
-contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
+contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
   using Counters for Counters.Counter;
-  Counters.Counter private _ticketIds;
+  Counters.Counter private _tokenIds;
   Counters.Counter private _eventIds;
 
   //Used by tutorial as an address to receive listing fees - can't charge people as this is a FYP project unfortunately
   address payable owner;
+
+  mapping(uint256 => MarketEvent) private idToMarketEvent;
+  mapping(uint256 => MarketTicket) private idToMarketTicket;
 
   struct MarketEvent {
     uint eventId;
@@ -27,10 +30,8 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
   }
 
   struct MarketTicket {
-    uint ticketId;
-    uint eventId;
-    address nftContract;
     uint256 tokenId;
+    uint eventId;
     address payable seller;
     address payable owner;
     uint256 price;
@@ -38,9 +39,6 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     uint256 totalSupply;
     bool sold;
   }
-  
-  mapping(uint256 => MarketEvent) private idToMarketEvent;
-  mapping(uint256 => MarketTicket) private idToMarketTicket;
 
   event MarketEventCreated (
     uint indexed eventId,
@@ -66,6 +64,36 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     bool sold
   );
 
+  constructor() ERC1155(tokenURI) {
+    owner = payable(msg.sender);
+  }
+
+//Mints token and then lists it in the marketplace
+  function createToken(uint64 amount, uint256 eventId, uint256 purchaseLimit, uint256 totalSupply, uint256 price) public returns (uint) {
+        _tokenIds.increment();
+        uint256 newTokenId = _tokenIds.current();
+
+        //use eventID for the metadata
+
+        //TODO - Add a check to see token creator owns the event, but then again i can just check this on market contract and not allow listing if token owner doesn't match event owner - ok i'll do this lols
+
+        _mint(msg.sender, newTokenId, amount, "");
+        createTicket(eventId, amount, newTokenId, purchaseLimit, totalSupply, price); 
+        return newTokenId;
+    }
+
+  //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure
+  function uri(uint256 tokenID) override public view returns (string memory) {
+        return(
+            string(abi.encodePacked(
+                "URL",
+                Strings.toString(tokenID),
+                ".json"
+            ))
+        );
+    }
+}
+
    /* Places an item for sale on the marketplace */
   function createEvent(
     string name,
@@ -73,7 +101,7 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     string imageUri,
     string location,
     uint64 eventStartDate
-  ) public nonReentrant {
+  ) public {
       // check if thic fucntion caller is not an zero address account
     require(msg.sender != address(0));
     require((uint64(now) < eventStartDate), "Date has already passed");
@@ -108,10 +136,9 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
   }
 
    /* Places a ticket for sale on the marketplace */
-  function createTicket(
+  function createMarketTicket(
     uint256 eventId,
     uint256 amount,
-    address nftContract,
     uint256 tokenId,
     uint256 purchaseLimit,
     uint256 totalSupply,
@@ -120,20 +147,15 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     require(price > 0, "Price must be at least 1 wei");
 
     //check user owns NFT before listing it on the market
-    require(IERC1155(nftContract).balanceOf(msg.sender, tokenId)>= amount, "You do not own the NFT ticket you are trying to list");
+    require(balanceOf(msg.sender, tokenId)>= amount, "You do not own the NFT ticket you are trying to list");
     //check msg sender owns event
     require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
     //Check event has not already passed
     require((uint64(now) < idToMarketEvent[eventId].eventStartDate), "Event has already passed");
-
-    _ticketIds.increment();
-    uint256 ticketId = _ticketIds.current();
   
-    idToMarketTicket[ticketId] =  MarketTicket(
-      ticketId,
-      eventId,
-      nftContract,
+    idToMarketTicket[tokenId] =  MarketTicket(
       tokenId,
+      eventId,
       payable(msg.sender),
       payable(address(0)),
       price,
@@ -142,13 +164,12 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
       false
     );
 
-    IERC1155(nftContract).transferFrom(msg.sender, address(this), tokenId, amount);
+    //TODO - Double check this is the correct format for transfer
+    safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
 
     emit MarketTicketCreated(
-      ticketId,
-      eventId,
-      nftContract,
       tokenId,
+      eventId,
       msg.sender,
       address(0),
       price,
@@ -315,5 +336,36 @@ contract NFTMarket is ReentrancyGuard, IERC1155Receiver, ERC165{
     So to list an item on the market, a user will interact with the front ent and he mints the nft, then we transfer that nft from the user to the marketplace
 
     balanceOf checks the quantity of a specific token that a contract has x
+
+
+    OLD TICKET CONTRACT NOTES
+     Marketplace{
+        All events
+
+    }
+
+    Event{
+        Name
+        Description
+        Start Date
+        Creator
+    }
+
+    Ticket{
+        Event ID
+        Price
+        Owner
+        *Availability
+    }
+
+
+
+    *Create an empty event
+    *We must map all the events to the correct creater
+
+    //Withdraw is used to make sure you are the only one who can withdraw from a contract
+
+    Ticket contract just mints the required amount of your asset with an ID alongside it, e.g. 1 for SWORD, 2 for ARMOUR
+    https://www.youtube.com/watch?v=PakCemMvY58&list=LL&index=20
  */
 
