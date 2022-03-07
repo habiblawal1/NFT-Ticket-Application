@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
- pragma solidity ^0.8.3;
+ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -9,6 +9,7 @@ import "hardhat/console.sol";
 
 contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
   using Counters for Counters.Counter;
+  //counters start at 0 
   Counters.Counter private _tokenIds;
   Counters.Counter private _eventIds;
 
@@ -18,6 +19,7 @@ contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
   mapping(uint256 => MarketEvent) private idToMarketEvent;
   mapping(uint256 => MarketTicket) private idToMarketTicket;
 
+  //TODO - Need new solution as apparently you can't have dynamic arrays in solidity
   struct MarketEvent {
     uint eventId;
     string name;
@@ -72,10 +74,9 @@ contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
   function createToken(uint64 amount, uint256 eventId, uint256 purchaseLimit, uint256 totalSupply, uint256 price) public returns (uint) {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
-
+        
         //use eventID for the metadata
-
-        //TODO - Add a check to see token creator owns the event, but then again i can just check this on market contract and not allow listing if token owner doesn't match event owner - ok i'll do this lols
+        //Create JSON metadata for token
 
         _mint(msg.sender, newTokenId, amount, "");
         createTicket(eventId, amount, newTokenId, purchaseLimit, totalSupply, price); 
@@ -153,6 +154,7 @@ contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
     //Check event has not already passed
     require((uint64(now) < idToMarketEvent[eventId].eventStartDate), "Event has already passed");
   
+    //seller is the person putting it for sale and owner is no one as the ticket is up for sale
     idToMarketTicket[tokenId] =  MarketTicket(
       tokenId,
       eventId,
@@ -183,18 +185,20 @@ contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
     address nftContract,
     uint256 ticketId,
     uint256 amount
-    ) public payable nonReentrant {
+    ) public payable {
     uint price = idToMarketTicket[ticketId].price;
     uint tokenId = idToMarketTicket[ticketId].tokenId;
     uint limit = idToMarketTicket[ticketId].purchaseLimit;
-    require(amount <= IERC1155(nftContract).balanceOf(address(this), tokenId), "You've requested to buy more tickets that are remaining on the marketplace");
-    require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, tokenId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
+    address seller = idToMarketTicket[tokenId].seller;
+
+    require(amount <= balanceOf(address(this), tokenId), "Not enough tickets remaining on the marketplace");
+    require(amount <= limit - balanceOf(msg.sender, tokenId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
     require(msg.value == price * amount, "Not enough money sent");
+    //make sure the event hasn't started
     require((uint64(now) < idToMarketEvent[idToMarketTicket[ticketId]].eventStartDate), "Event has already passed");
 
-    //TODO make sure the event hasn't started
-    idToMarketTicket[ticketId].seller.transfer(msg.value);
-    IERC1155(nftContract).transferFrom(address(this), msg.sender, tokenId, amount);
+    seller.transfer(msg.value);
+    safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
     idToMarketTicket[itemId].owner = payable(msg.sender);
     idToMarketTicket[itemId].sold = true;
   }
@@ -206,7 +210,9 @@ contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
   /// @author The name of the author
   /// @notice Explain to an end user what this does
   /// @dev Explain to a developer any extra details
-  
+
+
+  /* A vieww doesn't do any transacrional stuff, i think its used when u return stuff idk */
   /* Returns only events that a user has created */
   function getMyEvents() public view returns (MarketEvent[] memory) {
     uint totalEventCount = _eventIds.current();
@@ -252,6 +258,29 @@ contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
     }
     return userEvents;
    }
+   
+   function getEventTickets(uint256 _eventId) public view returns (MarketTicket[] memory) {
+    uint totalTicketCount = _ticketIds.current();
+    uint ticketCount = 0;
+    uint currentIndex = 0;
+
+    for (uint i = 0; i < totalTicketCount; i++) {
+      if (idToMarketTicket[i + 1].eventId == _eventId && idToMarketTicket[i + 1].owner == address(0)) {
+        ticketCount += 1;
+      }
+    }
+
+    MarketTicket[] memory userTickets = new MarketTicket[](ticketCount);
+    for (uint i = 0; i < totalTicketCount; i++) {
+      if (idToMarketTicket[i + 1].eventId == _eventId && idToMarketTicket[i + 1].owner == address(0)) {
+        uint currentId = i + 1;
+        MarketTicket storage currentTicket = idToMarketTicket[currentId];
+        userTickets[currentIndex] = currentTicket;
+        currentIndex += 1;
+      }
+    }
+    return userTickets;
+   }
 
    function getMyTickets() public view returns (MarketTicket[] memory) {
     uint totalTicketCount = _ticketIds.current();
@@ -263,8 +292,6 @@ contract NFTMarket is ERC1155, IERC1155Receiver, ERC165{
         ticketCount += 1;
       }
     }
-
-    //TODO - How to store a user's tickets
 
     MarketTicket[] memory userTickets = new MarketTicket[](ticketCount);
     for (uint i = 0; i < totalTicketCount; i++) {
