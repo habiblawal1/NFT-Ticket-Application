@@ -81,6 +81,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Greeter__factory>;
     getContractFactory(
+      name: "NFTTicket",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NFTTicket__factory>;
+    getContractFactory(
       name: "TicketMarket",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TicketMarket__factory>;
@@ -170,6 +174,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Greeter>;
+    getContractAt(
+      name: "NFTTicket",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NFTTicket>;
     getContractAt(
       name: "TicketMarket",
       address: string,

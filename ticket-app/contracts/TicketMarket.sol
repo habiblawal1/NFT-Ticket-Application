@@ -8,10 +8,10 @@ import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 
 import "hardhat/console.sol";
 
-contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
+contract TicketMarket is ERC1155Holder{
   using Counters for Counters.Counter;
   //counters start at 0 
-  Counters.Counter private _tokenIds;
+  Counters.Counter private _ticketIds;
   Counters.Counter private _eventIds;
 
   //Used by tutorial as an address to receive listing fees - can't charge people as this is a FYP project unfortunately
@@ -33,6 +33,7 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
 
   struct MarketTicket {
     uint256 tokenId;
+    uint256 ticketId;
     uint eventId;
     address payable seller;
     address payable owner;
@@ -54,6 +55,7 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
 
   event MarketTicketCreated (
     uint indexed tokenId,
+    uint indexed ticketId,
     uint indexed eventId,
     address seller,
     address owner,
@@ -62,10 +64,6 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
     uint256 totalSupply,
     bool sold
   );
-
-  constructor() ERC1155PresetMinterPauser("ipfs://hash/{id}.json") {
-    owner = payable(msg.sender);
-  }
 
   /* Places an item for sale on the marketplace */
   function createEvent(
@@ -104,26 +102,6 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
 
     return eventId;
   }
-
-//Mints token and then lists it in the marketplace
-  function createToken(uint64 amount, uint256 eventId, uint256 purchaseLimit, uint256 price) public payable returns (uint) {
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
-        
-        //use eventID for the metadata
-        //Create JSON metadata for token
-
-        _mint(msg.sender, newTokenId, amount, "");
-        console.log("Balance of Market When token created", balanceOf(address(this),newTokenId));
-        console.log("Ticket ID = ", newTokenId);
-        console.log("Market address = ", address(this));
-        createMarketTicket(eventId, newTokenId, purchaseLimit, amount, price); 
-        console.log("Balance of Market after ticket created", balanceOf(address(this),newTokenId));
-        console.log("Ticket ID = ", newTokenId);
-        console.log("Market address = ", address(this));
-        return newTokenId;
-    }
-
   //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure
   /*
   function uri(uint256 tokenID) override public view returns (string memory) {
@@ -142,22 +120,25 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
   function createMarketTicket(
     uint256 eventId,
     uint256 tokenId,
+    address nftContract,
     uint256 purchaseLimit,
     uint256 totalSupply,
     uint256 price
-  ) private {
+  ) public returns (uint) {
     require(price > 0, "Price must be at least 1 wei");
-
     //check user owns NFT before listing it on the market
-    require(balanceOf(msg.sender, tokenId)>= totalSupply, "You do not own the NFT ticket you are trying to list");
+    require(IERC1155(nftContract).balanceOf(msg.sender, tokenId)>= totalSupply, "You do not own the NFT ticket you are trying to list");
     //check msg sender owns event
     require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
     //Check event has not already passed
     require((uint64(block.timestamp) < idToMarketEvent[eventId].eventStartDate), "Event has already passed");
-  
+    
+    _ticketIds.increment();
+    uint256 ticketId = _ticketIds.current();
     //seller is the person putting it for sale and owner is no one as the ticket is up for sale
-    idToMarketTicket[tokenId] =  MarketTicket(
+    idToMarketTicket[ticketId] =  MarketTicket(
       tokenId,
+      ticketId,
       eventId,
       payable(msg.sender),
       payable(address(0)),
@@ -166,15 +147,11 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
       totalSupply,
       false
     );
-    console.log("This works");
-    console.log("From = ", msg.sender);
-    console.log("To = ", address(this));
-    console.log("Balance of From = ", balanceOf(msg.sender,tokenId));
-    console.log("MSG SENDER = ", msg.sender);
-    //TODO - Double check this is the correct format for transfer
-    safeTransferFrom(msg.sender, address(this), tokenId, totalSupply, "");
+
+    IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, totalSupply, "");
     emit MarketTicketCreated(
       tokenId,
+      ticketId,
       eventId,
       msg.sender,
       address(0),
@@ -183,21 +160,21 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
       totalSupply,
       false
     );
+    return ticketId;
   }
 
   function buyTicket(
+    address nftContract,
     uint256 ticketId,
     uint256 amount
     ) public payable {
-    console.log("Balance of Market after when ticket is being bought", balanceOf(address(this),ticketId));
-    console.log("Ticket ID = ", ticketId);
-     console.log("Market address = ", address(this));
     uint price = idToMarketTicket[ticketId].price;
+    uint tokenId = idToMarketTicket[ticketId].tokenId;
     uint limit = idToMarketTicket[ticketId].purchaseLimit;
     address seller = idToMarketTicket[ticketId].seller;
-    require(balanceOf(address(this), ticketId) >=1 , "From must be owner");
-    require(amount <= balanceOf(address(this), ticketId), "Not enough tickets remaining on the marketplace");
-    require(amount <= limit - balanceOf(msg.sender, ticketId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
+    require(IERC1155(nftContract).balanceOf(address(this), ticketId) >=1 , "From must be owner");
+    require(amount <= IERC1155(nftContract).balanceOf(address(this), ticketId), "Not enough tickets remaining on the marketplace");
+    require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, ticketId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
     require(msg.value == price * amount, "Not enough money sent");
     //make sure the event hasn't started
     require((uint64(block.timestamp) < idToMarketEvent[idToMarketTicket[ticketId].eventId].eventStartDate), "Event has already passed");
@@ -205,12 +182,7 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
     idToMarketTicket[ticketId].sold = true;
     idToMarketTicket[ticketId].seller = payable(address(0));
 
-    console.log("This DOESN'T work");
-    console.log("From = ", address(this));
-    console.log("To = ", msg.sender);
-    console.log("Balance of From = ", balanceOf(address(this),ticketId));
-    console.log("MSG SENDER = ", msg.sender);
-    safeTransferFrom(address(this), msg.sender, ticketId, amount, "");
+    IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
     payable(seller).transfer(msg.value);
   }
 
@@ -264,7 +236,7 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
    }
    
    function getEventTickets(uint256 _eventId) public view returns (MarketTicket[] memory) {
-    uint totalTicketCount = _tokenIds.current();
+    uint totalTicketCount = _ticketIds.current();
     uint ticketCount = 0;
     uint currentIndex = 0;
 
@@ -287,7 +259,7 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
    }
 
    function getMyTickets() public view returns (MarketTicket[] memory) {
-    uint totalTicketCount = _tokenIds.current();
+    uint totalTicketCount = _ticketIds.current();
     uint ticketCount = 0;
     uint currentIndex = 0;
 
@@ -309,7 +281,7 @@ contract TicketMarket is ERC1155PresetMinterPauser, ERC1155Holder{
     return userTickets;
   }
 
-  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155PresetMinterPauser, ERC1155Receiver) returns (bool) {
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Receiver) returns (bool) {
       return super.supportsInterface(interfaceId);
   }
 

@@ -18,6 +18,7 @@ export type { ERC1155Receiver } from "./ERC1155Receiver";
 export type { ERC165 } from "./ERC165";
 export type { IERC165 } from "./IERC165";
 export type { Greeter } from "./Greeter";
+export type { NFTTicket } from "./NFTTicket";
 export type { TicketMarket } from "./TicketMarket";
 
 export { AccessControl__factory } from "./factories/AccessControl__factory";
@@ -37,4 +38,5 @@ export { ERC1155Receiver__factory } from "./factories/ERC1155Receiver__factory";
 export { ERC165__factory } from "./factories/ERC165__factory";
 export { IERC165__factory } from "./factories/IERC165__factory";
 export { Greeter__factory } from "./factories/Greeter__factory";
+export { NFTTicket__factory } from "./factories/NFTTicket__factory";
 export { TicketMarket__factory } from "./factories/TicketMarket__factory";

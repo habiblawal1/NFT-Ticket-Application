@@ -8,6 +8,12 @@ describe("Market", function () {
     const market = await Market.deploy();
     await market.deployed();
     const marketAddress = market.address;
+
+    const NFT = await ethers.getContractFactory("NFTTicket");
+    const nft = await NFT.deploy(marketAddress);
+    await nft.deployed();
+    const nftContract = nft.address;
+
     //A way to get test addresses. The first address is the deployment address so we ignore it with a "_"
     const [_, buyerAddress, sellerAddresss] = await ethers.getSigners();
 
@@ -33,36 +39,38 @@ describe("Market", function () {
     let eventId = await createEventEvent.wait();
     eventId = eventId.events[0].args.eventId.toNumber();
 
+    const createTokenEvent = await nft
+      .connect(sellerAddresss)
+      .createToken(10, eventId);
+    let tokenId = await createTokenEvent.wait();
+    tokenId.events.forEach((element: any) => {
+      if (element.event == "NFTTicketCreated") {
+        tokenId = element.args.tokenId.toNumber();
+      }
+    });
+
     /*
     int64 amount, 
     uint256 eventId, 
     uint256 purchaseLimit, 
     uint256 price
     */
-    const createTokenEvent = await market
+    const createMarketEvent = await market
       .connect(sellerAddresss)
-      .createToken(10, eventId, 4, ticketPrice);
-    let ticketId = await createTokenEvent.wait();
+      .createMarketTicket(eventId, tokenId, nftContract, 4, 10, ticketPrice);
+    let ticketId = await createMarketEvent.wait();
     ticketId.events.forEach((element: any) => {
       if (element.event == "MarketTicketCreated") {
-        ticketId = element.args.tokenId.toNumber();
-        //ticketId = element.args.seller;
+        ticketId = element.args.ticketId.toNumber();
       }
     });
-    // console.log("Ticket Id = ", ticketId);
-    // console.log("This market address = ", marketAddress);
-    // console.log("sellerAddress = " + sellerAddresss.address);
 
-    /**
-    uint256 ticketId,
-    uint256 amount
-     */
-    // const myNFTs = await market.balanceOf(sellerAddresss.address, ticketId);
-    // console.log("MY NFTs=", myNFTs.toString());
     await market
       .connect(buyerAddress)
-      .buyTicket(ticketId, 2, { value: ticketPrice.mul(2) });
+      .buyTicket(nftContract, ticketId, 2, { value: ticketPrice.mul(2) });
 
+    const myNfts = await nft.balanceOf(buyerAddress.address, tokenId);
+    console.log("Buyer's NFTs = ", myNfts.toString());
     let allEvents = await market.getAllEvents();
     allEvents = await Promise.all(
       allEvents.map(
@@ -89,7 +97,7 @@ describe("Market", function () {
       )
     );
     console.log("Events: ", allEvents);
-    // let myTickets = await market.connect(buyerAddress).getMyTickets();
+    let myTickets = await market.connect(buyerAddress).getMyTickets();
 
     /**    uint256 tokenId;
     uint eventId;
@@ -99,7 +107,7 @@ describe("Market", function () {
     uint256 purchaseLimit;
     uint256 totalSupply;
     bool sold; */
-    /* myTickets = await Promise.all(
+    myTickets = await Promise.all(
       myTickets.map(
         async (i: {
           tokenId: BigNumber;
@@ -125,6 +133,6 @@ describe("Market", function () {
         }
       )
     );
-    console.log("My tickets: ", myTickets);*/
+    console.log("My tickets: ", myTickets);
   });
 });
