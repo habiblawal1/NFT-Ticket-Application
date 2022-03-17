@@ -2,21 +2,25 @@
  pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import '@openzeppelin/contracts/token/ERC1155/presets/ERC1155PresetMinterPauser.sol';
+
 
 import "hardhat/console.sol";
 
-contract NFTTicket is ERC1155PresetMinterPauser {
+contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     address contractAddress;
+
+    mapping(uint256 => string) private _uris;
 
      event NFTTicketCreated (
         uint indexed tokenId
     );
 
     //orginal uri for 1155 must end in {id}.json which is done to save gas, but this format isn't widely accepted e.g. not by opensea
-    constructor(address marketplaceAddress) ERC1155PresetMinterPauser("ipfs://hash/{id}.json") {
+    constructor(address marketplaceAddress) ERC1155PresetMinterPauser("") {
         contractAddress = marketplaceAddress;
     }
 
@@ -38,17 +42,16 @@ contract NFTTicket is ERC1155PresetMinterPauser {
     }
 
     //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure
-    /*
     function uri(uint256 tokenID) override public view returns (string memory) {
             //TODO - "Strings" throws an error
-        return(
-            string(abi.encodePacked(
-                "URL",
-                Strings.toString(tokenID),
-                ".json"
-            ))
-        );
-    }*/
+        return(_uris[tokenID]);
+    }
+
+    function setTokenUri(uint256 tokenId, string memory uri) public onlyOwner{
+        //allow you to only ever set the token uri once by requiring that the string mapped to the tokenId is empty
+        require(bytes(_uris[tokenId]).length == 0, "You cannot set token uri twice");
+        _uris[tokenId] = uri;
+    }
 }
 
 /**

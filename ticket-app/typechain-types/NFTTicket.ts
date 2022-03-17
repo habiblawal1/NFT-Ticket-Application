@@ -36,14 +36,18 @@ export interface NFTTicketInterface extends utils.Interface {
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint(address,uint256,uint256,bytes)": FunctionFragment;
     "mintBatch(address,uint256[],uint256[],bytes)": FunctionFragment;
+    "owner()": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setTokenUri(uint256,string)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
     "unpause()": FunctionFragment;
     "uri(uint256)": FunctionFragment;
   };
@@ -112,8 +116,13 @@ export interface NFTTicketInterface extends utils.Interface {
     functionFragment: "mintBatch",
     values: [string, BigNumberish[], BigNumberish[], BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceRole",
     values: [BytesLike, string]
@@ -135,8 +144,16 @@ export interface NFTTicketInterface extends utils.Interface {
     values: [string, boolean]
   ): string;
   encodeFunctionData(
+    functionFragment: "setTokenUri",
+    values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [string]
   ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(functionFragment: "uri", values: [BigNumberish]): string;
@@ -184,8 +201,13 @@ export interface NFTTicketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintBatch", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceRole",
     data: BytesLike
@@ -204,7 +226,15 @@ export interface NFTTicketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setTokenUri",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
@@ -213,6 +243,7 @@ export interface NFTTicketInterface extends utils.Interface {
   events: {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "NFTTicketCreated(uint256)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
@@ -225,6 +256,7 @@ export interface NFTTicketInterface extends utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NFTTicketCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
@@ -249,6 +281,14 @@ export type NFTTicketCreatedEvent = TypedEvent<
 
 export type NFTTicketCreatedEventFilter =
   TypedEventFilter<NFTTicketCreatedEvent>;
+
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  { previousOwner: string; newOwner: string }
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
 
 export type PausedEvent = TypedEvent<[string], { account: string }>;
 
@@ -426,11 +466,17 @@ export interface NFTTicket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
     pause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     renounceRole(
       role: BytesLike,
@@ -468,16 +514,27 @@ export interface NFTTicket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setTokenUri(
+      tokenId: BigNumberish,
+      uri: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+    uri(tokenID: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -565,11 +622,17 @@ export interface NFTTicket extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  owner(overrides?: CallOverrides): Promise<string>;
+
   pause(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
+
+  renounceOwnership(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   renounceRole(
     role: BytesLike,
@@ -607,16 +670,27 @@ export interface NFTTicket extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setTokenUri(
+    tokenId: BigNumberish,
+    uri: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   supportsInterface(
     interfaceId: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  transferOwnership(
+    newOwner: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   unpause(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  uri(tokenID: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -704,9 +778,13 @@ export interface NFTTicket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    owner(overrides?: CallOverrides): Promise<string>;
+
     pause(overrides?: CallOverrides): Promise<void>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     renounceRole(
       role: BytesLike,
@@ -744,14 +822,25 @@ export interface NFTTicket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setTokenUri(
+      tokenId: BigNumberish,
+      uri: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    transferOwnership(
+      newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     unpause(overrides?: CallOverrides): Promise<void>;
 
-    uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    uri(tokenID: BigNumberish, overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -772,6 +861,15 @@ export interface NFTTicket extends BaseContract {
     NFTTicketCreated(
       tokenId?: BigNumberish | null
     ): NFTTicketCreatedEventFilter;
+
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): OwnershipTransferredEventFilter;
 
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
@@ -938,11 +1036,17 @@ export interface NFTTicket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
     pause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     renounceRole(
       role: BytesLike,
@@ -980,16 +1084,27 @@ export interface NFTTicket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setTokenUri(
+      tokenId: BigNumberish,
+      uri: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    uri(tokenID: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1083,11 +1198,17 @@ export interface NFTTicket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     pause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     renounceRole(
       role: BytesLike,
@@ -1125,9 +1246,20 @@ export interface NFTTicket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setTokenUri(
+      tokenId: BigNumberish,
+      uri: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     unpause(
@@ -1135,7 +1267,7 @@ export interface NFTTicket extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     uri(
-      arg0: BigNumberish,
+      tokenID: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

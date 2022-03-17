@@ -179,5 +179,8 @@ describe("Market", function () {
       )
     );
     console.log("My tickets: ", myTickets);
+    nft.setTokenUri(1, "url/1.json");
+    const nftURI = await nft.uri(1);
+    console.log("URI For Token ID 1 =", nftURI);
   });
 });
