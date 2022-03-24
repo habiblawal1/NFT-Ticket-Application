@@ -3,6 +3,7 @@
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
+import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 
 import "hardhat/console.sol";
@@ -19,7 +20,6 @@ contract TicketMarket is ERC1155Holder{
   mapping(uint256 => MarketEvent) private idToMarketEvent;
   mapping(uint256 => MarketTicket) private idToMarketTicket;
 
-  //TODO - Need new solution as apparently you can't have dynamic arrays in solidity
   struct MarketEvent {
     uint eventId;
     string name;
@@ -101,19 +101,6 @@ contract TicketMarket is ERC1155Holder{
 
     return eventId;
   }
-  //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure
-  /*
-  function uri(uint256 tokenID) override public view returns (string memory) {
-    //TODO - "Strings" throws an error
-        return(
-            string(abi.encodePacked(
-                "URL",
-                Strings.toString(tokenID),
-                ".json"
-            ))
-        );
-  }
-  */
 
 /* Places a ticket for sale on the marketplace */
   function createMarketTicket(

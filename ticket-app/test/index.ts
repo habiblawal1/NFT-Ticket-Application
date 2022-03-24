@@ -21,6 +21,8 @@ describe("Market", function () {
     //this method allows us to deal with whole units instead of wei. In here its not 100 ether, its 100 matic (1MATIC = 1.3GBP).
     const ticketPrice = ethers.utils.parseUnits("100", "ether");
 
+    //your_string
+
     /*
     string name,
     string description,
@@ -126,7 +128,7 @@ describe("Market", function () {
           owner: string;
         }): Promise<any> => {
           let _event = {
-            eventId: i.eventId.toString(),
+            eventId: i.eventId.toNumber(),
             name: i.name,
             description: i.description,
             imageUri: i.imageUri,
@@ -164,12 +166,13 @@ describe("Market", function () {
           totalSupply: BigNumber;
           sold: boolean;
         }): Promise<any> => {
+          let price = ethers.utils.formatUnits(i.price.toString(), "ether");
           let _ticket = {
             tokenId: i.tokenId.toString(),
             eventId: i.eventId.toString(),
             seller: i.seller,
             owner: i.owner,
-            price: i.price.toString(),
+            price: `${price} MATIC`,
             purchaseLimit: i.purchaseLimit.toString(),
             totalSupply: i.totalSupply.toString(),
             sold: i.sold,
@@ -179,8 +182,8 @@ describe("Market", function () {
       )
     );
     console.log("My tickets: ", myTickets);
-    nft.setTokenUri(1, "url/1.json");
     const nftURI = await nft.uri(1);
     console.log("URI For Token ID 1 =", nftURI);
+    nft.setTokenUri(1, "url/1.json");
   });
 });

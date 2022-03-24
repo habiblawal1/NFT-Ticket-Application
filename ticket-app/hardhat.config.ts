@@ -7,7 +7,7 @@ import "solidity-coverage";
 
 const fs = require("fs");
 const privateKey = fs.readFileSync(".secret").toString();
-const projectID = "01cc7e5cd63842bea357496477055f04";
+const projectID = process.env.PROJECT_ID;
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
