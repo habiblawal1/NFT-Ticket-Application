@@ -27,7 +27,7 @@ export interface NFTTicketInterface extends utils.Interface {
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "burn(address,uint256,uint256)": FunctionFragment;
     "burnBatch(address,uint256[],uint256[])": FunctionFragment;
-    "createToken(uint64,uint256)": FunctionFragment;
+    "createToken(uint64)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
     "getRoleMemberCount(bytes32)": FunctionFragment;
@@ -82,7 +82,7 @@ export interface NFTTicketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createToken",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -415,7 +415,6 @@ export interface NFTTicket extends BaseContract {
 
     createToken(
       amount: BigNumberish,
-      eventId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -571,7 +570,6 @@ export interface NFTTicket extends BaseContract {
 
   createToken(
     amount: BigNumberish,
-    eventId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -727,7 +725,6 @@ export interface NFTTicket extends BaseContract {
 
     createToken(
       amount: BigNumberish,
-      eventId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -982,7 +979,6 @@ export interface NFTTicket extends BaseContract {
 
     createToken(
       amount: BigNumberish,
-      eventId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1144,7 +1140,6 @@ export interface NFTTicket extends BaseContract {
 
     createToken(
       amount: BigNumberish,
-      eventId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

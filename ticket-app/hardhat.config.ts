@@ -7,6 +7,7 @@ import "solidity-coverage";
 
 const fs = require("fs");
 const privateKey = fs.readFileSync(".secret").toString();
+//The project Id given to us by infura so we can connect to the mumbai test  network
 const projectID = process.env.PROJECT_ID;
 
 // You need to export an object to set up your config
@@ -21,12 +22,10 @@ module.exports = {
     hardhat: {
       chainId: 1337,
     },
-    /*
     mumbai: {
-      url: `https://polygon-mumbai.infura.io/v3/${projectID}`
-      accounts: [privateKey]
-    }
-    */
+      url: `https://polygon-mumbai.infura.io/v3/${projectID}`,
+      accounts: [privateKey],
+    },
   },
   solidity: {
     version: "0.8.4",

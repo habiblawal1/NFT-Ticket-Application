@@ -22,11 +22,8 @@ contract TicketMarket is ERC1155Holder{
 
   struct MarketEvent {
     uint eventId;
-    string name;
-    string description;
-    string imageUri;
-    string location;
-    uint64 eventStartDate;
+    string uri;
+    uint64 startDate;
     address owner;
   }
 
@@ -44,11 +41,8 @@ contract TicketMarket is ERC1155Holder{
 
   event MarketEventCreated (
     uint indexed eventId,
-    string name,
-    string description,
-    string imageUri,
-    string location,
-    uint64 eventStartDate,
+    string uri,
+    uint64 startDate,
     address owner
   );
 
@@ -63,39 +57,29 @@ contract TicketMarket is ERC1155Holder{
     uint256 totalSupply,
     bool sold
   );
-
+//TODO - Create function to edit event start date
   /* Places an item for sale on the marketplace */
   function createEvent(
-    string memory name,
-    string memory description,
-    string memory imageUri,
-    string memory location,
-    uint64 eventStartDate
+    string memory uri, uint64 startDate
   ) public returns (uint) {
       // check if thic fucntion caller is not an zero address account
     require(msg.sender != address(0));
-    require((uint64(block.timestamp) < eventStartDate), "Date has already passed");
+    require((uint64(block.timestamp) < startDate), "Date has already passed");
     _eventIds.increment();
 
     uint256 eventId = _eventIds.current();
   
     idToMarketEvent[eventId] =  MarketEvent(
       eventId,
-      name,
-      description,
-      imageUri,
-      location,
-      eventStartDate,
+      uri,
+      startDate,
       msg.sender
     );
 
     emit MarketEventCreated(
       eventId,
-      name,
-      description,
-      imageUri,
-      location,
-      eventStartDate,
+      uri,
+      startDate,
       msg.sender
     );
 
@@ -117,7 +101,7 @@ contract TicketMarket is ERC1155Holder{
     //check msg sender owns event
     require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
     //Check event has not already passed
-    require((uint64(block.timestamp) < idToMarketEvent[eventId].eventStartDate), "Event has already passed");
+    require((uint64(block.timestamp) < idToMarketEvent[eventId].startDate), "Event has already passed");
     
     _ticketIds.increment();
     uint256 ticketId = _ticketIds.current();
@@ -163,7 +147,7 @@ contract TicketMarket is ERC1155Holder{
     require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, ticketId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
     require(msg.value == price * amount, "Not enough money sent");
     //make sure the event hasn't started
-    require((uint64(block.timestamp) < idToMarketEvent[idToMarketTicket[ticketId].eventId].eventStartDate), "Event has already passed");
+    require((uint64(block.timestamp) < idToMarketEvent[idToMarketTicket[ticketId].eventId].startDate), "Event has already passed");
     idToMarketTicket[ticketId].owner = payable(msg.sender);
     idToMarketTicket[ticketId].sold = true;
     idToMarketTicket[ticketId].seller = payable(address(0));
@@ -205,13 +189,13 @@ contract TicketMarket is ERC1155Holder{
     uint currentIndex = 0;
 
     for (uint i = 0; i < totalEventCount; i++) {
-      if ((uint64(block.timestamp) < idToMarketEvent[i+1].eventStartDate)) {
+      if ((uint64(block.timestamp) < idToMarketEvent[i+1].startDate)) {
         eventCount += 1;
       }
     }
     MarketEvent[] memory userEvents = new MarketEvent[](eventCount);
     for (uint i = 0; i < totalEventCount; i++) {
-      if ((uint64(block.timestamp) < idToMarketEvent[i+1].eventStartDate)) {
+      if ((uint64(block.timestamp) < idToMarketEvent[i+1].startDate)) {
         uint currentId = i + 1;
         MarketEvent storage currentEvent = idToMarketEvent[currentId];
         userEvents[currentIndex] = currentEvent;
@@ -266,6 +250,22 @@ contract TicketMarket is ERC1155Holder{
     }
     return userTickets;
   }
+
+  //   // TODO - I don't think this is needed
+  // function getEventUri(uint256 eventId) public view returns (string memory) {
+  //     require(bytes(idToMarketEvent[eventId].uri).length != 0, "No uri exists for the event, please create one using the setEventUri function");
+  //     return(idToMarketEvent[eventId].uri);
+  // }
+
+  // function setEventUri(uint256 eventId, string memory uri) public{
+  //     //allow you to only ever set the token uri once by requiring that the string mapped to the tokenId is empty
+  //     //TODO - Add check to ensure event ID exists
+  //     //TODO - Decide if I need to actually give a min number of times I can set event URI, for now so I'm not stuck on blocker, I'm making it immutable so you can't modify events, but need to decide what to do QUICK
+  //     //require(bytes(_uris[tokenId]).length == 0, "You cannot set token uri twice");
+  //     //TODO - Can I do the thing they did in the NFT paper strings where common custom checks were done elsewhere and then you can include them in the header of other functions. I could do this with the event owner check re
+  //     require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
+  //     idToMarketEvent[eventId].uri = uri;
+  // }
 
   function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Receiver) returns (bool) {
       return super.supportsInterface(interfaceId);

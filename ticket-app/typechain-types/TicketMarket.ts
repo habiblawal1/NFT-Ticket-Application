@@ -21,31 +21,17 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export declare namespace TicketMarket {
   export type MarketEventStruct = {
     eventId: BigNumberish;
-    name: string;
-    description: string;
-    imageUri: string;
-    location: string;
-    eventStartDate: BigNumberish;
+    uri: string;
+    startDate: BigNumberish;
     owner: string;
   };
 
   export type MarketEventStructOutput = [
     BigNumber,
     string,
-    string,
-    string,
-    string,
     BigNumber,
     string
-  ] & {
-    eventId: BigNumber;
-    name: string;
-    description: string;
-    imageUri: string;
-    location: string;
-    eventStartDate: BigNumber;
-    owner: string;
-  };
+  ] & { eventId: BigNumber; uri: string; startDate: BigNumber; owner: string };
 
   export type MarketTicketStruct = {
     tokenId: BigNumberish;
@@ -86,7 +72,7 @@ export interface TicketMarketInterface extends utils.Interface {
   contractName: "TicketMarket";
   functions: {
     "buyTicket(address,uint256,uint256)": FunctionFragment;
-    "createEvent(string,string,string,string,uint64)": FunctionFragment;
+    "createEvent(string,uint64)": FunctionFragment;
     "createMarketTicket(uint256,uint256,address,uint256,uint256,uint256)": FunctionFragment;
     "getAllEvents()": FunctionFragment;
     "getEventTickets(uint256)": FunctionFragment;
@@ -103,7 +89,7 @@ export interface TicketMarketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createEvent",
-    values: [string, string, string, string, BigNumberish]
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "createMarketTicket",
@@ -184,7 +170,7 @@ export interface TicketMarketInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "MarketEventCreated(uint256,string,string,string,string,uint64,address)": EventFragment;
+    "MarketEventCreated(uint256,string,uint64,address)": EventFragment;
     "MarketTicketCreated(uint256,uint256,uint256,address,address,uint256,uint256,uint256,bool)": EventFragment;
   };
 
@@ -193,16 +179,8 @@ export interface TicketMarketInterface extends utils.Interface {
 }
 
 export type MarketEventCreatedEvent = TypedEvent<
-  [BigNumber, string, string, string, string, BigNumber, string],
-  {
-    eventId: BigNumber;
-    name: string;
-    description: string;
-    imageUri: string;
-    location: string;
-    eventStartDate: BigNumber;
-    owner: string;
-  }
+  [BigNumber, string, BigNumber, string],
+  { eventId: BigNumber; uri: string; startDate: BigNumber; owner: string }
 >;
 
 export type MarketEventCreatedEventFilter =
@@ -272,11 +250,8 @@ export interface TicketMarket extends BaseContract {
     ): Promise<ContractTransaction>;
 
     createEvent(
-      name: string,
-      description: string,
-      imageUri: string,
-      location: string,
-      eventStartDate: BigNumberish,
+      uri: string,
+      startDate: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -339,11 +314,8 @@ export interface TicketMarket extends BaseContract {
   ): Promise<ContractTransaction>;
 
   createEvent(
-    name: string,
-    description: string,
-    imageUri: string,
-    location: string,
-    eventStartDate: BigNumberish,
+    uri: string,
+    startDate: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -406,11 +378,8 @@ export interface TicketMarket extends BaseContract {
     ): Promise<void>;
 
     createEvent(
-      name: string,
-      description: string,
-      imageUri: string,
-      location: string,
-      eventStartDate: BigNumberish,
+      uri: string,
+      startDate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -466,22 +435,16 @@ export interface TicketMarket extends BaseContract {
   };
 
   filters: {
-    "MarketEventCreated(uint256,string,string,string,string,uint64,address)"(
+    "MarketEventCreated(uint256,string,uint64,address)"(
       eventId?: BigNumberish | null,
-      name?: null,
-      description?: null,
-      imageUri?: null,
-      location?: null,
-      eventStartDate?: null,
+      uri?: null,
+      startDate?: null,
       owner?: null
     ): MarketEventCreatedEventFilter;
     MarketEventCreated(
       eventId?: BigNumberish | null,
-      name?: null,
-      description?: null,
-      imageUri?: null,
-      location?: null,
-      eventStartDate?: null,
+      uri?: null,
+      startDate?: null,
       owner?: null
     ): MarketEventCreatedEventFilter;
 
@@ -518,11 +481,8 @@ export interface TicketMarket extends BaseContract {
     ): Promise<BigNumber>;
 
     createEvent(
-      name: string,
-      description: string,
-      imageUri: string,
-      location: string,
-      eventStartDate: BigNumberish,
+      uri: string,
+      startDate: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -580,11 +540,8 @@ export interface TicketMarket extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     createEvent(
-      name: string,
-      description: string,
-      imageUri: string,
-      location: string,
-      eventStartDate: BigNumberish,
+      uri: string,
+      startDate: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

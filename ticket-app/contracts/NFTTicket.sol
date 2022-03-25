@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import '@openzeppelin/contracts/token/ERC1155/presets/ERC1155PresetMinterPauser.sol';
 
-
 import "hardhat/console.sol";
 
 contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
@@ -24,13 +23,9 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
         contractAddress = marketplaceAddress;
     }
 
-    function createToken(uint64 amount, uint256 eventId) public returns (uint) {
+    function createToken(uint64 amount) public returns (uint) {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
-
-        //use eventID for the metadata
-
-        //TODO - Add a check to see token creator owns the event, but then again i can just check this on market contract and not allow listing if token owner doesn't match event owner - ok i'll do this lols
 
         _mint(msg.sender, newTokenId, amount, "");
         setApprovalForAll(contractAddress, true);
@@ -41,7 +36,7 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
         return newTokenId;
     }
 
-    //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure
+    // //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure
     function uri(uint256 tokenId) override public view returns (string memory) {
         require(bytes(_uris[tokenId]).length != 0, "No uri exists for the token, please create one using the setTokenUri function");
         return(_uris[tokenId]);

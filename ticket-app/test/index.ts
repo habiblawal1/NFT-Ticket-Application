@@ -1,5 +1,4 @@
 import { BigNumber } from "@ethersproject/bignumber";
-import { expect } from "chai";
 import { ethers } from "hardhat";
 
 describe("Market", function () {
@@ -33,30 +32,26 @@ describe("Market", function () {
     const createEventEvent = await market
       .connect(sellerAddress)
       .createEvent(
-        "Asian Nights",
-        "Come Rubix this saturday to have fun",
-        "https://www.google.com/imgres?imgurl=https%3A%2F%2Fwww.lawdonut.co.uk%2Fsites%2Fdefault%2Ffiles%2Fchristmas_parties.jpg&imgrefurl=https%3A%2F%2Fwww.lawdonut.co.uk%2Fpersonal%2Fblog%2F19%2F12%2Foffice-christmas-party-employers-dos-and-donts&tbnid=Y-FwqdAMIIvizM&vet=12ahUKEwj1jdzhzbT2AhVpiIsKHZ_XCL0QMygJegUIARDsAQ..i&docid=_pB8B9JlB_JWAM&w=1148&h=696&q=party&client=safari&ved=2ahUKEwj1jdzhzbT2AhVpiIsKHZ_XCL0QMygJegUIARDsAQ",
-        "Union House, University Of Surrey, Stag Hill, University Campus, Guildford GU2 7XH",
-        Math.floor(new Date("2022-03-25").getTime() / 1000)
+        "url/event/1.json",
+        Math.floor(new Date("2022-05-15").getTime() / 1000)
       );
     let eventId = await createEventEvent.wait();
+    console.log("EVENT 1", eventId.events[0].args);
     eventId = eventId.events[0].args.eventId.toNumber();
+    //await market.connect(sellerAddress).setEventUri(eventId, "url/event/1.json");
 
     const createEventEvent2 = await market
       .connect(sellerAddress2)
       .createEvent(
-        "Chelsea vs Arsenal",
-        "The big derby game to watch Chelsea vs Arsenal at Stamford Bride",
-        "https://www.google.com/imgres?imgurl=https%3A%2F%2Fwww.lawdonut.co.uk%2Fsites%2Fdefault%2Ffiles%2Fchristmas_parties.jpg&imgrefurl=https%3A%2F%2Fwww.lawdonut.co.uk%2Fpersonal%2Fblog%2F19%2F12%2Foffice-christmas-party-employers-dos-and-donts&tbnid=Y-FwqdAMIIvizM&vet=12ahUKEwj1jdzhzbT2AhVpiIsKHZ_XCL0QMygJegUIARDsAQ..i&docid=_pB8B9JlB_JWAM&w=1148&h=696&q=party&client=safari&ved=2ahUKEwj1jdzhzbT2AhVpiIsKHZ_XCL0QMygJegUIARDsAQ",
-        "Fulham Rd., London SW6 1HS",
-        Math.floor(new Date("2022-03-25").getTime() / 1000)
+        "url/event/2.json",
+        Math.floor(new Date("2022-12-23").getTime() / 1000)
       );
-    let eventId2 = await createEventEvent.wait();
-    eventId = eventId2.events[0].args.eventId.toNumber();
+    let eventId2 = await createEventEvent2.wait();
+    console.log("EVENT 2", eventId2.events[0].args);
+    eventId2 = eventId2.events[0].args.eventId.toNumber();
+    //await market.connect(sellerAddress2).setEventUri(eventId2, "url/event/2.json");
 
-    const createTokenEvent = await nft
-      .connect(sellerAddress)
-      .createToken(10, eventId);
+    const createTokenEvent = await nft.connect(sellerAddress).createToken(10);
     let tokenId = await createTokenEvent.wait();
     tokenId.events.forEach((element: any) => {
       if (element.event == "NFTTicketCreated") {
@@ -64,16 +59,10 @@ describe("Market", function () {
       }
     });
 
-    /*
-    int64 amount, 
-    uint256 eventId, 
-    uint256 purchaseLimit, 
-    uint256 price
-    */
-    const createMarketEvent = await market
+    const createMarketTicketEvent = await market
       .connect(sellerAddress)
       .createMarketTicket(eventId, tokenId, nftContract, 4, 10, ticketPrice);
-    let ticketId = await createMarketEvent.wait();
+    let ticketId = await createMarketTicketEvent.wait();
     ticketId.events.forEach((element: any) => {
       if (element.event == "MarketTicketCreated") {
         ticketId = element.args.ticketId.toNumber();
@@ -91,21 +80,15 @@ describe("Market", function () {
       allEvents.map(
         async (i: {
           eventId: BigNumber;
-          name: string;
-          description: string;
-          imageUri: string;
-          location: string;
-          eventStartDate: BigNumber;
+          uri: string;
+          startDate: BigNumber;
           owner: string;
         }): Promise<any> => {
           let _event = {
             eventId: i.eventId.toString(),
-            name: i.name,
-            description: i.description,
-            imageUri: i.imageUri,
-            location: i.location,
-            eventStartDate: new Date(
-              i.eventStartDate.toNumber() * 1000
+            uri: i.uri,
+            startDate: new Date(
+              i.startDate.toNumber() * 1000
             ).toLocaleDateString(),
             owner: i.owner,
           };
@@ -120,21 +103,15 @@ describe("Market", function () {
       myEvents.map(
         async (i: {
           eventId: BigNumber;
-          name: string;
-          description: string;
-          imageUri: string;
-          location: string;
-          eventStartDate: BigNumber;
+          uri: string;
+          startDate: BigNumber;
           owner: string;
         }): Promise<any> => {
           let _event = {
-            eventId: i.eventId.toNumber(),
-            name: i.name,
-            description: i.description,
-            imageUri: i.imageUri,
-            location: i.location,
-            eventStartDate: new Date(
-              i.eventStartDate.toNumber() * 1000
+            eventId: i.eventId.toString(),
+            uri: i.uri,
+            startDate: new Date(
+              i.startDate.toNumber() * 1000
             ).toLocaleDateString(),
             owner: i.owner,
           };
@@ -182,8 +159,8 @@ describe("Market", function () {
       )
     );
     console.log("My tickets: ", myTickets);
+    nft.setTokenUri(1, "url/1.json");
     const nftURI = await nft.uri(1);
     console.log("URI For Token ID 1 =", nftURI);
-    nft.setTokenUri(1, "url/1.json");
   });
 });
