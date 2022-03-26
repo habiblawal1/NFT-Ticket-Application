@@ -58,20 +58,17 @@ describe("Market", function () {
         tokenId = element.args.tokenId.toNumber();
       }
     });
+    await nft.connect(sellerAddress).setTokenUri(1, "url/1.json");
+    const nftURI = await nft.uri(1);
+    console.log("URI For Token ID 1 =", nftURI);
 
-    const createMarketTicketEvent = await market
+    await market
       .connect(sellerAddress)
       .createMarketTicket(eventId, tokenId, nftContract, 4, 10, ticketPrice);
-    let ticketId = await createMarketTicketEvent.wait();
-    ticketId.events.forEach((element: any) => {
-      if (element.event == "MarketTicketCreated") {
-        ticketId = element.args.ticketId.toNumber();
-      }
-    });
 
     await market
       .connect(buyerAddress)
-      .buyTicket(nftContract, ticketId, 2, { value: ticketPrice.mul(2) });
+      .buyTicket(nftContract, tokenId, 2, { value: ticketPrice.mul(2) });
 
     const myNfts = await nft.balanceOf(buyerAddress.address, tokenId);
     console.log("Buyer's NFTs = ", myNfts.toString());
@@ -159,8 +156,5 @@ describe("Market", function () {
       )
     );
     console.log("My tickets: ", myTickets);
-    nft.setTokenUri(1, "url/1.json");
-    const nftURI = await nft.uri(1);
-    console.log("URI For Token ID 1 =", nftURI);
   });
 });

@@ -12,7 +12,11 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
     Counters.Counter private _tokenIds;
     address contractAddress;
 
-    mapping(uint256 => string) private _uris;
+    struct NFTInfo {
+        string uri;
+        address owner;
+    }
+    mapping(uint256 => NFTInfo) private _NFTInfo;
 
      event NFTTicketCreated (
         uint indexed tokenId
@@ -29,7 +33,8 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
 
         _mint(msg.sender, newTokenId, amount, "");
         setApprovalForAll(contractAddress, true);
-
+        //Makes msg.sender the owner so that now they are the only ones capable of 
+        _NFTInfo[newTokenId].owner = msg.sender;
         emit NFTTicketCreated(
             newTokenId
         );
@@ -38,14 +43,15 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
 
     // //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure
     function uri(uint256 tokenId) override public view returns (string memory) {
-        require(bytes(_uris[tokenId]).length != 0, "No uri exists for the token, please create one using the setTokenUri function");
-        return(_uris[tokenId]);
+        require(bytes(_NFTInfo[tokenId].uri).length != 0, "No uri exists for the token, please create one using the setTokenUri function");
+        return(_NFTInfo[tokenId].uri);
     }
 
-    function setTokenUri(uint256 tokenId, string memory uri) public onlyOwner{
+    function setTokenUri(uint256 tokenId, string memory newUri) public{
+        require(_NFTInfo[tokenId].owner == msg.sender, "Only token owner can set uri");
         //allow you to only ever set the token uri once by requiring that the string mapped to the tokenId is empty
-        require(bytes(_uris[tokenId]).length == 0, "You cannot set token uri twice");
-        _uris[tokenId] = uri;
+        require(bytes(_NFTInfo[tokenId].uri).length == 0, "You cannot set token uri twice");
+       _NFTInfo[tokenId].uri = newUri;
     }
 }
 

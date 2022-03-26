@@ -56,7 +56,9 @@ export default function allEvents() {
           imageUri: eventData.image,
           location: eventData.location,
           startDate: eventData.eventDate,
+          owner: i.owner,
         };
+        console.log("Event ", currEvent.eventId, " owner = ", currEvent.owner);
         return currEvent;
       })
     );
@@ -132,6 +134,14 @@ export default function allEvents() {
                   className="text-3xl font-semibold"
                 >
                   Category: {event.category}
+                </p>
+              </div>
+              <div className="p-4">
+                <p
+                  style={{ height: "64px" }}
+                  className="text-3xl font-semibold"
+                >
+                  Owner: {event.owner}
                 </p>
               </div>
             </div>

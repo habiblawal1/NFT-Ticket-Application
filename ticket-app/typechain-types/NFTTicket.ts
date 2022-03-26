@@ -515,7 +515,7 @@ export interface NFTTicket extends BaseContract {
 
     setTokenUri(
       tokenId: BigNumberish,
-      uri: string,
+      newUri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -670,7 +670,7 @@ export interface NFTTicket extends BaseContract {
 
   setTokenUri(
     tokenId: BigNumberish,
-    uri: string,
+    newUri: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -821,7 +821,7 @@ export interface NFTTicket extends BaseContract {
 
     setTokenUri(
       tokenId: BigNumberish,
-      uri: string,
+      newUri: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1082,7 +1082,7 @@ export interface NFTTicket extends BaseContract {
 
     setTokenUri(
       tokenId: BigNumberish,
-      uri: string,
+      newUri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1243,7 +1243,7 @@ export interface NFTTicket extends BaseContract {
 
     setTokenUri(
       tokenId: BigNumberish,
-      uri: string,
+      newUri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -84,8 +84,7 @@ export default function createEvent() {
       Market.abi,
       signer
     );
-    //let listingPrice = await marketContract.getListingPrice()
-    //listingPrice = listingPrice.toString()
+
     try {
       const url = await uploadToIPFS();
       const transaction = await marketContract.createEvent(
@@ -104,23 +103,6 @@ export default function createEvent() {
       setErr((oldErr) => [...oldErr, "Check console for new error with ETH"]);
       console.log(error);
     }
-  }
-
-  async function logDate() {
-    try {
-      const added = await client.add(eventPic, {
-        progress: (prog) => console.log(`received: ${prog}`),
-      });
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-      setFileUrl(url);
-      console.log("FILE URL = ", fileUrl);
-    } catch (error) {
-      setErr((oldErr) => [...oldErr, error.message]);
-      console.log(err);
-      return;
-    }
-    //console.log(new Date(eventDate).toLocaleDateString());
-    //router.push("/events/");
   }
 
   return (
@@ -185,12 +167,6 @@ export default function createEvent() {
             className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
           >
             Create Event
-          </button>
-          <button
-            onClick={logDate}
-            className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
-          >
-            Display Date
           </button>
           <div>
             {err.map((error) => (

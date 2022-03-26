@@ -11,7 +11,7 @@ import "hardhat/console.sol";
 contract TicketMarket is ERC1155Holder{
   using Counters for Counters.Counter;
   //counters start at 0 
-  Counters.Counter private _ticketIds;
+  Counters.Counter private _ticketCount;
   Counters.Counter private _eventIds;
 
   //Used by tutorial as an address to receive listing fees - can't charge people as this is a FYP project unfortunately
@@ -29,7 +29,6 @@ contract TicketMarket is ERC1155Holder{
 
   struct MarketTicket {
     uint256 tokenId;
-    uint256 ticketId;
     uint eventId;
     address payable seller;
     address payable owner;
@@ -48,7 +47,6 @@ contract TicketMarket is ERC1155Holder{
 
   event MarketTicketCreated (
     uint indexed tokenId,
-    uint indexed ticketId,
     uint indexed eventId,
     address seller,
     address owner,
@@ -94,7 +92,7 @@ contract TicketMarket is ERC1155Holder{
     uint256 purchaseLimit,
     uint256 totalSupply,
     uint256 price
-  ) public returns (uint) {
+  ) public {
     require(price > 0, "Price must be at least 1 wei");
     //check user owns NFT before listing it on the market
     require(IERC1155(nftContract).balanceOf(msg.sender, tokenId)>= totalSupply, "You do not own the NFT ticket you are trying to list");
@@ -103,12 +101,11 @@ contract TicketMarket is ERC1155Holder{
     //Check event has not already passed
     require((uint64(block.timestamp) < idToMarketEvent[eventId].startDate), "Event has already passed");
     
-    _ticketIds.increment();
-    uint256 ticketId = _ticketIds.current();
+    _ticketCount.increment();
+
     //seller is the person putting it for sale and owner is no one as the ticket is up for sale
-    idToMarketTicket[ticketId] =  MarketTicket(
+    idToMarketTicket[tokenId] =  MarketTicket(
       tokenId,
-      ticketId,
       eventId,
       payable(msg.sender),
       payable(address(0)),
@@ -121,7 +118,6 @@ contract TicketMarket is ERC1155Holder{
     IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, totalSupply, "");
     emit MarketTicketCreated(
       tokenId,
-      ticketId,
       eventId,
       msg.sender,
       address(0),
@@ -130,27 +126,25 @@ contract TicketMarket is ERC1155Holder{
       totalSupply,
       false
     );
-    return ticketId;
   }
 
   function buyTicket(
     address nftContract,
-    uint256 ticketId,
+    uint256 tokenId,
     uint256 amount
     ) public payable {
-    uint price = idToMarketTicket[ticketId].price;
-    uint tokenId = idToMarketTicket[ticketId].tokenId;
-    uint limit = idToMarketTicket[ticketId].purchaseLimit;
-    address seller = idToMarketTicket[ticketId].seller;
-    require(IERC1155(nftContract).balanceOf(address(this), ticketId) >=1 , "From must be owner");
-    require(amount <= IERC1155(nftContract).balanceOf(address(this), ticketId), "Not enough tickets remaining on the marketplace");
-    require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, ticketId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
+    uint price = idToMarketTicket[tokenId].price;
+    uint limit = idToMarketTicket[tokenId].purchaseLimit;
+    address seller = idToMarketTicket[tokenId].seller;
+    require(IERC1155(nftContract).balanceOf(address(this), tokenId) >=1 , "From must be owner");
+    require(amount <= IERC1155(nftContract).balanceOf(address(this), tokenId), "Not enough tickets remaining on the marketplace");
+    require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, tokenId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
     require(msg.value == price * amount, "Not enough money sent");
     //make sure the event hasn't started
-    require((uint64(block.timestamp) < idToMarketEvent[idToMarketTicket[ticketId].eventId].startDate), "Event has already passed");
-    idToMarketTicket[ticketId].owner = payable(msg.sender);
-    idToMarketTicket[ticketId].sold = true;
-    idToMarketTicket[ticketId].seller = payable(address(0));
+    require((uint64(block.timestamp) < idToMarketEvent[idToMarketTicket[tokenId].eventId].startDate), "Event has already passed");
+    idToMarketTicket[tokenId].owner = payable(msg.sender);
+    idToMarketTicket[tokenId].sold = true;
+    idToMarketTicket[tokenId].seller = payable(address(0));
 
     IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
     payable(seller).transfer(msg.value);
@@ -206,7 +200,7 @@ contract TicketMarket is ERC1155Holder{
    }
    
    function getEventTickets(uint256 _eventId) public view returns (MarketTicket[] memory) {
-    uint totalTicketCount = _ticketIds.current();
+    uint totalTicketCount = _ticketCount.current();
     uint ticketCount = 0;
     uint currentIndex = 0;
 
@@ -229,7 +223,7 @@ contract TicketMarket is ERC1155Holder{
    }
 
    function getMyTickets() public view returns (MarketTicket[] memory) {
-    uint totalTicketCount = _ticketIds.current();
+    uint totalTicketCount = _ticketCount.current();
     uint ticketCount = 0;
     uint currentIndex = 0;
 

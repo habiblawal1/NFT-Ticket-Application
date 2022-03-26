@@ -24,7 +24,7 @@
     "mime": "^1.6.0",
     "mocha": "^7.2.0",
     "next": "12.1.0",
-    "nft.storage": "^6.0.2",
+    "nft.storage": "^6.1.0",
     "postcss-preset-env": "^7.4.2",
     "react": "17.0.2",
     "react-datepicker": "^4.7.0",
