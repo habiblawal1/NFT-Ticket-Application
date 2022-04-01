@@ -177,6 +177,11 @@ contract TicketMarket is ERC1155Holder{
     return userEvents;
   }
 
+  function getEvent(uint256 _eventId) public view returns (MarketEvent memory) {
+    require(idToMarketEvent[_eventId].eventId > 0, "This event does not exist");
+    return idToMarketEvent[_eventId];
+  }
+
    function getAllEvents() public view returns (MarketEvent[] memory) {
     uint totalEventCount = _eventIds.current();
     uint eventCount = 0;

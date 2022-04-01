@@ -72,6 +72,7 @@ export interface TicketMarketInterface extends utils.Interface {
     "createEvent(string,uint64)": FunctionFragment;
     "createMarketTicket(uint256,uint256,address,uint256,uint256,uint256)": FunctionFragment;
     "getAllEvents()": FunctionFragment;
+    "getEvent(uint256)": FunctionFragment;
     "getEventTickets(uint256)": FunctionFragment;
     "getMyEvents()": FunctionFragment;
     "getMyTickets()": FunctionFragment;
@@ -102,6 +103,10 @@ export interface TicketMarketInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getAllEvents",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getEvent",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getEventTickets",
@@ -141,6 +146,7 @@ export interface TicketMarketInterface extends utils.Interface {
     functionFragment: "getAllEvents",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getEvent", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getEventTickets",
     data: BytesLike
@@ -264,6 +270,11 @@ export interface TicketMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[TicketMarket.MarketEventStructOutput[]]>;
 
+    getEvent(
+      _eventId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[TicketMarket.MarketEventStructOutput]>;
+
     getEventTickets(
       _eventId: BigNumberish,
       overrides?: CallOverrides
@@ -328,6 +339,11 @@ export interface TicketMarket extends BaseContract {
     overrides?: CallOverrides
   ): Promise<TicketMarket.MarketEventStructOutput[]>;
 
+  getEvent(
+    _eventId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<TicketMarket.MarketEventStructOutput>;
+
   getEventTickets(
     _eventId: BigNumberish,
     overrides?: CallOverrides
@@ -391,6 +407,11 @@ export interface TicketMarket extends BaseContract {
     getAllEvents(
       overrides?: CallOverrides
     ): Promise<TicketMarket.MarketEventStructOutput[]>;
+
+    getEvent(
+      _eventId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<TicketMarket.MarketEventStructOutput>;
 
     getEventTickets(
       _eventId: BigNumberish,
@@ -491,6 +512,11 @@ export interface TicketMarket extends BaseContract {
 
     getAllEvents(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getEvent(
+      _eventId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getEventTickets(
       _eventId: BigNumberish,
       overrides?: CallOverrides
@@ -549,6 +575,11 @@ export interface TicketMarket extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getAllEvents(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getEvent(
+      _eventId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getEventTickets(
       _eventId: BigNumberish,

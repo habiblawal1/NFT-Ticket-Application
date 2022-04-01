@@ -124,6 +124,7 @@ export default function createEvent() {
               updateFormInput({ ...formInput, description: e.target.value })
             }
           />
+          {/* TODO - Add options for category */}
           <input
             placeholder="Event Category"
             className="mt-4 border rounded p-4"

@@ -40,6 +40,18 @@ describe("Market", function () {
     eventId = eventId.events[0].args.eventId.toNumber();
     //await market.connect(sellerAddress).setEventUri(eventId, "url/event/1.json");
 
+    let getEvent = await market.connect(buyerAddress).getEvent(1);
+    getEvent = {
+      eventId: getEvent.eventId.toString(),
+      uri: getEvent.uri,
+      startDate: new Date(
+        getEvent.startDate.toNumber() * 1000
+      ).toLocaleDateString(),
+      owner: getEvent.owner,
+    };
+
+    console.log("Get event: ", getEvent);
+
     const createEventEvent2 = await market
       .connect(sellerAddress2)
       .createEvent(
