@@ -117,7 +117,7 @@ export default function createTicket() {
       );
       await marketTransaction.wait();
 
-      //router.push("/events/my-events");
+      router.push("/events/my-events");
     } catch (error) {
       setErr((oldErr) => [...oldErr, "Check console for new error with ETH"]);
       console.log(error);

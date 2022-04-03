@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ethers, providers } from "ethers";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -142,6 +143,16 @@ export default function allEvents() {
                   className="text-3xl font-semibold"
                 >
                   Owner: {event.owner}
+                </p>
+              </div>
+              <div className="p-4">
+                <p
+                  style={{ height: "64px" }}
+                  className="text-blue-500 font-semibold"
+                >
+                  <Link href={`/events/${event.eventId}`}>
+                    <a className="mr-6">Book Now</a>
+                  </Link>
                 </p>
               </div>
             </div>

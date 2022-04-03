@@ -31,11 +31,9 @@ contract TicketMarket is ERC1155Holder{
     uint256 tokenId;
     uint eventId;
     address payable seller;
-    address payable owner;
     uint256 price;
     uint256 purchaseLimit;
     uint256 totalSupply;
-    bool sold;
   }
 
   event MarketEventCreated (
@@ -49,11 +47,9 @@ contract TicketMarket is ERC1155Holder{
     uint indexed tokenId,
     uint indexed eventId,
     address seller,
-    address owner,
     uint256 price,
     uint256 purchaseLimit,
-    uint256 totalSupply,
-    bool sold
+    uint256 totalSupply
   );
 //TODO - Create function to edit event start date
   /* Places an item for sale on the marketplace */
@@ -108,11 +104,9 @@ contract TicketMarket is ERC1155Holder{
       tokenId,
       eventId,
       payable(msg.sender),
-      payable(address(0)),
       price,
       purchaseLimit,
-      totalSupply,
-      false
+      totalSupply
     );
 
     IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, totalSupply, "");
@@ -120,11 +114,9 @@ contract TicketMarket is ERC1155Holder{
       tokenId,
       eventId,
       msg.sender,
-      address(0),
       price,
       purchaseLimit,
-      totalSupply,
-      false
+      totalSupply
     );
   }
 
@@ -142,8 +134,6 @@ contract TicketMarket is ERC1155Holder{
     require(msg.value == price * amount, "Not enough money sent");
     //make sure the event hasn't started
     require((uint64(block.timestamp) < idToMarketEvent[idToMarketTicket[tokenId].eventId].startDate), "Event has already passed");
-    idToMarketTicket[tokenId].owner = payable(msg.sender);
-    idToMarketTicket[tokenId].sold = true;
     idToMarketTicket[tokenId].seller = payable(address(0));
 
     IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
@@ -210,14 +200,14 @@ contract TicketMarket is ERC1155Holder{
     uint currentIndex = 0;
 
     for (uint i = 0; i < totalTicketCount; i++) {
-      if (idToMarketTicket[i + 1].eventId == _eventId && idToMarketTicket[i + 1].owner == address(0)) {
+      if (idToMarketTicket[i + 1].eventId == _eventId) {
         ticketCount += 1;
       }
     }
 
     MarketTicket[] memory userTickets = new MarketTicket[](ticketCount);
     for (uint i = 0; i < totalTicketCount; i++) {
-      if (idToMarketTicket[i + 1].eventId == _eventId && idToMarketTicket[i + 1].owner == address(0)) {
+      if (idToMarketTicket[i + 1].eventId == _eventId) {
         uint currentId = i + 1;
         MarketTicket storage currentTicket = idToMarketTicket[currentId];
         userTickets[currentIndex] = currentTicket;
@@ -227,20 +217,20 @@ contract TicketMarket is ERC1155Holder{
     return userTickets;
    }
 
-   function getMyTickets() public view returns (MarketTicket[] memory) {
+   function getMyTickets(address nftContract) public view returns (MarketTicket[] memory) {
     uint totalTicketCount = _ticketCount.current();
     uint ticketCount = 0;
     uint currentIndex = 0;
 
     for (uint i = 0; i < totalTicketCount; i++) {
-      if (idToMarketTicket[i + 1].owner == msg.sender) {
+      if (IERC1155(nftContract).balanceOf(address(msg.sender), i+1) >=1) {
         ticketCount += 1;
       }
     }
 
     MarketTicket[] memory userTickets = new MarketTicket[](ticketCount);
     for (uint i = 0; i < totalTicketCount; i++) {
-      if (idToMarketTicket[i + 1].owner == msg.sender) {
+      if (IERC1155(nftContract).balanceOf(address(msg.sender), i+1) >=1) {
         uint currentId = i + 1;
         MarketTicket storage currentTicket = idToMarketTicket[currentId];
         userTickets[currentIndex] = currentTicket;
@@ -249,6 +239,7 @@ contract TicketMarket is ERC1155Holder{
     }
     return userTickets;
   }
+  //TODO - MAJOR When a user buys a single ticket, its no longer on the market, this should only happen once all quantity of that ticket is gone
 
   //   // TODO - I don't think this is needed
   // function getEventUri(uint256 eventId) public view returns (string memory) {

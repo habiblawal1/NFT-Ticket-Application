@@ -37,31 +37,25 @@ export declare namespace TicketMarket {
     tokenId: BigNumberish;
     eventId: BigNumberish;
     seller: string;
-    owner: string;
     price: BigNumberish;
     purchaseLimit: BigNumberish;
     totalSupply: BigNumberish;
-    sold: boolean;
   };
 
   export type MarketTicketStructOutput = [
     BigNumber,
     BigNumber,
     string,
-    string,
     BigNumber,
     BigNumber,
-    BigNumber,
-    boolean
+    BigNumber
   ] & {
     tokenId: BigNumber;
     eventId: BigNumber;
     seller: string;
-    owner: string;
     price: BigNumber;
     purchaseLimit: BigNumber;
     totalSupply: BigNumber;
-    sold: boolean;
   };
 }
 
@@ -75,7 +69,7 @@ export interface TicketMarketInterface extends utils.Interface {
     "getEvent(uint256)": FunctionFragment;
     "getEventTickets(uint256)": FunctionFragment;
     "getMyEvents()": FunctionFragment;
-    "getMyTickets()": FunctionFragment;
+    "getMyTickets(address)": FunctionFragment;
     "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "onERC1155Received(address,address,uint256,uint256,bytes)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -118,7 +112,7 @@ export interface TicketMarketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getMyTickets",
-    values?: undefined
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "onERC1155BatchReceived",
@@ -174,7 +168,7 @@ export interface TicketMarketInterface extends utils.Interface {
 
   events: {
     "MarketEventCreated(uint256,string,uint64,address)": EventFragment;
-    "MarketTicketCreated(uint256,uint256,address,address,uint256,uint256,uint256,bool)": EventFragment;
+    "MarketTicketCreated(uint256,uint256,address,uint256,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "MarketEventCreated"): EventFragment;
@@ -190,25 +184,14 @@ export type MarketEventCreatedEventFilter =
   TypedEventFilter<MarketEventCreatedEvent>;
 
 export type MarketTicketCreatedEvent = TypedEvent<
-  [
-    BigNumber,
-    BigNumber,
-    string,
-    string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    boolean
-  ],
+  [BigNumber, BigNumber, string, BigNumber, BigNumber, BigNumber],
   {
     tokenId: BigNumber;
     eventId: BigNumber;
     seller: string;
-    owner: string;
     price: BigNumber;
     purchaseLimit: BigNumber;
     totalSupply: BigNumber;
-    sold: boolean;
   }
 >;
 
@@ -285,6 +268,7 @@ export interface TicketMarket extends BaseContract {
     ): Promise<[TicketMarket.MarketEventStructOutput[]]>;
 
     getMyTickets(
+      nftContract: string,
       overrides?: CallOverrides
     ): Promise<[TicketMarket.MarketTicketStructOutput[]]>;
 
@@ -354,6 +338,7 @@ export interface TicketMarket extends BaseContract {
   ): Promise<TicketMarket.MarketEventStructOutput[]>;
 
   getMyTickets(
+    nftContract: string,
     overrides?: CallOverrides
   ): Promise<TicketMarket.MarketTicketStructOutput[]>;
 
@@ -423,6 +408,7 @@ export interface TicketMarket extends BaseContract {
     ): Promise<TicketMarket.MarketEventStructOutput[]>;
 
     getMyTickets(
+      nftContract: string,
       overrides?: CallOverrides
     ): Promise<TicketMarket.MarketTicketStructOutput[]>;
 
@@ -464,25 +450,21 @@ export interface TicketMarket extends BaseContract {
       owner?: null
     ): MarketEventCreatedEventFilter;
 
-    "MarketTicketCreated(uint256,uint256,address,address,uint256,uint256,uint256,bool)"(
+    "MarketTicketCreated(uint256,uint256,address,uint256,uint256,uint256)"(
       tokenId?: BigNumberish | null,
       eventId?: BigNumberish | null,
       seller?: null,
-      owner?: null,
       price?: null,
       purchaseLimit?: null,
-      totalSupply?: null,
-      sold?: null
+      totalSupply?: null
     ): MarketTicketCreatedEventFilter;
     MarketTicketCreated(
       tokenId?: BigNumberish | null,
       eventId?: BigNumberish | null,
       seller?: null,
-      owner?: null,
       price?: null,
       purchaseLimit?: null,
-      totalSupply?: null,
-      sold?: null
+      totalSupply?: null
     ): MarketTicketCreatedEventFilter;
   };
 
@@ -524,7 +506,10 @@ export interface TicketMarket extends BaseContract {
 
     getMyEvents(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getMyTickets(overrides?: CallOverrides): Promise<BigNumber>;
+    getMyTickets(
+      nftContract: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     onERC1155BatchReceived(
       arg0: string,
@@ -588,7 +573,10 @@ export interface TicketMarket extends BaseContract {
 
     getMyEvents(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getMyTickets(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getMyTickets(
+      nftContract: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     onERC1155BatchReceived(
       arg0: string,

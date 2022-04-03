@@ -97,8 +97,7 @@ export default function createEvent() {
       //await marketContract.setEventUri(eventId, url);
 
       //TODO - Find a way to calculate price of creating an event, this will be by having a listing fee which is the same price as the cost to list on blockchain
-      router.push("/events");
-      //router.push("/events/my-events");
+      router.push("/events/my-events");
     } catch (error) {
       setErr((oldErr) => [...oldErr, "Check console for new error with ETH"]);
       console.log(error);
@@ -147,10 +146,10 @@ export default function createEvent() {
             }
           />
           <div>
-            <label htmlFor="Asset">Event Picture: </label>
+            <label htmlFor="Picture">Event Picture: </label>
             <input
               type="file"
-              name="Asset"
+              name="Picture"
               className="my-4"
               onChange={(e) => setEventPic(e.target.files[0])}
             />

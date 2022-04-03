@@ -130,7 +130,9 @@ describe("Market", function () {
     );
     console.log("My Events: ", myEvents);
 
-    let myTickets = await market.connect(buyerAddress).getMyTickets();
+    let myTickets = await market
+      .connect(buyerAddress)
+      .getMyTickets(nftContract);
 
     /**    uint256 tokenId;
     uint eventId;
@@ -153,12 +155,17 @@ describe("Market", function () {
           sold: boolean;
         }): Promise<any> => {
           let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+          let qty = await nft.balanceOf(
+            buyerAddress.address,
+            i.tokenId.toNumber()
+          );
           let _ticket = {
             tokenId: i.tokenId.toString(),
             eventId: i.eventId.toString(),
             seller: i.seller,
             owner: i.owner,
             price: `${price} MATIC`,
+            quantity: qty.toNumber(),
             purchaseLimit: i.purchaseLimit.toString(),
             totalSupply: i.totalSupply.toString(),
             sold: i.sold,
