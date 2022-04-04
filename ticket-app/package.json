@@ -10,24 +10,36 @@
   },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@nomiclabs/hardhat-waffle": "^2.0.2",
     "@openzeppelin/contracts": "^4.5.0",
+    "@typechain/ethers-v5": "^9.0.0",
+    "@typechain/hardhat": "^5.0.0",
     "axios": "^0.26.0",
     "chai": "^4.3.6",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.5.4",
-    "hardhat": "^2.8.4",
+    "hardhat-gas-reporter": "^1.0.8",
     "ipfs-http-client": "^50.1.2",
+    "mime": "^1.6.0",
+    "mocha": "^7.2.0",
     "next": "12.1.0",
+    "nft.storage": "^6.1.0",
+    "postcss-preset-env": "^7.4.2",
     "react": "17.0.2",
+    "react-datepicker": "^4.7.0",
     "react-dom": "17.0.2",
     "web3modal": "^1.9.5"
   },
   "devDependencies": {
+    "@types/react": "^17.0.40",
     "autoprefixer": "^10.4.2",
     "eslint": "8.9.0",
     "eslint-config-next": "12.1.0",
+    "hardhat": "^2.9.1",
     "postcss": "^8.4.6",
-    "tailwindcss": "^3.0.23"
+    "solidity-coverage": "^0.7.20",
+    "tailwindcss": "^3.0.23",
+    "ts-node": "^10.7.0"
   }
 }
