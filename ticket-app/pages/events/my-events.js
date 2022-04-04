@@ -64,6 +64,8 @@ export default function myEvents() {
           imageUri: eventData.image,
           location: eventData.location,
           startDate: eventData.eventDate,
+          ticketTotal: i.ticketTotal.toNumber(),
+          ticketsSold: i.ticketsSold.toNumber(),
           owner: i.owner,
         };
         console.log("Event ", currEvent.eventId, " owner = ", currEvent.owner);
@@ -85,7 +87,7 @@ export default function myEvents() {
   return (
     <div className="flex justify-center">
       <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <h1>All Events Page</h1>
+        <h1>Your Events</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
           {events.map((event) => (
             <div
@@ -139,6 +141,22 @@ export default function myEvents() {
                   className="text-3xl font-semibold"
                 >
                   Category: {event.category}
+                </p>
+              </div>
+              <div className="p-4">
+                <p
+                  style={{ height: "64px" }}
+                  className="text-black-500 font-semibold"
+                >
+                  Tickets Supplied: {event.ticketTotal}
+                </p>
+              </div>
+              <div className="p-4">
+                <p
+                  style={{ height: "64px" }}
+                  className="text-yellow-500 font-semibold"
+                >
+                  Tickets Remaining: {event.ticketTotal - event.ticketsSold}
                 </p>
               </div>
               <div className="p-4">

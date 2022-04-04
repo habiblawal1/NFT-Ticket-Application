@@ -81,7 +81,7 @@ export default function allEvents() {
   return (
     <div className="flex justify-center">
       <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <h1>All Events Page</h1>
+        <h1>All Events</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
           {events.map((event) => (
             <div

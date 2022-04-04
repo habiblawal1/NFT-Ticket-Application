@@ -91,6 +91,8 @@ describe("Market", function () {
           eventId: BigNumber;
           uri: string;
           startDate: BigNumber;
+          ticketTotal: BigNumber;
+          ticketsSold: BigNumber;
           owner: string;
         }): Promise<any> => {
           let _event = {
@@ -99,6 +101,8 @@ describe("Market", function () {
             startDate: new Date(
               i.startDate.toNumber() * 1000
             ).toLocaleDateString(),
+            ticketTotal: i.ticketTotal.toNumber(),
+            ticketsSold: i.ticketsSold.toNumber(),
             owner: i.owner,
           };
           return _event;
@@ -114,6 +118,8 @@ describe("Market", function () {
           eventId: BigNumber;
           uri: string;
           startDate: BigNumber;
+          ticketTotal: BigNumber;
+          ticketsSold: BigNumber;
           owner: string;
         }): Promise<any> => {
           let _event = {
@@ -122,6 +128,8 @@ describe("Market", function () {
             startDate: new Date(
               i.startDate.toNumber() * 1000
             ).toLocaleDateString(),
+            ticketTotal: i.ticketTotal.toNumber(),
+            ticketsSold: i.ticketsSold.toNumber(),
             owner: i.owner,
           };
           return _event;
@@ -148,11 +156,9 @@ describe("Market", function () {
           tokenId: BigNumber;
           eventId: BigNumber;
           seller: string;
-          owner: string;
           price: BigNumber;
           purchaseLimit: BigNumber;
           totalSupply: BigNumber;
-          sold: boolean;
         }): Promise<any> => {
           let price = ethers.utils.formatUnits(i.price.toString(), "ether");
           let qty = await nft.balanceOf(
@@ -163,12 +169,10 @@ describe("Market", function () {
             tokenId: i.tokenId.toString(),
             eventId: i.eventId.toString(),
             seller: i.seller,
-            owner: i.owner,
             price: `${price} MATIC`,
             quantity: qty.toNumber(),
             purchaseLimit: i.purchaseLimit.toString(),
             totalSupply: i.totalSupply.toString(),
-            sold: i.sold,
           };
           return _ticket;
         }

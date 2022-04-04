@@ -23,6 +23,8 @@ export declare namespace TicketMarket {
     eventId: BigNumberish;
     uri: string;
     startDate: BigNumberish;
+    ticketTotal: BigNumberish;
+    ticketsSold: BigNumberish;
     owner: string;
   };
 
@@ -30,8 +32,17 @@ export declare namespace TicketMarket {
     BigNumber,
     string,
     BigNumber,
+    BigNumber,
+    BigNumber,
     string
-  ] & { eventId: BigNumber; uri: string; startDate: BigNumber; owner: string };
+  ] & {
+    eventId: BigNumber;
+    uri: string;
+    startDate: BigNumber;
+    ticketTotal: BigNumber;
+    ticketsSold: BigNumber;
+    owner: string;
+  };
 
   export type MarketTicketStruct = {
     tokenId: BigNumberish;
@@ -167,7 +178,7 @@ export interface TicketMarketInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "MarketEventCreated(uint256,string,uint64,address)": EventFragment;
+    "MarketEventCreated(uint256,string,uint64,uint256,uint256,address)": EventFragment;
     "MarketTicketCreated(uint256,uint256,address,uint256,uint256,uint256)": EventFragment;
   };
 
@@ -176,8 +187,15 @@ export interface TicketMarketInterface extends utils.Interface {
 }
 
 export type MarketEventCreatedEvent = TypedEvent<
-  [BigNumber, string, BigNumber, string],
-  { eventId: BigNumber; uri: string; startDate: BigNumber; owner: string }
+  [BigNumber, string, BigNumber, BigNumber, BigNumber, string],
+  {
+    eventId: BigNumber;
+    uri: string;
+    startDate: BigNumber;
+    ticketTotal: BigNumber;
+    ticketsSold: BigNumber;
+    owner: string;
+  }
 >;
 
 export type MarketEventCreatedEventFilter =
@@ -437,16 +455,20 @@ export interface TicketMarket extends BaseContract {
   };
 
   filters: {
-    "MarketEventCreated(uint256,string,uint64,address)"(
+    "MarketEventCreated(uint256,string,uint64,uint256,uint256,address)"(
       eventId?: BigNumberish | null,
       uri?: null,
       startDate?: null,
+      ticketTotal?: null,
+      ticketsSold?: null,
       owner?: null
     ): MarketEventCreatedEventFilter;
     MarketEventCreated(
       eventId?: BigNumberish | null,
       uri?: null,
       startDate?: null,
+      ticketTotal?: null,
+      ticketsSold?: null,
       owner?: null
     ): MarketEventCreatedEventFilter;
 

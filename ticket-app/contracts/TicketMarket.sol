@@ -24,6 +24,8 @@ contract TicketMarket is ERC1155Holder{
     uint eventId;
     string uri;
     uint64 startDate;
+    uint256 ticketTotal;
+    uint256 ticketsSold;
     address owner;
   }
 
@@ -40,6 +42,8 @@ contract TicketMarket is ERC1155Holder{
     uint indexed eventId,
     string uri,
     uint64 startDate,
+    uint256 ticketTotal,
+    uint256 ticketsSold,
     address owner
   );
 
@@ -67,6 +71,8 @@ contract TicketMarket is ERC1155Holder{
       eventId,
       uri,
       startDate,
+      0,
+      0,
       msg.sender
     );
 
@@ -74,6 +80,8 @@ contract TicketMarket is ERC1155Holder{
       eventId,
       uri,
       startDate,
+      0,
+      0,
       msg.sender
     );
 
@@ -110,6 +118,8 @@ contract TicketMarket is ERC1155Holder{
     );
 
     IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, totalSupply, "");
+    idToMarketEvent[eventId].ticketTotal = idToMarketEvent[eventId].ticketTotal+totalSupply;
+
     emit MarketTicketCreated(
       tokenId,
       eventId,
@@ -127,8 +137,8 @@ contract TicketMarket is ERC1155Holder{
     ) public payable {
     uint price = idToMarketTicket[tokenId].price;
     uint limit = idToMarketTicket[tokenId].purchaseLimit;
+    uint eventId = idToMarketTicket[tokenId].eventId;
     address seller = idToMarketTicket[tokenId].seller;
-    require(IERC1155(nftContract).balanceOf(address(this), tokenId) >=1 , "From must be owner");
     require(amount <= IERC1155(nftContract).balanceOf(address(this), tokenId), "Not enough tickets remaining on the marketplace");
     require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, tokenId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
     require(msg.value == price * amount, "Not enough money sent");
@@ -137,6 +147,7 @@ contract TicketMarket is ERC1155Holder{
     idToMarketTicket[tokenId].seller = payable(address(0));
 
     IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
+    idToMarketEvent[eventId].ticketsSold = idToMarketEvent[eventId].ticketsSold+amount;
     payable(seller).transfer(msg.value);
   }
 

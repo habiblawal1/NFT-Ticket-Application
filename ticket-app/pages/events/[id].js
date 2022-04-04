@@ -83,7 +83,7 @@ export default function eventDetails() {
         const ticketRequest = await axios.get(tokenUri);
         const ticketData = ticketRequest.data;
         console.log("ticketdata:", i);
-        console.log("LIMIT yo:", i.purchaseLimit.toString());
+        console.log("LIMIT yo:", ticketData.properties.purchaseLimit);
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
         let qty = await tokenContract.balanceOf(nftmarketaddress, tokenId);
         let _ticket = {
@@ -91,7 +91,7 @@ export default function eventDetails() {
           name: ticketData.name,
           description: ticketData.description,
           price,
-          limit: ticketData.properties.purchaseLimit,
+          limit: i.purchaseLimit.toNumber(),
           quantity: qty.toNumber(),
         };
         return _ticket;
@@ -115,7 +115,7 @@ export default function eventDetails() {
       signer
     );
 
-    //TODO - Edit quantity on front end so it shows max of purchase limit, or tickets remaining
+    //TODO - Can't use my current way of storing qty as use state because if you have multiple tickets and change qty, all the tickets' qty will be the same
     /* user will be prompted to pay the asking proces to complete the transaction */
     console.log("PRICE, ", price);
     const ticketPrice = ethers.utils.parseUnits(price, "ether");

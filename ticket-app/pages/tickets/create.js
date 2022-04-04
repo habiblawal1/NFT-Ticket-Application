@@ -99,6 +99,7 @@ export default function createTicket() {
       nftTx = await nftTransaction.wait();
 
       //TODO - User has to sign making token, setting uri, and creating market ticket, find a way so that a user only needs to do it once
+      //TODO - Don't allow user to click the button twice, disable it after having it clicked once otherwise you accidently create multiple tokens
       /**
       uint256 eventId,
       uint256 tokenId,
