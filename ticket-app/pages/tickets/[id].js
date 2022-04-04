@@ -26,7 +26,11 @@ export default function ticketDetails() {
     <div>
       <h1>Ticket ID: {ticketId}</h1>
       <div>
-        <QR tokenId={ticketId} />
+        <QR
+          tokenId={ticketId}
+          event={"#2 - Chelsea Vs Arsenal"}
+          ticket={`#${ticketId} - Student Ticket`}
+        />
       </div>
     </div>
   );

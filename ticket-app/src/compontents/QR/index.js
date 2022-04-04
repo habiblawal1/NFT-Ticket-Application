@@ -1,6 +1,6 @@
 import React from "react";
 import Qrcode from "qrcode.react";
-
+import jsPDF from "jspdf";
 import { useState } from "react";
 import { ethers, providers } from "ethers";
 import Web3Modal from "web3modal";
@@ -24,7 +24,21 @@ const QR = (props) => {
   }
 
   const downloadQR = () => {
-    alert("QR Downloaded");
+    const qrCodeURL = document
+      .getElementById("qrCode")
+      .toDataURL("image/png")
+      .replace("image/png", "image/octet-stream");
+    console.log(qrCodeURL);
+
+    let doc = new jsPDF("portrait", "px", "a4", "false");
+    //first param is margin, second param is length down
+    doc.text(60, 60, `Event: ${props.event} `);
+    doc.text(60, 80, `Ticket: ${props.ticket} `);
+    doc.addImage(qrCodeURL, "PNG", 180, 100, 100, 100);
+    doc.setFontSize(6.2);
+    doc.text(2, 210, `${qr} `);
+
+    doc.save("ticket.pdf");
   };
 
   return (
@@ -38,8 +52,19 @@ const QR = (props) => {
         </button>
       ) : (
         <div>
-          <Qrcode value={qr} />
-          <a onClick={downloadQR}> Download </a>
+          <Qrcode id="qrCode" value={qr} />
+          <button
+            onClick={downloadQR}
+            className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+          >
+            Download Ticket
+          </button>
+          <button
+            onClick={() => setShow(false)}
+            className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+          >
+            Hide Ticket
+          </button>
           <h1>{qr}</h1>
         </div>
       )}
