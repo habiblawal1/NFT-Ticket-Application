@@ -59,7 +59,6 @@ export default function allEvents() {
           startDate: eventData.eventDate,
           owner: i.owner,
         };
-        console.log("Event ", currEvent.eventId, " owner = ", currEvent.owner);
         return currEvent;
       })
     );
