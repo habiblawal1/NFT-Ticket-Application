@@ -15,11 +15,15 @@ const QR = (props) => {
     const provider = new ethers.providers.Web3Provider(connection);
     const signer = provider.getSigner();
 
-    const addr = await signer.getAddress();
-    const secondHalf = `${addr}-${props.tokenId}`;
-    console.log("Unsigned Second Half = ", secondHalf);
-    const signedsecondHalf = await signer.signMessage(secondHalf);
-    setQr(`${addr}-${signedsecondHalf}`);
+    // const addr = await signer.getAddress();
+    // const secondHalf = `${addr}-${props.tokenId}`;
+    // console.log("Unsigned Second Half = ", secondHalf);
+    // const signedsecondHalf = await signer.signMessage(secondHalf);
+    // setQr(`${addr}-${signedsecondHalf}`);
+
+    console.log("Unsigned Second Half = ", props.tokenId);
+    const signedsecondHalf = await signer.signMessage(props.tokenId);
+    setQr(`${props.tokenId}-${signedsecondHalf}`);
     setShow(true);
   }
 
@@ -35,9 +39,12 @@ const QR = (props) => {
     doc.text(60, 60, `Event: ${props.event} `);
     doc.text(60, 80, `Ticket: ${props.ticket} `);
     doc.addImage(qrCodeURL, "PNG", 180, 100, 100, 100);
-    doc.setFontSize(6.2);
+    doc.setFontSize(8.2);
     doc.text(2, 210, `${qr} `);
 
+    // doc.text(60, 60, `Event: ${props.event} `);
+    // doc.text(60, 80, `Ticket: ${props.ticket} `);
+    // doc.addImage(qrCodeURL, "PNG", 100, 130, 200, 200);
     doc.save("ticket.pdf");
   };
 

@@ -94,6 +94,16 @@ export default function myEvents() {
               key={event.eventId}
               className="border shadow rounded-l overflow-hidden"
             >
+              <div className="p-4">
+                <p
+                  style={{ height: "64px" }}
+                  className="text-blue-500 font-semibold"
+                >
+                  <Link href={`/events/validate/${event.eventId}`}>
+                    Validate Event-&gt;
+                  </Link>
+                </p>
+              </div>
               <img src={event.imageUri} />
               <div className="p-4">
                 <p

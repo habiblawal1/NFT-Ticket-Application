@@ -12,7 +12,6 @@ import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json
 export default function ticketDetails() {
   const router = useRouter();
   const ticketId = router.query["id"];
-  const [addr, setAddress] = useState([]);
   useEffect(() => {
     if (!router.isReady) return;
     getSigner();
