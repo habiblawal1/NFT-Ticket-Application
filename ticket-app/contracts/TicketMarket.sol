@@ -19,6 +19,8 @@ contract TicketMarket is ERC1155Holder{
 
   mapping(uint256 => MarketEvent) private idToMarketEvent;
   mapping(uint256 => MarketTicket) private idToMarketTicket;
+  mapping(uint256 => mapping (address=>bool)) private idToValidated;
+
 
   struct MarketEvent {
     uint eventId;
@@ -144,11 +146,24 @@ contract TicketMarket is ERC1155Holder{
     require(msg.value == price * amount, "Not enough money sent");
     //make sure the event hasn't started
     require((uint64(block.timestamp) < idToMarketEvent[idToMarketTicket[tokenId].eventId].startDate), "Event has already passed");
+
     idToMarketTicket[tokenId].seller = payable(address(0));
+    idToValidated[tokenId][msg.sender] = false;
 
     IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
     idToMarketEvent[eventId].ticketsSold = idToMarketEvent[eventId].ticketsSold+amount;
     payable(seller).transfer(msg.value);
+  }
+
+  function validateTicket(address nftContract, address userAddress, uint256 tokenId) public{
+    //Only event owner can validate ticket
+    require(idToMarketEvent[idToMarketTicket[tokenId].eventId].owner == msg.sender, "You do not the own the event for the ticket trying to be validated");
+    //user must own token
+    require(IERC1155(nftContract).balanceOf(userAddress, tokenId)>0, "Address does not own token");
+    //Stops user from entering their ticket twice
+    require(idToValidated[tokenId][userAddress]==false, "User has already validated ticket");
+    
+    idToValidated[tokenId][userAddress] = true;
   }
 
   /* Getters */
