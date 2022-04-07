@@ -53,6 +53,12 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
         require(bytes(_NFTInfo[tokenId].uri).length == 0, "You cannot set token uri twice");
        _NFTInfo[tokenId].uri = newUri;
     }
+
+    function giveResaleApproval(uint256 tokenId) public { 
+        require(balanceOf(msg.sender, tokenId) > 0, "You must own this NFT in order to resell it" ); 
+        setApprovalForAll(contractAddress, true); 
+        return; 
+    }
 }
 
 /**

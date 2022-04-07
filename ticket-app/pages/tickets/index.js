@@ -39,6 +39,7 @@ export default function myTickets() {
         const tokenUri = await tokenContract.uri(tokenId);
         const ticketRequest = await axios.get(tokenUri);
         const ticketData = ticketRequest.data;
+        console.log("Ticket Data: ", ticketData);
 
         const eventId = i.eventId.toNumber();
         const eventContractData = await marketContract.getEvent(eventId);

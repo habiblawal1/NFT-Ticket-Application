@@ -13,17 +13,19 @@ contract TicketMarket is ERC1155Holder{
   //counters start at 0 
   Counters.Counter private _ticketCount;
   Counters.Counter private _eventIds;
+  Counters.Counter private _resaleIds;
 
   //Used by tutorial as an address to receive listing fees - can't charge people as this is a FYP project unfortunately
   address payable owner;
 
   mapping(uint256 => MarketEvent) private idToMarketEvent;
   mapping(uint256 => MarketTicket) private idToMarketTicket;
+  mapping(uint256 => ResaleTicket) private idToResaleTicket;
   mapping(uint256 => mapping (address=>bool)) private idToValidated;
 
 
   struct MarketEvent {
-    uint eventId;
+    uint256 eventId;
     string uri;
     uint64 startDate;
     uint256 ticketTotal;
@@ -33,11 +35,20 @@ contract TicketMarket is ERC1155Holder{
 
   struct MarketTicket {
     uint256 tokenId;
-    uint eventId;
+    uint256 eventId;
     address payable seller;
     uint256 price;
     uint256 purchaseLimit;
     uint256 totalSupply;
+    uint256 royaltyFee;
+    uint256 maxResalePrice;
+  }
+
+  struct ResaleTicket {
+    uint256 resaleId;
+    uint256 tokenId;
+    address payable seller;
+    uint256 resalePrice;
   }
 
   event MarketEventCreated (
@@ -55,8 +66,18 @@ contract TicketMarket is ERC1155Holder{
     address seller,
     uint256 price,
     uint256 purchaseLimit,
-    uint256 totalSupply
+    uint256 totalSupply,
+    uint256 royaltyFee,
+    uint256 maxResalePrice
   );
+
+   event ResaleTicketCreated (
+    uint indexed resaleId,
+    uint indexed tokenId,
+    address seller,
+    uint256 resalePrice
+  );
+
 //TODO - Create function to edit event start date
   /* Places an item for sale on the marketplace */
   function createEvent(
@@ -97,7 +118,9 @@ contract TicketMarket is ERC1155Holder{
     address nftContract,
     uint256 purchaseLimit,
     uint256 totalSupply,
-    uint256 price
+    uint256 price,
+    uint256 royaltyFee,
+    uint256 maxResalePrice
   ) public {
     require(price > 0, "Price must be at least 1 wei");
     //check user owns NFT before listing it on the market
@@ -106,6 +129,7 @@ contract TicketMarket is ERC1155Holder{
     require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
     //Check event has not already passed
     require((uint64(block.timestamp) < idToMarketEvent[eventId].startDate), "Event has already passed");
+    require(royaltyFee<=100, "Royalty fee must be a percentage, therefore can't be more than 100");
     
     _ticketCount.increment();
 
@@ -116,7 +140,9 @@ contract TicketMarket is ERC1155Holder{
       payable(msg.sender),
       price,
       purchaseLimit,
-      totalSupply
+      totalSupply,
+      royaltyFee,
+      maxResalePrice
     );
 
     IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, totalSupply, "");
@@ -128,7 +154,9 @@ contract TicketMarket is ERC1155Holder{
       msg.sender,
       price,
       purchaseLimit,
-      totalSupply
+      totalSupply,
+      royaltyFee,
+      maxResalePrice
     );
   }
 
@@ -162,8 +190,33 @@ contract TicketMarket is ERC1155Holder{
     require(IERC1155(nftContract).balanceOf(userAddress, tokenId)>0, "Address does not own token");
     //Stops user from entering their ticket twice
     require(idToValidated[tokenId][userAddress]==false, "User has already validated ticket");
-    
+
     idToValidated[tokenId][userAddress] = true;
+  }
+
+  function listOnResale(address nftContract, uint256 _tokenId, uint256 price) public returns (uint) {
+    require(IERC1155(nftContract).balanceOf(msg.sender, _tokenId) > 0, "You do not own the ticket you are trying to list");
+    require(price <= idToMarketTicket[_tokenId].maxResalePrice, "Resale price should not exceed the max resale price for this ticket");
+    _resaleIds.increment();
+    uint256 resaleId = _resaleIds.current();
+  
+    idToResaleTicket[resaleId] = ResaleTicket(
+      resaleId,
+      _tokenId,
+      payable(msg.sender),
+      price
+    );
+
+    IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), _tokenId, 1, "");
+
+    emit ResaleTicketCreated(
+      resaleId,
+      _tokenId,
+      msg.sender,
+      price
+    );
+
+    return resaleId;
   }
 
   /* Getters */
@@ -264,6 +317,30 @@ contract TicketMarket is ERC1155Holder{
       }
     }
     return userTickets;
+  }
+
+  function getResaleTickets(uint256 _tokenId) public view returns(ResaleTicket[] memory){
+    uint totalTicketCount = _resaleIds.current();
+    uint ticketCount = 0;
+    uint currentIndex = 0;
+
+    for (uint i = 0; i < totalTicketCount; i++) {
+      if (idToResaleTicket[i + 1].tokenId == _tokenId) {
+        ticketCount += 1;
+      }
+    }
+
+    ResaleTicket[] memory resaleTickets = new ResaleTicket[](ticketCount);
+    for (uint i = 0; i < totalTicketCount; i++) {
+      if (idToResaleTicket[i + 1].tokenId == _tokenId) {
+        uint currentId = i + 1;
+        ResaleTicket storage currentTicket = idToResaleTicket[currentId];
+        resaleTickets[currentIndex] = currentTicket;
+        currentIndex += 1;
+      }
+    }
+    return resaleTickets;
+
   }
   //TODO - MAJOR When a user buys a single ticket, its no longer on the market, this should only happen once all quantity of that ticket is gone
 

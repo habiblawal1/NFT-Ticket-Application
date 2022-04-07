@@ -16,7 +16,8 @@ describe("Market", function () {
 
     //this method allows us to deal with whole units instead of wei. In here its not 100 ether, its 100 matic (1MATIC = 1.3GBP).
     const ticketPrice = ethers.utils.parseUnits("100", "ether");
-
+    const maxPrice = ethers.utils.parseUnits("150", "ether");
+    const resalePrice = ethers.utils.parseUnits("150", "ether");
     //your_string
 
     /*
@@ -73,7 +74,16 @@ describe("Market", function () {
 
     await market
       .connect(sellerAddress)
-      .createMarketTicket(eventId, tokenId, nftContract, 4, 10, ticketPrice);
+      .createMarketTicket(
+        eventId,
+        tokenId,
+        nftContract,
+        4,
+        10,
+        ticketPrice,
+        10,
+        maxPrice
+      );
 
     await market
       .connect(buyerAddress)
@@ -132,6 +142,10 @@ describe("Market", function () {
     myTickets = await Promise.all(
       myTickets.map(async (i) => {
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+        let maxResalePrice = ethers.utils.formatUnits(
+          i.maxResalePrice.toString(),
+          "ether"
+        );
         let qty = await nft.balanceOf(
           buyerAddress.address,
           i.tokenId.toNumber()
@@ -144,6 +158,8 @@ describe("Market", function () {
           quantity: qty.toNumber(),
           purchaseLimit: i.purchaseLimit.toString(),
           totalSupply: i.totalSupply.toString(),
+          royaltyFee: `${i.royaltyFee.toString()}%`,
+          maxResalePrice: `${maxResalePrice} MATIC`,
         };
         return _ticket;
       })
@@ -151,7 +167,36 @@ describe("Market", function () {
     console.log("My tickets: ", myTickets);
 
     await market
-      .connect(sellerAddress2)
+      .connect(sellerAddress)
       .validateTicket(nftContract, buyerAddress.address, 1);
+
+    //EXPLANATION - https://ethereum.stackexchange.com/questions/117944/why-do-i-keep-receiving-this-error-revert-erc721-transfer-caller-is-not-owner
+    //You need to give the market approval again for some reason before being able to resale ticket
+    await nft.connect(buyerAddress).giveResaleApproval(1);
+    await market
+      .connect(buyerAddress)
+      .listOnResale(nftContract, 1, resalePrice);
+
+    let resaleTickets = await market.getResaleTickets(1);
+
+    // struct ResaleTicket {
+    //   uint256 resaleId;
+    //   uint256 tokenId;
+    //   address payable seller;
+    //   uint256 resalePrice;
+    // }
+    resaleTickets = await Promise.all(
+      resaleTickets.map(async (i) => {
+        let price = ethers.utils.formatUnits(i.resalePrice.toString(), "ether");
+        let _ticket = {
+          resaleId: i.resaleId.toString(),
+          tokenId: i.tokenId.toString(),
+          seller: i.seller,
+          resalePrice: `${price} MATIC`,
+        };
+        return _ticket;
+      })
+    );
+    console.log("Resale tickets: ", resaleTickets);
   });
 });
