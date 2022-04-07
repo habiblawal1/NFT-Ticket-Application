@@ -2,7 +2,7 @@ import React from "react";
 import Qrcode from "qrcode.react";
 import jsPDF from "jspdf";
 import { useState } from "react";
-import { ethers, providers } from "ethers";
+import { ethers } from "ethers";
 import Web3Modal from "web3modal";
 
 const QR = (props) => {

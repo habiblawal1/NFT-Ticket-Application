@@ -1,6 +1,3 @@
-import { BigNumber } from "@ethersproject/bignumber";
-import { ethers } from "hardhat";
-
 describe("Market", function () {
   it("It should create events, tickets, and execute ticket sales", async function () {
     const Market = await ethers.getContractFactory("TicketMarket");
@@ -65,7 +62,7 @@ describe("Market", function () {
 
     const createTokenEvent = await nft.connect(sellerAddress).createToken(10);
     let tokenId = await createTokenEvent.wait();
-    tokenId.events.forEach((element: any) => {
+    tokenId.events.forEach((element) => {
       if (element.event == "NFTTicketCreated") {
         tokenId = element.args.tokenId.toNumber();
       }
@@ -86,55 +83,37 @@ describe("Market", function () {
     console.log("Buyer's NFTs = ", myNfts.toString());
     let allEvents = await market.getAllEvents();
     allEvents = await Promise.all(
-      allEvents.map(
-        async (i: {
-          eventId: BigNumber;
-          uri: string;
-          startDate: BigNumber;
-          ticketTotal: BigNumber;
-          ticketsSold: BigNumber;
-          owner: string;
-        }): Promise<any> => {
-          let _event = {
-            eventId: i.eventId.toString(),
-            uri: i.uri,
-            startDate: new Date(
-              i.startDate.toNumber() * 1000
-            ).toLocaleDateString(),
-            ticketTotal: i.ticketTotal.toNumber(),
-            ticketsSold: i.ticketsSold.toNumber(),
-            owner: i.owner,
-          };
-          return _event;
-        }
-      )
+      allEvents.map(async (i) => {
+        let _event = {
+          eventId: i.eventId.toString(),
+          uri: i.uri,
+          startDate: new Date(
+            i.startDate.toNumber() * 1000
+          ).toLocaleDateString(),
+          ticketTotal: i.ticketTotal.toNumber(),
+          ticketsSold: i.ticketsSold.toNumber(),
+          owner: i.owner,
+        };
+        return _event;
+      })
     );
     console.log("All Events: ", allEvents);
 
     let myEvents = await market.connect(sellerAddress).getMyEvents();
     myEvents = await Promise.all(
-      myEvents.map(
-        async (i: {
-          eventId: BigNumber;
-          uri: string;
-          startDate: BigNumber;
-          ticketTotal: BigNumber;
-          ticketsSold: BigNumber;
-          owner: string;
-        }): Promise<any> => {
-          let _event = {
-            eventId: i.eventId.toString(),
-            uri: i.uri,
-            startDate: new Date(
-              i.startDate.toNumber() * 1000
-            ).toLocaleDateString(),
-            ticketTotal: i.ticketTotal.toNumber(),
-            ticketsSold: i.ticketsSold.toNumber(),
-            owner: i.owner,
-          };
-          return _event;
-        }
-      )
+      myEvents.map(async (i) => {
+        let _event = {
+          eventId: i.eventId.toString(),
+          uri: i.uri,
+          startDate: new Date(
+            i.startDate.toNumber() * 1000
+          ).toLocaleDateString(),
+          ticketTotal: i.ticketTotal.toNumber(),
+          ticketsSold: i.ticketsSold.toNumber(),
+          owner: i.owner,
+        };
+        return _event;
+      })
     );
     console.log("My Events: ", myEvents);
 
@@ -151,33 +130,28 @@ describe("Market", function () {
     uint256 totalSupply;
     bool sold; */
     myTickets = await Promise.all(
-      myTickets.map(
-        async (i: {
-          tokenId: BigNumber;
-          eventId: BigNumber;
-          seller: string;
-          price: BigNumber;
-          purchaseLimit: BigNumber;
-          totalSupply: BigNumber;
-        }): Promise<any> => {
-          let price = ethers.utils.formatUnits(i.price.toString(), "ether");
-          let qty = await nft.balanceOf(
-            buyerAddress.address,
-            i.tokenId.toNumber()
-          );
-          let _ticket = {
-            tokenId: i.tokenId.toString(),
-            eventId: i.eventId.toString(),
-            seller: i.seller,
-            price: `${price} MATIC`,
-            quantity: qty.toNumber(),
-            purchaseLimit: i.purchaseLimit.toString(),
-            totalSupply: i.totalSupply.toString(),
-          };
-          return _ticket;
-        }
-      )
+      myTickets.map(async (i) => {
+        let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+        let qty = await nft.balanceOf(
+          buyerAddress.address,
+          i.tokenId.toNumber()
+        );
+        let _ticket = {
+          tokenId: i.tokenId.toString(),
+          eventId: i.eventId.toString(),
+          seller: i.seller,
+          price: `${price} MATIC`,
+          quantity: qty.toNumber(),
+          purchaseLimit: i.purchaseLimit.toString(),
+          totalSupply: i.totalSupply.toString(),
+        };
+        return _ticket;
+      })
     );
     console.log("My tickets: ", myTickets);
+
+    await market
+      .connect(sellerAddress2)
+      .validateTicket(nftContract, buyerAddress.address, 1);
   });
 });

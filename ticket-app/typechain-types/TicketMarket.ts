@@ -16,7 +16,12 @@ import {
 } from "ethers";
 import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
-import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
+import type {
+  TypedEventFilter,
+  TypedEvent,
+  TypedListener,
+  OnEvent,
+} from "./common";
 
 export declare namespace TicketMarket {
   export type MarketEventStruct = {
@@ -84,6 +89,7 @@ export interface TicketMarketInterface extends utils.Interface {
     "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "onERC1155Received(address,address,uint256,uint256,bytes)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
+    "validateTicket(address,address,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -137,6 +143,10 @@ export interface TicketMarketInterface extends utils.Interface {
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "validateTicket",
+    values: [string, string, BigNumberish]
+  ): string;
 
   decodeFunctionResult(functionFragment: "buyTicket", data: BytesLike): Result;
   decodeFunctionResult(
@@ -174,6 +184,10 @@ export interface TicketMarketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "validateTicket",
     data: BytesLike
   ): Result;
 
@@ -312,6 +326,13 @@ export interface TicketMarket extends BaseContract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    validateTicket(
+      nftContract: string,
+      userAddress: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   buyTicket(
@@ -383,6 +404,13 @@ export interface TicketMarket extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  validateTicket(
+    nftContract: string,
+    userAddress: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     buyTicket(
       nftContract: string,
@@ -452,6 +480,13 @@ export interface TicketMarket extends BaseContract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    validateTicket(
+      nftContract: string,
+      userAddress: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -555,6 +590,13 @@ export interface TicketMarket extends BaseContract {
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    validateTicket(
+      nftContract: string,
+      userAddress: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -621,6 +663,13 @@ export interface TicketMarket extends BaseContract {
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    validateTicket(
+      nftContract: string,
+      userAddress: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

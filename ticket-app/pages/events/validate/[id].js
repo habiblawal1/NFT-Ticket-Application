@@ -9,7 +9,6 @@ const QrReader = dynamic(() => import("react-qr-reader"), { ssr: false });
 
 import { nftaddress, nftmarketaddress } from "../../../config";
 
-import NFT from "../../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
 import Market from "../../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
 
 export default function validate() {
@@ -33,25 +32,19 @@ export default function validate() {
   };
   const handleScanWebCam = (result) => {
     if (result) {
+      setVer("");
+      setErr("");
       setTicket(result);
     }
   };
 
   const scannedTicket = () => {
     let splitString = ticket.split("-");
-    splitString.length != 2 ? setErr("INVALID CODE") : setErr("");
-    setVer("");
+    if (splitString.length != 2) {
+      setErr("INVALID CODE");
+    }
     setId(splitString[0]);
     setSig(splitString[1]);
-
-    // console.log("Address = ", address);
-    // let isValidAddress = WAValidator.validate(address, "eth");
-    // if (!isValidAddress) {
-    //   setErr(`INVALID ETH ADDRESS: ${address}`);
-    // } else {
-    //   console.log("TRUEEEEE");
-    // }
-    // const verified = ethers.utils.verifyMessage(rawMessage, signedMessage);
   };
 
   async function verifyTicket() {
@@ -61,7 +54,6 @@ export default function validate() {
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = provider.getSigner();
 
-      const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
       //We need to povide a signer instead of JSONRPC so we know who the signer is
       const marketContract = new ethers.Contract(
         nftmarketaddress,
@@ -70,20 +62,19 @@ export default function validate() {
       );
 
       let verifiedAddress = ethers.utils.verifyMessage(id, sig);
-      let qty = await tokenContract.balanceOf(verifiedAddress, id);
-      console.log(`Balance of ${verifiedAddress} is ${qty.toNumber()}`);
-      if (qty.toNumber() > 0) {
-        setVer(
-          `SUCCESS! Ticket #${id} successully verified for Account ${verifiedAddress}`
-        );
-      } else {
-        setErr(
-          `INVALID! Account ${verifiedAddress} does not own Ticket #${id}`
-        );
-      }
+      await marketContract.validateTicket(nftaddress, verifiedAddress, id);
+      //   let qty = await tokenContract.balanceOf(verifiedAddress, id);
+      //   console.log(`Balance of ${verifiedAddress} is ${qty.toNumber()}`);
+      setVer(
+        `SUCCESS! Ticket #${id} successully verified for Account ${verifiedAddress}`
+      );
     } catch (error) {
       console.error(error);
-      setErr("Unable to verify ticket");
+      if (error.data) {
+        setErr(error.data.message);
+      } else {
+        setErr("Unable to verify ticket");
+      }
     }
   }
   return (
@@ -105,7 +96,6 @@ export default function validate() {
         />
       </div>
       <h3>Scanned Result:</h3>
-      {/* <h3>{ticket}</h3> */}
       {ticket && (
         <div>
           <h3>Ticket ID = {id}</h3>
@@ -128,8 +118,3 @@ export default function validate() {
     </div>
   );
 }
-
-/**          width: "10%",
-          display: "block",
-          marginLeft: "auto",
-          marginRight: "auto", */
