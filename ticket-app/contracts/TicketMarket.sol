@@ -30,13 +30,12 @@ contract TicketMarket is ERC1155Holder{
     uint64 startDate;
     uint256 ticketTotal;
     uint256 ticketsSold;
-    address owner;
+    address payable owner;
   }
 
   struct MarketTicket {
     uint256 tokenId;
     uint256 eventId;
-    address payable seller;
     uint256 price;
     uint256 purchaseLimit;
     uint256 totalSupply;
@@ -49,6 +48,7 @@ contract TicketMarket is ERC1155Holder{
     uint256 tokenId;
     address payable seller;
     uint256 resalePrice;
+    bool sold;
   }
 
   event MarketEventCreated (
@@ -63,7 +63,6 @@ contract TicketMarket is ERC1155Holder{
   event MarketTicketCreated (
     uint indexed tokenId,
     uint indexed eventId,
-    address seller,
     uint256 price,
     uint256 purchaseLimit,
     uint256 totalSupply,
@@ -75,7 +74,8 @@ contract TicketMarket is ERC1155Holder{
     uint indexed resaleId,
     uint indexed tokenId,
     address seller,
-    uint256 resalePrice
+    uint256 resalePrice,
+    bool sold
   );
 
 //TODO - Create function to edit event start date
@@ -96,7 +96,7 @@ contract TicketMarket is ERC1155Holder{
       startDate,
       0,
       0,
-      msg.sender
+      payable(msg.sender)
     );
 
     emit MarketEventCreated(
@@ -133,11 +133,9 @@ contract TicketMarket is ERC1155Holder{
     
     _ticketCount.increment();
 
-    //seller is the person putting it for sale and owner is no one as the ticket is up for sale
-    idToMarketTicket[tokenId] =  MarketTicket(
+    idToMarketTicket[tokenId] = MarketTicket(
       tokenId,
       eventId,
-      payable(msg.sender),
       price,
       purchaseLimit,
       totalSupply,
@@ -151,7 +149,6 @@ contract TicketMarket is ERC1155Holder{
     emit MarketTicketCreated(
       tokenId,
       eventId,
-      msg.sender,
       price,
       purchaseLimit,
       totalSupply,
@@ -168,19 +165,53 @@ contract TicketMarket is ERC1155Holder{
     uint price = idToMarketTicket[tokenId].price;
     uint limit = idToMarketTicket[tokenId].purchaseLimit;
     uint eventId = idToMarketTicket[tokenId].eventId;
-    address seller = idToMarketTicket[tokenId].seller;
+    address eventOwner = idToMarketEvent[eventId].owner;
     require(amount <= IERC1155(nftContract).balanceOf(address(this), tokenId), "Not enough tickets remaining on the marketplace");
     require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, tokenId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
-    require(msg.value == price * amount, "Not enough money sent");
+    require(msg.value == price * amount, "Correct amount of money was not sent");
     //make sure the event hasn't started
-    require((uint64(block.timestamp) < idToMarketEvent[idToMarketTicket[tokenId].eventId].startDate), "Event has already passed");
+    require((uint64(block.timestamp) < idToMarketEvent[eventId].startDate), "Event has already passed");
 
-    idToMarketTicket[tokenId].seller = payable(address(0));
     idToValidated[tokenId][msg.sender] = false;
 
     IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, "");
     idToMarketEvent[eventId].ticketsSold = idToMarketEvent[eventId].ticketsSold+amount;
-    payable(seller).transfer(msg.value);
+    payable(eventOwner).transfer(msg.value);
+  }
+
+  // struct ResaleTicket {
+  //   uint256 resaleId;
+  //   uint256 tokenId;
+  //   address payable seller;
+  //   uint256 resalePrice;
+  // }
+
+   function buyResaleTicket(address nftContract, uint256 _resaleId) public payable{
+    uint price = idToResaleTicket[_resaleId].resalePrice;
+    uint256 tokenId = idToResaleTicket[_resaleId].tokenId;
+    uint limit = idToMarketTicket[tokenId].purchaseLimit;
+    uint eventId = idToMarketTicket[tokenId].eventId;
+    address seller = idToResaleTicket[_resaleId].seller;
+    address eventOwner = idToMarketEvent[eventId].owner;
+    uint royaltyPercentage = idToMarketTicket[tokenId].royaltyFee;
+    require(!idToResaleTicket[_resaleId].sold, "This ticket is not currently being resold on the market");
+    require(limit - IERC1155(nftContract).balanceOf(msg.sender, tokenId) > 0, "You have exceeded the maximum amount of tickets you are allowed to purchase");
+    require(msg.value == price, "Correct amount of money was not sent");
+    //make sure the event hasn't started
+    require((uint64(block.timestamp) < idToMarketEvent[eventId].startDate), "Event has already passed");
+
+    idToValidated[tokenId][msg.sender] = false;
+
+    IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
+    idToResaleTicket[_resaleId].sold == true;
+
+    uint256 _royaltyFee = (price/100)*royaltyPercentage;
+    uint256 _sellerFee = price-_royaltyFee;
+
+    payable(seller).transfer(_sellerFee);
+    payable(eventOwner).transfer(_royaltyFee);
+
+    idToResaleTicket[_resaleId].sold = true;
   }
 
   function validateTicket(address nftContract, address userAddress, uint256 tokenId) public{
@@ -197,14 +228,31 @@ contract TicketMarket is ERC1155Holder{
   function listOnResale(address nftContract, uint256 _tokenId, uint256 price) public returns (uint) {
     require(IERC1155(nftContract).balanceOf(msg.sender, _tokenId) > 0, "You do not own the ticket you are trying to list");
     require(price <= idToMarketTicket[_tokenId].maxResalePrice, "Resale price should not exceed the max resale price for this ticket");
-    _resaleIds.increment();
-    uint256 resaleId = _resaleIds.current();
+
+    uint resaleId;
+    uint256 totalIdCount = _resaleIds.current();
+
+    uint currentIndex = 1;
+    bool noSoldIds = true;
+
+  //We loop through resaleMarket, if a resale item is sold, we use that id as the id for our new resale item and overwrite the old item
+    while(noSoldIds && currentIndex<=totalIdCount) {
+      if (idToResaleTicket[currentIndex].sold == true) {
+        noSoldIds=false;
+        resaleId = currentIndex;
+      }
+    }
+    if(noSoldIds){
+      _resaleIds.increment();
+      resaleId=_resaleIds.current();
+    }
   
     idToResaleTicket[resaleId] = ResaleTicket(
       resaleId,
       _tokenId,
       payable(msg.sender),
-      price
+      price,
+      false
     );
 
     IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), _tokenId, 1, "");
@@ -213,11 +261,14 @@ contract TicketMarket is ERC1155Holder{
       resaleId,
       _tokenId,
       msg.sender,
-      price
+      price,
+      false
     );
 
     return resaleId;
   }
+
+ 
 
   /* Getters */
 
@@ -325,14 +376,14 @@ contract TicketMarket is ERC1155Holder{
     uint currentIndex = 0;
 
     for (uint i = 0; i < totalTicketCount; i++) {
-      if (idToResaleTicket[i + 1].tokenId == _tokenId) {
+      if (idToResaleTicket[i + 1].tokenId == _tokenId && idToResaleTicket[i + 1].sold == false) {
         ticketCount += 1;
       }
     }
 
     ResaleTicket[] memory resaleTickets = new ResaleTicket[](ticketCount);
     for (uint i = 0; i < totalTicketCount; i++) {
-      if (idToResaleTicket[i + 1].tokenId == _tokenId) {
+      if (idToResaleTicket[i + 1].tokenId == _tokenId && idToResaleTicket[i + 1].sold == false) {
         uint currentId = i + 1;
         ResaleTicket storage currentTicket = idToResaleTicket[currentId];
         resaleTickets[currentIndex] = currentTicket;
@@ -344,6 +395,7 @@ contract TicketMarket is ERC1155Holder{
   }
   //TODO - MAJOR When a user buys a single ticket, its no longer on the market, this should only happen once all quantity of that ticket is gone
 
+//TODO - When a resoldticket is sold, how do I reassign the ID, instead of having endless resold tickets
   //   // TODO - I don't think this is needed
   // function getEventUri(uint256 eventId) public view returns (string memory) {
   //     require(bytes(idToMarketEvent[eventId].uri).length != 0, "No uri exists for the event, please create one using the setEventUri function");

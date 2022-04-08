@@ -11,7 +11,7 @@ describe("Market", function () {
     const nftContract = nft.address;
 
     //A way to get test addresses. The first address is the deployment address so we ignore it with a "_"
-    const [_, buyerAddress, sellerAddress, sellerAddress2] =
+    const [_, buyerAddress, buyerAddress2, sellerAddress, sellerAddress2] =
       await ethers.getSigners();
 
     //this method allows us to deal with whole units instead of wei. In here its not 100 ether, its 100 matic (1MATIC = 1.3GBP).
@@ -153,7 +153,6 @@ describe("Market", function () {
         let _ticket = {
           tokenId: i.tokenId.toString(),
           eventId: i.eventId.toString(),
-          seller: i.seller,
           price: `${price} MATIC`,
           quantity: qty.toNumber(),
           purchaseLimit: i.purchaseLimit.toString(),
@@ -173,9 +172,16 @@ describe("Market", function () {
     //EXPLANATION - https://ethereum.stackexchange.com/questions/117944/why-do-i-keep-receiving-this-error-revert-erc721-transfer-caller-is-not-owner
     //You need to give the market approval again for some reason before being able to resale ticket
     await nft.connect(buyerAddress).giveResaleApproval(1);
-    await market
+    const listForResealEvent = await market
       .connect(buyerAddress)
       .listOnResale(nftContract, 1, resalePrice);
+    let resaleId = await listForResealEvent.wait();
+    resaleId.events.forEach((element) => {
+      if (element.event == "ResaleTicketCreated") {
+        resaleId = element.args.resaleId.toNumber();
+      }
+    });
+    console.log("resaleId = ", resaleId);
 
     let resaleTickets = await market.getResaleTickets(1);
 
@@ -192,11 +198,61 @@ describe("Market", function () {
           resaleId: i.resaleId.toString(),
           tokenId: i.tokenId.toString(),
           seller: i.seller,
-          resalePrice: `${price} MATIC`,
+          price: `${price} MATIC`,
+          sold: i.sold,
         };
         return _ticket;
       })
     );
     console.log("Resale tickets: ", resaleTickets);
+
+    await market
+      .connect(buyerAddress2)
+      .buyResaleTicket(nftContract, resaleId, { value: resalePrice });
+
+    resaleTickets = await market.getResaleTickets(1);
+    resaleTickets = await Promise.all(
+      resaleTickets.map(async (i) => {
+        let price = ethers.utils.formatUnits(i.resalePrice.toString(), "ether");
+        let _ticket = {
+          resaleId: i.resaleId.toString(),
+          tokenId: i.tokenId.toString(),
+          seller: i.seller,
+          resalePrice: `${price} MATIC`,
+          sold: i.sold,
+        };
+        return _ticket;
+      })
+    );
+    console.log("Resale tickets after purchase: ", resaleTickets);
+
+    const newResalePrice = ethers.utils.parseUnits("125", "ether");
+    await nft.connect(buyerAddress2).giveResaleApproval(1);
+    const listForResellEvent2 = await market
+      .connect(buyerAddress2)
+      .listOnResale(nftContract, 1, newResalePrice);
+    resaleId = await listForResellEvent2.wait();
+    resaleId.events.forEach((element) => {
+      if (element.event == "ResaleTicketCreated") {
+        resaleId = element.args.resaleId.toNumber();
+      }
+    });
+    console.log("resaleId = ", resaleId);
+
+    resaleTickets = await market.getResaleTickets(1);
+    resaleTickets = await Promise.all(
+      resaleTickets.map(async (i) => {
+        let price = ethers.utils.formatUnits(i.resalePrice.toString(), "ether");
+        let _ticket = {
+          resaleId: i.resaleId.toString(),
+          tokenId: i.tokenId.toString(),
+          seller: i.seller,
+          resalePrice: `${price} MATIC`,
+          sold: i.sold,
+        };
+        return _ticket;
+      })
+    );
+    console.log("Resale tickets after new resale: ", resaleTickets);
   });
 });
