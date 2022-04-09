@@ -85,7 +85,9 @@ contract TicketMarket is ERC1155Holder{
   ) public returns (uint) {
       // check if thic fucntion caller is not an zero address account
     require(msg.sender != address(0));
-    require((uint64(block.timestamp) < startDate), "Date has already passed");
+   console.log(uint64(block.timestamp));
+    console.log(startDate);
+    require((uint64(block.timestamp) <= startDate), "Date has already passed");
     _eventIds.increment();
 
     uint256 eventId = _eventIds.current();
@@ -128,7 +130,7 @@ contract TicketMarket is ERC1155Holder{
     //check msg sender owns event
     require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
     //Check event has not already passed
-    require((uint64(block.timestamp) < idToMarketEvent[eventId].startDate), "Event has already passed");
+    require((uint64(block.timestamp) <= idToMarketEvent[eventId].startDate), "Event has already passed");
     require(royaltyFee<=100, "Royalty fee must be a percentage, therefore can't be more than 100");
     
     _ticketCount.increment();
@@ -170,7 +172,7 @@ contract TicketMarket is ERC1155Holder{
     require(amount <= limit - IERC1155(nftContract).balanceOf(msg.sender, tokenId), "You have exceeded the maximum amount of tickets you are allowed to purchase");
     require(msg.value == price * amount, "Correct amount of money was not sent");
     //make sure the event hasn't started
-    require((uint64(block.timestamp) < idToMarketEvent[eventId].startDate), "Event has already passed");
+    require((uint64(block.timestamp) <= idToMarketEvent[eventId].startDate), "Event has already passed");
 
     idToValidated[tokenId][msg.sender] = false;
 
@@ -198,7 +200,7 @@ contract TicketMarket is ERC1155Holder{
     require(limit - IERC1155(nftContract).balanceOf(msg.sender, tokenId) > 0, "You have exceeded the maximum amount of tickets you are allowed to purchase");
     require(msg.value == price, "Correct amount of money was not sent");
     //make sure the event hasn't started
-    require((uint64(block.timestamp) < idToMarketEvent[eventId].startDate), "Event has already passed");
+    require((uint64(block.timestamp) <= idToMarketEvent[eventId].startDate), "Event has already passed");
 
     idToValidated[tokenId][msg.sender] = false;
 
@@ -308,13 +310,13 @@ contract TicketMarket is ERC1155Holder{
     uint currentIndex = 0;
 
     for (uint i = 0; i < totalEventCount; i++) {
-      if ((uint64(block.timestamp) < idToMarketEvent[i+1].startDate)) {
+      if ((uint64(block.timestamp) <= idToMarketEvent[i+1].startDate)) {
         eventCount += 1;
       }
     }
     MarketEvent[] memory userEvents = new MarketEvent[](eventCount);
     for (uint i = 0; i < totalEventCount; i++) {
-      if ((uint64(block.timestamp) < idToMarketEvent[i+1].startDate)) {
+      if ((uint64(block.timestamp) <= idToMarketEvent[i+1].startDate)) {
         uint currentId = i + 1;
         MarketEvent storage currentEvent = idToMarketEvent[currentId];
         userEvents[currentIndex] = currentEvent;
@@ -370,6 +372,29 @@ contract TicketMarket is ERC1155Holder{
     return userTickets;
   }
 
+  function getMyResaleListings() public view returns(ResaleTicket[] memory){
+    uint totalTicketCount = _resaleIds.current();
+    uint ticketCount = 0;
+    uint currentIndex = 0;
+
+    for (uint i = 0; i < totalTicketCount; i++) {
+      if (idToResaleTicket[i + 1].seller == msg.sender && idToResaleTicket[i + 1].sold == false) {
+        ticketCount += 1;
+      }
+    }
+
+    ResaleTicket[] memory resaleTickets = new ResaleTicket[](ticketCount);
+    for (uint i = 0; i < totalTicketCount; i++) {
+      if (idToResaleTicket[i + 1].seller == msg.sender && idToResaleTicket[i + 1].sold == false) {
+        uint currentId = i + 1;
+        ResaleTicket storage currentTicket = idToResaleTicket[currentId];
+        resaleTickets[currentIndex] = currentTicket;
+        currentIndex += 1;
+      }
+    }
+    return resaleTickets;
+  }
+  
   function getResaleTickets(uint256 _tokenId) public view returns(ResaleTicket[] memory){
     uint totalTicketCount = _resaleIds.current();
     uint ticketCount = 0;

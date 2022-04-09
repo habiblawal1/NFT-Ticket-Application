@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ethers, providers } from "ethers";
@@ -30,6 +31,20 @@ export default function ticketDetails() {
           event={"#2 - Chelsea Vs Arsenal"}
           ticket={`#${ticketId} - Student Ticket`}
         />
+      </div>
+      <div className="p-4">
+        <p style={{ height: "64px" }} className="text-blue-500 font-semibold">
+          <Link href={`/resale/create/${ticketId}`}>
+            <a className="mr-6">Resell Ticket</a>
+          </Link>
+        </p>
+      </div>
+      <div className="p-4">
+        <p style={{ height: "64px" }} className="text-blue-500 font-semibold">
+          <Link href={`/tickets/send`}>
+            <a className="mr-6">Send Ticket</a>
+          </Link>
+        </p>
       </div>
     </div>
   );

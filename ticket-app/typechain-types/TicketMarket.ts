@@ -111,6 +111,7 @@ export interface TicketMarketInterface extends utils.Interface {
     "getEvent(uint256)": FunctionFragment;
     "getEventTickets(uint256)": FunctionFragment;
     "getMyEvents()": FunctionFragment;
+    "getMyResaleListings()": FunctionFragment;
     "getMyTickets(address)": FunctionFragment;
     "getResaleTickets(uint256)": FunctionFragment;
     "listOnResale(address,uint256,uint256)": FunctionFragment;
@@ -159,6 +160,10 @@ export interface TicketMarketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getMyEvents",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMyResaleListings",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -214,6 +219,10 @@ export interface TicketMarketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getMyEvents",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMyResaleListings",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -378,6 +387,10 @@ export interface TicketMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[TicketMarket.MarketEventStructOutput[]]>;
 
+    getMyResaleListings(
+      overrides?: CallOverrides
+    ): Promise<[TicketMarket.ResaleTicketStructOutput[]]>;
+
     getMyTickets(
       nftContract: string,
       overrides?: CallOverrides
@@ -475,6 +488,10 @@ export interface TicketMarket extends BaseContract {
     overrides?: CallOverrides
   ): Promise<TicketMarket.MarketEventStructOutput[]>;
 
+  getMyResaleListings(
+    overrides?: CallOverrides
+  ): Promise<TicketMarket.ResaleTicketStructOutput[]>;
+
   getMyTickets(
     nftContract: string,
     overrides?: CallOverrides
@@ -571,6 +588,10 @@ export interface TicketMarket extends BaseContract {
     getMyEvents(
       overrides?: CallOverrides
     ): Promise<TicketMarket.MarketEventStructOutput[]>;
+
+    getMyResaleListings(
+      overrides?: CallOverrides
+    ): Promise<TicketMarket.ResaleTicketStructOutput[]>;
 
     getMyTickets(
       nftContract: string,
@@ -719,6 +740,8 @@ export interface TicketMarket extends BaseContract {
 
     getMyEvents(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getMyResaleListings(overrides?: CallOverrides): Promise<BigNumber>;
+
     getMyTickets(
       nftContract: string,
       overrides?: CallOverrides
@@ -812,6 +835,10 @@ export interface TicketMarket extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getMyEvents(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getMyResaleListings(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getMyTickets(
       nftContract: string,

@@ -14,14 +14,18 @@ export default function eventDetails() {
   const [event, setEvent] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [qty, setQty] = useState(0);
-  const [loadingState, setLoadingState] = useState("not-loaded");
+  const [loadingState, setLoadingState] = useState(false);
   const router = useRouter();
   const eventId = router.query["id"];
   useEffect(() => {
     if (!router.isReady) return;
-    loadEvent();
-    loadTickets();
+    loadData();
   }, [router.isReady]);
+
+  async function loadData() {
+    await loadEvent();
+    await loadTickets();
+  }
 
   async function loadEvent() {
     const provider = new ethers.providers.JsonRpcProvider();
@@ -39,7 +43,6 @@ export default function eventDetails() {
         eventId: "NO EVENT URI",
         name: "NO EVENT URI",
         description: "NO EVENT URI",
-        category: "NO EVENT URI",
         imageUri: "NO EVENT URI",
         location: "NO EVENT URI",
         startDate: "NO EVENT URI",
@@ -56,7 +59,6 @@ export default function eventDetails() {
       eventId: data.eventId.toNumber(),
       name: eventData.name,
       description: eventData.description,
-      category: eventData.category,
       imageUri: eventData.image,
       location: eventData.location,
       startDate: eventData.eventDate,
@@ -82,8 +84,10 @@ export default function eventDetails() {
         const tokenUri = await tokenContract.uri(tokenId);
         const ticketRequest = await axios.get(tokenUri);
         const ticketData = ticketRequest.data;
-        console.log("ticketdata:", i);
-        console.log("LIMIT yo:", ticketData.properties.purchaseLimit);
+
+        const resaleTickets = await marketContract.getResaleTickets(tokenId);
+        let resaleAvail;
+        resaleTickets.length > 0 ? (resaleAvail = true) : (resaleAvail = false);
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
         let qty = await tokenContract.balanceOf(nftmarketaddress, tokenId);
         let _ticket = {
@@ -93,13 +97,14 @@ export default function eventDetails() {
           price,
           limit: i.purchaseLimit.toNumber(),
           quantity: qty.toNumber(),
+          resaleAvail,
         };
         return _ticket;
       })
     );
     console.log("Tickets: ", eventTickets);
     setTickets(eventTickets);
-    setLoadingState("loaded");
+    setLoadingState(true);
   }
 
   async function buyTicket(id, price) {
@@ -126,7 +131,7 @@ export default function eventDetails() {
     router.push("/tickets");
   }
 
-  if (loadingState === "not-loaded") {
+  if (!loadingState) {
     return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
   }
   return (
@@ -180,14 +185,6 @@ export default function eventDetails() {
                   Location: {event.location}
                 </p>
               </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Category: {event.category}
-                </p>
-              </div>
             </div>
           )}
         </div>
@@ -225,7 +222,7 @@ export default function eventDetails() {
                   </p>
                 </div>
                 {ticket.quantity > 1 ? (
-                  <div>
+                  <>
                     <div>
                       <label>
                         Qty:
@@ -258,7 +255,19 @@ export default function eventDetails() {
                     >
                       Buy Ticket
                     </button>
-                  </div>
+                    {ticket.resaleAvail && (
+                      <div className="p-4">
+                        <p
+                          style={{ height: "64px" }}
+                          className="text-blue-500 font-semibold"
+                        >
+                          <Link href={`/resale/${ticket.tokenId}`}>
+                            <a className="mr-6">Available on resale -&gt;</a>
+                          </Link>
+                        </p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <h1>SOLD OUT</h1>
                 )}

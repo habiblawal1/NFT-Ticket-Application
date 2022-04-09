@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Web3Modal from "web3modal";
 
-import { nftaddress, nftmarketaddress } from "../../config";
+import { nftaddress, nftmarketaddress } from "../../../config";
 
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import NFT from "../../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
+import Market from "../../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
 
 export default function myEvents() {
   const [events, setEvents] = useState([]);
-  const [loadingState, setLoadingState] = useState("not-loaded");
+  const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
     loadEvents();
@@ -43,7 +43,6 @@ export default function myEvents() {
             eventId: "NO EVENT URI",
             name: "NO EVENT URI",
             description: "NO EVENT URI",
-            category: "NO EVENT URI",
             imageUri: "NO EVENT URI",
             location: "NO EVENT URI",
             startDate: "NO EVENT URI",
@@ -60,7 +59,6 @@ export default function myEvents() {
           eventId: i.eventId.toNumber(),
           name: eventData.name,
           description: eventData.description,
-          category: eventData.category,
           imageUri: eventData.image,
           location: eventData.location,
           startDate: eventData.eventDate,
@@ -75,14 +73,26 @@ export default function myEvents() {
 
     console.log("ALL EVENTS: ", allEvents);
     setEvents(allEvents);
-    setLoadingState("loaded");
+    setLoadingState(true);
   }
 
-  if (loadingState === "not-loaded") {
+  if (!loadingState) {
     return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
   }
-  if (loadingState === "loaded" && !events.length) {
-    return <h1 className="px-20 py-10 text-3xl">You have created no events</h1>;
+  if (loadingState && !events.length) {
+    return (
+      <>
+        <h1 className="px-20 py-10 text-3xl">You have created no events</h1>
+        <div className="p-4">
+          <p style={{ height: "64px" }} className="text-blue-500 font-semibold">
+            {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
+            <Link href={`/events/create`}>
+              <a className="mr-6">Create Event</a>
+            </Link>
+          </p>
+        </div>
+      </>
+    );
   }
   return (
     <div className="flex justify-center">
@@ -101,6 +111,16 @@ export default function myEvents() {
                 >
                   <Link href={`/events/validate/${event.eventId}`}>
                     Validate Event-&gt;
+                  </Link>
+                </p>
+              </div>
+              <div className="p-4">
+                <p
+                  style={{ height: "64px" }}
+                  className="text-blue-500 font-semibold"
+                >
+                  <Link href={`/events/my-events/${event.eventId}`}>
+                    View Event Details -&gt;
                   </Link>
                 </p>
               </div>
@@ -148,14 +168,6 @@ export default function myEvents() {
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Category: {event.category}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
                   className="text-black-500 font-semibold"
                 >
                   Tickets Supplied: {event.ticketTotal}
@@ -182,6 +194,17 @@ export default function myEvents() {
               </div>
             </div>
           ))}
+          <div className="p-4">
+            <p
+              style={{ height: "64px" }}
+              className="text-blue-500 font-semibold"
+            >
+              {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
+              <Link href={`/events/create`}>
+                <a className="mr-6">Create Event</a>
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

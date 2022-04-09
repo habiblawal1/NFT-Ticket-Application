@@ -27,11 +27,12 @@ describe("Market", function () {
     string location,
     uint64 eventStartDate
     */
+
     const createEventEvent = await market
       .connect(sellerAddress)
       .createEvent(
         "url/event/1.json",
-        Math.floor(new Date("2022-05-15").getTime() / 1000)
+        Math.floor(new Date("2022-04-08, 23:59:59").getTime() / 1000)
       );
     let eventId = await createEventEvent.wait();
     console.log("EVENT 1", eventId.events[0].args);
@@ -183,6 +184,24 @@ describe("Market", function () {
     });
     console.log("resaleId = ", resaleId);
 
+    let myResaleListings = await market
+      .connect(buyerAddress)
+      .getMyResaleListings();
+    myResaleListings = await Promise.all(
+      myResaleListings.map(async (i) => {
+        let price = ethers.utils.formatUnits(i.resalePrice.toString(), "ether");
+        let _ticket = {
+          resaleId: i.resaleId.toString(),
+          tokenId: i.tokenId.toString(),
+          seller: i.seller,
+          price: `${price} MATIC`,
+          sold: i.sold,
+        };
+        return _ticket;
+      })
+    );
+    console.log("My Resale Listings: ", myResaleListings);
+
     let resaleTickets = await market.getResaleTickets(1);
 
     // struct ResaleTicket {
@@ -254,5 +273,8 @@ describe("Market", function () {
       })
     );
     console.log("Resale tickets after new resale: ", resaleTickets);
+    console.log(new Date(1649422882 * 1000).toLocaleString());
+    const myDate = new Date("04/08/22, 23:59:59").toLocaleString();
+    console.log(myDate.toLocaleString());
   });
 });
