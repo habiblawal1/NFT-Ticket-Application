@@ -9,24 +9,35 @@ import Web3Modal from "web3modal";
 
 const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we can use that sets and pins items to ipfs
 
-import { nftaddress, nftmarketaddress } from "../../config";
+import { nftmarketaddress } from "../../config";
 
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
 import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
 
 export default function createEvent() {
   //const [fileUrl, setFileUrl] = useState(null);
   const [eventPic, setEventPic] = useState(null);
   const [err, setErr] = useState([]);
-  const [eventDate, setEventDate] = useState(new Date());
+  const [eventDate, setEventDate] = useState(
+    formatDate(new Date().toLocaleString())
+  );
   const [formInput, updateFormInput] = useState({
     name: "",
     description: "",
-    category: "",
     location: "",
   });
   const router = useRouter();
 
+  function formatDate(date) {
+    const oldDate = new Date(date);
+    const newDate =
+      oldDate.getFullYear() +
+      "/" +
+      (oldDate.getMonth() + 1) +
+      "/" +
+      oldDate.getDate() +
+      ", 23:59:59";
+    return new Date(newDate);
+  }
   async function uploadToPictureToIPFS() {
     //TODO - If no file is added, then use placeholder picture instead
     //Upload Event Picture
@@ -42,8 +53,8 @@ export default function createEvent() {
   }
 
   async function uploadToIPFS() {
-    const { name, description, category, location } = formInput;
-    if (!name || !description || !category || !location || !eventDate) {
+    const { name, description, location } = formInput;
+    if (!name || !description || !location || !eventDate) {
       throw new Error("Please check you have completed all fields");
     }
 
@@ -54,7 +65,6 @@ export default function createEvent() {
     const data = JSON.stringify({
       name,
       description,
-      category,
       image: fileUrl,
       location,
       eventDate: new Date(eventDate).toLocaleDateString(),
@@ -86,6 +96,7 @@ export default function createEvent() {
     );
 
     try {
+      formatDate(eventDate);
       const url = await uploadToIPFS();
       const transaction = await marketContract.createEvent(
         url,
@@ -123,19 +134,11 @@ export default function createEvent() {
               updateFormInput({ ...formInput, description: e.target.value })
             }
           />
-          {/* TODO - Add options for category */}
-          <input
-            placeholder="Event Category"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, category: e.target.value })
-            }
-          />
           <p className="mt-4">Start Date:</p>
           <div className="mt-1 border rounded p-4">
             <DatePicker
               selected={eventDate}
-              onChange={(date) => setEventDate(date)}
+              onChange={(date) => setEventDate(formatDate(date))}
             />
           </div>
           <input

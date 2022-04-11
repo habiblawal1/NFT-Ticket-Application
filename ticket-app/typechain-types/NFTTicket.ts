@@ -28,6 +28,7 @@ export interface NFTTicketInterface extends utils.Interface {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "MINTER_ROLE()": FunctionFragment;
     "PAUSER_ROLE()": FunctionFragment;
+    "addTokens(uint256,uint64)": FunctionFragment;
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "burn(address,uint256,uint256)": FunctionFragment;
@@ -36,6 +37,7 @@ export interface NFTTicketInterface extends utils.Interface {
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
     "getRoleMemberCount(bytes32)": FunctionFragment;
+    "giveResaleApproval(uint256)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
@@ -70,6 +72,10 @@ export interface NFTTicketInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "addTokens",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "balanceOf",
     values: [string, BigNumberish]
   ): string;
@@ -100,6 +106,10 @@ export interface NFTTicketInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getRoleMemberCount",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "giveResaleApproval",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -175,6 +185,7 @@ export interface NFTTicketInterface extends utils.Interface {
     functionFragment: "PAUSER_ROLE",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "addTokens", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfBatch",
@@ -196,6 +207,10 @@ export interface NFTTicketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getRoleMemberCount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "giveResaleApproval",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
@@ -392,6 +407,12 @@ export interface NFTTicket extends BaseContract {
 
     PAUSER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
+    addTokens(
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -435,6 +456,11 @@ export interface NFTTicket extends BaseContract {
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    giveResaleApproval(
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     grantRole(
       role: BytesLike,
@@ -547,6 +573,12 @@ export interface NFTTicket extends BaseContract {
 
   PAUSER_ROLE(overrides?: CallOverrides): Promise<string>;
 
+  addTokens(
+    tokenId: BigNumberish,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   balanceOf(
     account: string,
     id: BigNumberish,
@@ -590,6 +622,11 @@ export interface NFTTicket extends BaseContract {
     role: BytesLike,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  giveResaleApproval(
+    tokenId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   grantRole(
     role: BytesLike,
@@ -702,6 +739,12 @@ export interface NFTTicket extends BaseContract {
 
     PAUSER_ROLE(overrides?: CallOverrides): Promise<string>;
 
+    addTokens(
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -745,6 +788,11 @@ export interface NFTTicket extends BaseContract {
       role: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    giveResaleApproval(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     grantRole(
       role: BytesLike,
@@ -956,6 +1004,12 @@ export interface NFTTicket extends BaseContract {
 
     PAUSER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
+    addTokens(
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -1001,6 +1055,11 @@ export interface NFTTicket extends BaseContract {
     getRoleMemberCount(
       role: BytesLike,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    giveResaleApproval(
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     grantRole(
@@ -1117,6 +1176,12 @@ export interface NFTTicket extends BaseContract {
 
     PAUSER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    addTokens(
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -1162,6 +1227,11 @@ export interface NFTTicket extends BaseContract {
     getRoleMemberCount(
       role: BytesLike,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    giveResaleApproval(
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     grantRole(

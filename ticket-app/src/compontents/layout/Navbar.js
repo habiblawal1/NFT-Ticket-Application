@@ -16,6 +16,9 @@ const Navbar = () => {
         <Link href="/events/my-events">
           <a className="mr-6 text-pink-500">Manage Events</a>
         </Link>
+        <Link href="/resale">
+          <a className="mr-6 text-pink-500">Resale</a>
+        </Link>
       </nav>
     </div>
   );

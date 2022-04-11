@@ -10,7 +10,7 @@ import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json
 
 export default function allEvents() {
   const [events, setEvents] = useState([]);
-  const [loadingState, setLoadingState] = useState("not-loaded");
+  const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
     loadEvents();
@@ -36,7 +36,6 @@ export default function allEvents() {
             eventId: "NO EVENT URI",
             name: "NO EVENT URI",
             description: "NO EVENT URI",
-            category: "NO EVENT URI",
             imageUri: "NO EVENT URI",
             location: "NO EVENT URI",
             startDate: "NO EVENT URI",
@@ -53,7 +52,6 @@ export default function allEvents() {
           eventId: i.eventId.toNumber(),
           name: eventData.name,
           description: eventData.description,
-          category: eventData.category,
           imageUri: eventData.image,
           location: eventData.location,
           startDate: eventData.eventDate,
@@ -65,13 +63,13 @@ export default function allEvents() {
 
     console.log("ALL EVENTS: ", allEvents);
     setEvents(allEvents);
-    setLoadingState("loaded");
+    setLoadingState(true);
   }
 
-  if (loadingState === "not-loaded") {
+  if (!loadingState) {
     return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
   }
-  if (loadingState === "loaded" && !events.length) {
+  if (loadingState && !events.length) {
     return (
       <h1 className="px-20 py-10 text-3xl">No Events In the Marketplace</h1>
     );
@@ -126,14 +124,6 @@ export default function allEvents() {
                   className="text-3xl font-semibold"
                 >
                   Location: {event.location}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Category: {event.category}
                 </p>
               </div>
               <div className="p-4">

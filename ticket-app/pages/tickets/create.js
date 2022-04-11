@@ -27,6 +27,8 @@ export default function createTicket() {
     price: "",
     purchaseLimit: "",
     amount: "",
+    royaltyFee: "",
+    maxResalePrice: "",
   });
   const router = useRouter();
   url: "ipfs://bafyreih6tmlwwzkphuhenrby6diek3oke6xxphvzxaq4bijtlex2gyfliq/metadata.json";
@@ -42,9 +44,25 @@ export default function createTicket() {
   }
 
   async function uploadToIPFS() {
-    const { eventId, name, description, price, purchaseLimit, amount } =
-      formInput;
-    if (!name || !eventId || !price || !amount || !purchaseLimit) {
+    const {
+      eventId,
+      name,
+      description,
+      price,
+      purchaseLimit,
+      amount,
+      royaltyFee,
+      maxResalePrice,
+    } = formInput;
+    if (
+      !name ||
+      !eventId ||
+      !price ||
+      !amount ||
+      !purchaseLimit ||
+      !royaltyFee ||
+      !maxResalePrice
+    ) {
       throw new Error("Please check you have completed all fields");
     }
     const image = await getPlaceholderImage();
@@ -59,6 +77,8 @@ export default function createTicket() {
         price,
         eventId,
         purchaseLimit,
+        royaltyFee,
+        maxResalePrice,
       },
     };
     const metadata = await client.store(data);
@@ -68,7 +88,14 @@ export default function createTicket() {
   }
 
   async function addTicket() {
-    const { eventId, price, purchaseLimit, amount } = formInput;
+    const {
+      eventId,
+      price,
+      purchaseLimit,
+      amount,
+      royaltyFee,
+      maxResalePrice,
+    } = formInput;
     //TODO - Add error check for if ticket creater matches event owner
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
@@ -85,6 +112,7 @@ export default function createTicket() {
     try {
       const url = await uploadToIPFS();
       const ticketPrice = ethers.utils.parseUnits(price, "ether");
+      const resalePrice = ethers.utils.parseUnits(maxResalePrice, "ether");
 
       let nftTransaction = await tokenContract.createToken(amount);
       let tokenId = -1;
@@ -100,13 +128,16 @@ export default function createTicket() {
 
       //TODO - User has to sign making token, setting uri, and creating market ticket, find a way so that a user only needs to do it once
       //TODO - Don't allow user to click the button twice, disable it after having it clicked once otherwise you accidently create multiple tokens
+      //TODO - Auto fill event ID and name
       /**
-      uint256 eventId,
-      uint256 tokenId,
-      address nftContract,
-      uint256 purchaseLimit,
-      uint256 totalSupply,
-      uint256 price
+    uint256 eventId,
+    uint256 tokenId,
+    address nftContract,
+    uint256 purchaseLimit,
+    uint256 totalSupply,
+    uint256 price,
+    uint256 royaltyFee,
+    uint256 maxResalePrice
        */
       const marketTransaction = await marketContract.createMarketTicket(
         eventId,
@@ -114,7 +145,9 @@ export default function createTicket() {
         tokenContract.address,
         purchaseLimit,
         amount,
-        ticketPrice
+        ticketPrice,
+        royaltyFee,
+        resalePrice
       );
       await marketTransaction.wait();
 
@@ -172,6 +205,20 @@ export default function createTicket() {
             className="mt-4 border rounded p-4"
             onChange={(e) =>
               updateFormInput({ ...formInput, amount: e.target.value })
+            }
+          />
+          <input
+            placeholder="Royalty fee (%)"
+            className="mt-4 border rounded p-4"
+            onChange={(e) =>
+              updateFormInput({ ...formInput, royaltyFee: e.target.value })
+            }
+          />
+          <input
+            placeholder="Maximum Resale Price (MATIC)"
+            className="mt-4 border rounded p-4"
+            onChange={(e) =>
+              updateFormInput({ ...formInput, maxResalePrice: e.target.value })
             }
           />
           <button

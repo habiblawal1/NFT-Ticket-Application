@@ -33,12 +33,18 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
 
         _mint(msg.sender, newTokenId, amount, "");
         setApprovalForAll(contractAddress, true);
-        //Makes msg.sender the owner so that now they are the only ones capable of 
+        //Makes msg.sender the owner so that now they are the only ones capable of setting token uri
         _NFTInfo[newTokenId].owner = msg.sender;
         emit NFTTicketCreated(
             newTokenId
         );
         return newTokenId;
+    }
+
+    function addTokens(uint256 tokenId, uint64 amount) public {
+        require(_NFTInfo[tokenId].owner == msg.sender, "Only token owner can mint extra tokens");
+        _mint(msg.sender, tokenId, amount, "");
+        setApprovalForAll(contractAddress, true);
     }
 
     // //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure
@@ -52,6 +58,12 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
         //allow you to only ever set the token uri once by requiring that the string mapped to the tokenId is empty
         require(bytes(_NFTInfo[tokenId].uri).length == 0, "You cannot set token uri twice");
        _NFTInfo[tokenId].uri = newUri;
+    }
+
+    function giveResaleApproval(uint256 tokenId) public { 
+        require(balanceOf(msg.sender, tokenId) > 0, "You must own this NFT in order to resell it" ); 
+        setApprovalForAll(contractAddress, true); 
+        return; 
     }
 }
 

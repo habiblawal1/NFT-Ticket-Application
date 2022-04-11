@@ -11,7 +11,7 @@ import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json
 
 export default function myTickets() {
   const [tickets, setTickets] = useState([]);
-  const [loadingState, setLoadingState] = useState("not-loaded");
+  const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
     loadTickets();
@@ -39,6 +39,7 @@ export default function myTickets() {
         const tokenUri = await tokenContract.uri(tokenId);
         const ticketRequest = await axios.get(tokenUri);
         const ticketData = ticketRequest.data;
+        console.log("Ticket Data: ", ticketData);
 
         const eventId = i.eventId.toNumber();
         const eventContractData = await marketContract.getEvent(eventId);
@@ -67,9 +68,11 @@ export default function myTickets() {
     );
     console.log("Tickets: ", myTickets);
     setTickets(myTickets);
-    setLoadingState("loaded");
+    setLoadingState(true);
   }
-
+  if (!loadingState) {
+    return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
+  }
   return (
     <div className="flex justify-center">
       <div className="px-4" style={{ maxWidth: "1600px" }}>
@@ -134,7 +137,7 @@ export default function myTickets() {
                   style={{ height: "64px" }}
                   className="text-3xl font-semibold"
                 >
-                  Price: {ticket.price} MATIC
+                  Original Price: {ticket.price} MATIC
                 </p>
               </div>
               <div className="p-4">
