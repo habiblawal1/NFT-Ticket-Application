@@ -39,16 +39,6 @@ export default function eventDetails() {
     const eventUri = await data.uri;
     if (!eventUri) {
       //TODO - Proper error msg for no URI
-      let currEvent = {
-        eventId: "NO EVENT URI",
-        name: "NO EVENT URI",
-        description: "NO EVENT URI",
-        imageUri: "NO EVENT URI",
-        location: "NO EVENT URI",
-        startDate: "NO EVENT URI",
-        owner: "NO EVENT URI",
-      };
-      return currEvent;
     }
     console.log("URI = ", eventUri);
     const eventRequest = await axios.get(eventUri);

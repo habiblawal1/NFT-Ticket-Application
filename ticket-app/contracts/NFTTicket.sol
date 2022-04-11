@@ -33,12 +33,18 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
 
         _mint(msg.sender, newTokenId, amount, "");
         setApprovalForAll(contractAddress, true);
-        //Makes msg.sender the owner so that now they are the only ones capable of 
+        //Makes msg.sender the owner so that now they are the only ones capable of setting token uri
         _NFTInfo[newTokenId].owner = msg.sender;
         emit NFTTicketCreated(
             newTokenId
         );
         return newTokenId;
+    }
+
+    function addTokens(uint256 tokenId, uint64 amount) public {
+        require(_NFTInfo[tokenId].owner == msg.sender, "Only token owner can mint extra tokens");
+        _mint(msg.sender, tokenId, amount, "");
+        setApprovalForAll(contractAddress, true);
     }
 
     // //What this function does is allow a custom uri for a token which doesn't need to follow {id} structure

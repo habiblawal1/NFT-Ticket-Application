@@ -28,6 +28,7 @@ export interface NFTTicketInterface extends utils.Interface {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "MINTER_ROLE()": FunctionFragment;
     "PAUSER_ROLE()": FunctionFragment;
+    "addTokens(uint256,uint64)": FunctionFragment;
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "burn(address,uint256,uint256)": FunctionFragment;
@@ -69,6 +70,10 @@ export interface NFTTicketInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "PAUSER_ROLE",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addTokens",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
@@ -180,6 +185,7 @@ export interface NFTTicketInterface extends utils.Interface {
     functionFragment: "PAUSER_ROLE",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "addTokens", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfBatch",
@@ -401,6 +407,12 @@ export interface NFTTicket extends BaseContract {
 
     PAUSER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
+    addTokens(
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -561,6 +573,12 @@ export interface NFTTicket extends BaseContract {
 
   PAUSER_ROLE(overrides?: CallOverrides): Promise<string>;
 
+  addTokens(
+    tokenId: BigNumberish,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   balanceOf(
     account: string,
     id: BigNumberish,
@@ -720,6 +738,12 @@ export interface NFTTicket extends BaseContract {
     MINTER_ROLE(overrides?: CallOverrides): Promise<string>;
 
     PAUSER_ROLE(overrides?: CallOverrides): Promise<string>;
+
+    addTokens(
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     balanceOf(
       account: string,
@@ -980,6 +1004,12 @@ export interface NFTTicket extends BaseContract {
 
     PAUSER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
+    addTokens(
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -1145,6 +1175,12 @@ export interface NFTTicket extends BaseContract {
     MINTER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     PAUSER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    addTokens(
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     balanceOf(
       account: string,

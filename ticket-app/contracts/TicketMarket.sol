@@ -131,7 +131,7 @@ contract TicketMarket is ERC1155Holder{
     require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
     //Check event has not already passed
     require((uint64(block.timestamp) <= idToMarketEvent[eventId].startDate), "Event has already passed");
-    require(royaltyFee<=100, "Royalty fee must be a percentage, therefore can't be more than 100");
+    require(royaltyFee<=100, "Royalty fee must be a percentage, therefore it can't be more than 100");
     
     _ticketCount.increment();
 
@@ -157,6 +157,24 @@ contract TicketMarket is ERC1155Holder{
       royaltyFee,
       maxResalePrice
     );
+  }
+
+  function addMoreTicketsToMarket(
+    address nftContract,
+    uint256 tokenId,
+    uint256 amount
+    ) public{
+    uint eventId = idToMarketTicket[tokenId].eventId;  
+    //check user owns NFT before listing it on the market
+    require(IERC1155(nftContract).balanceOf(msg.sender, tokenId)>= amount, "You do not own the NFT ticket you are trying to list");
+    //check msg sender owns event
+    require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
+    //Check event has not already passed
+    require((uint64(block.timestamp) <= idToMarketEvent[eventId].startDate), "Event has already passed");
+
+    IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
+    idToMarketEvent[eventId].ticketTotal = idToMarketEvent[eventId].ticketTotal+amount;
+    idToMarketTicket[tokenId].totalSupply = idToMarketTicket[tokenId].totalSupply+amount;
   }
 
   function buyTicket(

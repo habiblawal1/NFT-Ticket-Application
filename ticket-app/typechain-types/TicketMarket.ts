@@ -103,6 +103,7 @@ export declare namespace TicketMarket {
 export interface TicketMarketInterface extends utils.Interface {
   contractName: "TicketMarket";
   functions: {
+    "addMoreTicketsToMarket(address,uint256,uint256)": FunctionFragment;
     "buyResaleTicket(address,uint256)": FunctionFragment;
     "buyTicket(address,uint256,uint256)": FunctionFragment;
     "createEvent(string,uint64)": FunctionFragment;
@@ -121,6 +122,10 @@ export interface TicketMarketInterface extends utils.Interface {
     "validateTicket(address,address,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "addMoreTicketsToMarket",
+    values: [string, BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "buyResaleTicket",
     values: [string, BigNumberish]
@@ -195,6 +200,10 @@ export interface TicketMarketInterface extends utils.Interface {
     values: [string, string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "addMoreTicketsToMarket",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "buyResaleTicket",
     data: BytesLike
@@ -338,6 +347,13 @@ export interface TicketMarket extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    addMoreTicketsToMarket(
+      nftContract: string,
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     buyResaleTicket(
       nftContract: string,
       _resaleId: BigNumberish,
@@ -438,6 +454,13 @@ export interface TicketMarket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
+
+  addMoreTicketsToMarket(
+    nftContract: string,
+    tokenId: BigNumberish,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   buyResaleTicket(
     nftContract: string,
@@ -540,6 +563,13 @@ export interface TicketMarket extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    addMoreTicketsToMarket(
+      nftContract: string,
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     buyResaleTicket(
       nftContract: string,
       _resaleId: BigNumberish,
@@ -695,6 +725,13 @@ export interface TicketMarket extends BaseContract {
   };
 
   estimateGas: {
+    addMoreTicketsToMarket(
+      nftContract: string,
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     buyResaleTicket(
       nftContract: string,
       _resaleId: BigNumberish,
@@ -791,6 +828,13 @@ export interface TicketMarket extends BaseContract {
   };
 
   populateTransaction: {
+    addMoreTicketsToMarket(
+      nftContract: string,
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     buyResaleTicket(
       nftContract: string,
       _resaleId: BigNumberish,
