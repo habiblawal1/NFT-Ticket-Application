@@ -1,12 +1,8 @@
 import Link from "next/link";
-import { ethers, providers } from "ethers";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-import { nftaddress, nftmarketaddress } from "../../config";
-
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { marketContract } from "../../components/contracts";
 
 export default function allEvents() {
   const [events, setEvents] = useState([]);
@@ -16,14 +12,6 @@ export default function allEvents() {
     loadEvents();
   }, []);
   async function loadEvents() {
-    const provider = new ethers.providers.JsonRpcProvider();
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      provider
-    );
-
     const data = await marketContract.getAllEvents();
     //console.log(data);
 
@@ -137,7 +125,7 @@ export default function allEvents() {
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-blue-500 font-semibold"
+                  className="text-primary font-semibold"
                 >
                   <Link href={`/events/${event.eventId}`}>
                     <a className="mr-6">Book Now</a>

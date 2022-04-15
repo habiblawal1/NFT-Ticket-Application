@@ -1,37 +1,66 @@
 import { ethers } from "ethers";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NFTStorage } from "nft.storage";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { useRouter } from "next/router"; //allows us to programatically route to different routes and read values off of route uri
-import Web3Modal from "web3modal";
+import axios from "axios";
 
-//const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we can use that sets and pins items to ipfs
-//TODO - Add as envVar
-const API_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDk1Qjg1NDdDNzdEMTQzNUU3M2QxQUEzNDc1OTg5ZDMyNGMwOTAwYjciLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0ODA3OTA5MTQ5OCwibmFtZSI6Ik5GVF9UaWNrZXRfQXBwIn0.1YjFxXNgTt5C89JOSSLCJfWphe22EYU8GcPQlodG8no";
-const ticketPlaceholderUrl =
-  "ipfs://bafkreibmj25canr2btdofjrek7djq4ghn5nwzhlh5t2uf2n6ad4nved4la";
-const client = new NFTStorage({ token: API_KEY });
+import MaticPrice from "../../../components/price/Matic";
 
-import { nftaddress, nftmarketaddress } from "../../config";
+const client = new NFTStorage({
+  token: process.env.NEXT_PUBLIC_NFT_STORAGE_TOKEN,
+});
 
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { signers } from "../../../components/contracts";
 
 export default function createTicket() {
   const [err, setErr] = useState([]);
   const [formInput, updateFormInput] = useState({
-    eventId: "",
     name: "",
     description: "",
     price: "",
+    priceMATIC: "",
     purchaseLimit: "",
     amount: "",
     royaltyFee: "",
     maxResalePrice: "",
+    maxResalePriceMATIC: "",
   });
+  const [eventName, setEventName] = useState("");
   const router = useRouter();
-  url: "ipfs://bafyreih6tmlwwzkphuhenrby6diek3oke6xxphvzxaq4bijtlex2gyfliq/metadata.json";
+  const eventId = router.query["id"];
+  // url: "ipfs://bafyreih6tmlwwzkphuhenrby6diek3oke6xxphvzxaq4bijtlex2gyfliq/metadata.json";
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    loadData();
+  }, [router.isReady]);
+
+  async function loadData() {
+    const contracts = await signers();
+    const { signedMarketContract, signer } = contracts;
+    let eventData = "";
+    try {
+      const data = await signedMarketContract.getEvent(eventId);
+      const eventUri = await data.uri;
+      const address = await signer.getAddress();
+      if (!eventUri) {
+        setErr((oldErr) => [...oldErr, "Could not find Event URI"]);
+      } else if (data.owner != address) {
+        console.log();
+        setErr((oldErr) => [
+          ...oldErr,
+          "You do not own the event that you are trying to create a ticket for",
+        ]);
+      }
+      const eventRequest = await axios.get(eventUri);
+      eventData = eventRequest.data;
+      setEventName(eventData.name);
+    } catch (error) {
+      setErr((oldErr) => [...oldErr, error.data.message]);
+      console.log(error);
+    }
+  }
 
   async function getPlaceholderImage() {
     const imageOriginUrl =
@@ -45,24 +74,32 @@ export default function createTicket() {
 
   async function uploadToIPFS() {
     const {
-      eventId,
       name,
       description,
       price,
+      priceMATIC,
       purchaseLimit,
       amount,
       royaltyFee,
       maxResalePrice,
+      maxResalePriceMATIC,
     } = formInput;
     if (
       !name ||
-      !eventId ||
       !price ||
       !amount ||
       !purchaseLimit ||
       !royaltyFee ||
       !maxResalePrice
     ) {
+      console.log({
+        name,
+        price,
+        amount,
+        purchaseLimit,
+        royaltyFee,
+        maxResalePrice,
+      });
       throw new Error("Please check you have completed all fields");
     }
     const image = await getPlaceholderImage();
@@ -74,11 +111,11 @@ export default function createTicket() {
       description,
       image,
       properties: {
-        price,
+        price: priceMATIC,
         eventId,
         purchaseLimit,
         royaltyFee,
-        maxResalePrice,
+        maxResalePrice: maxResalePriceMATIC,
       },
     };
     const metadata = await client.store(data);
@@ -89,32 +126,22 @@ export default function createTicket() {
 
   async function addTicket() {
     const {
-      eventId,
-      price,
       purchaseLimit,
       amount,
+      priceMATIC,
       royaltyFee,
-      maxResalePrice,
+      maxResalePriceMATIC,
     } = formInput;
     //TODO - Add error check for if ticket creater matches event owner
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, signer);
+    const contracts = await signers();
+    const { signedMarketContract, signedTokenContract } = contracts;
 
     try {
       const url = await uploadToIPFS();
-      const ticketPrice = ethers.utils.parseUnits(price, "ether");
-      const resalePrice = ethers.utils.parseUnits(maxResalePrice, "ether");
+      const ticketPrice = ethers.utils.parseUnits(priceMATIC, "ether");
+      const resalePrice = ethers.utils.parseUnits(maxResalePriceMATIC, "ether");
 
-      let nftTransaction = await tokenContract.createToken(amount);
+      let nftTransaction = await signedTokenContract.createToken(amount);
       let tokenId = -1;
       let nftTx = await nftTransaction.wait();
       nftTx.events.forEach((element) => {
@@ -123,7 +150,7 @@ export default function createTicket() {
         }
       });
       console.log("Token ID = ", tokenId);
-      nftTransaction = await tokenContract.setTokenUri(tokenId, url);
+      nftTransaction = await signedTokenContract.setTokenUri(tokenId, url);
       nftTx = await nftTransaction.wait();
 
       //TODO - User has to sign making token, setting uri, and creating market ticket, find a way so that a user only needs to do it once
@@ -139,10 +166,10 @@ export default function createTicket() {
     uint256 royaltyFee,
     uint256 maxResalePrice
        */
-      const marketTransaction = await marketContract.createMarketTicket(
+      const marketTransaction = await signedMarketContract.createMarketTicket(
         eventId,
         tokenId,
-        tokenContract.address,
+        signedTokenContract.address,
         purchaseLimit,
         amount,
         ticketPrice,
@@ -153,14 +180,33 @@ export default function createTicket() {
 
       router.push("/events/my-events");
     } catch (error) {
-      setErr((oldErr) => [...oldErr, "Check console for new error with ETH"]);
+      setErr((oldErr) => [...oldErr, err.data.message]);
       console.log(error);
+    }
+  }
+
+  async function updatePrice(type, value) {
+    const maticPrice = await MaticPrice(value);
+    if (type == "ticket") {
+      updateFormInput({ ...formInput, priceMATIC: maticPrice, price: value });
+    } else {
+      updateFormInput({
+        ...formInput,
+        maxResalePriceMATIC: maticPrice,
+        maxResalePrice: value,
+      });
     }
   }
 
   return (
     <div>
       <h1>Create Tickets Page</h1>
+      <div className="flex justify-center">
+        <p style={{ height: "64px" }} className="text-3xl">
+          <span className="text-primary font-semibold">{eventName}</span> - #
+          {eventId}
+        </p>
+      </div>
       <div className="flex justify-center">
         <div className="w-1/2 flex flex-col pb-12">
           <input
@@ -177,22 +223,16 @@ export default function createTicket() {
               updateFormInput({ ...formInput, description: e.target.value })
             }
           />
-          <input
-            placeholder="Event Id"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, eventId: e.target.value })
-            }
-          />
-          {/** TODO - Add conversion for MATIC to GBP*/}
           {/** TODO - Declare which fields are required*/}
           <input
-            placeholder="Ticket Price (MATIC)"
+            placeholder="Ticket Price (GBP)"
             className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, price: e.target.value })
-            }
+            onChange={(e) => {
+              updatePrice("ticket", e.target.value);
+            }}
           />
+
+          <p> = {formInput.priceMATIC} MATIC</p>
           <input
             placeholder="Maximum tickets a user can purchase at once"
             className="mt-4 border rounded p-4"
@@ -215,21 +255,20 @@ export default function createTicket() {
             }
           />
           <input
-            placeholder="Maximum Resale Price (MATIC)"
+            placeholder="Maximum Resale Price (GBP)"
             className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, maxResalePrice: e.target.value })
-            }
+            onChange={(e) => updatePrice("resale", e.target.value)}
           />
+          <p>= {formInput.maxResalePriceMATIC} MATIC</p>
           <button
             onClick={addTicket}
-            className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+            className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
           >
             Create Ticket
           </button>
           <div>
             {err.map((error) => (
-              <p key={error} className="mr-6 text-red-500">
+              <p key={error} className="mr-6 text-red">
                 {error}
               </p>
             ))}

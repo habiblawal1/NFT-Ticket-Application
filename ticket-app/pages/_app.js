@@ -1,7 +1,8 @@
 import "../styles/globals.css";
-import Layout from "../src/compontents/layout/Layout";
+import "tailwindcss/tailwind.css";
+
+import Layout from "../components/layout/Layout";
 import Head from "next/head";
-import Link from "next/link";
 
 function MyApp({ Component, pageProps }) {
   return (
@@ -11,6 +12,7 @@ function MyApp({ Component, pageProps }) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
+        <title>NFTickets</title>
       </Head>
       <Layout>
         <Component {...pageProps} />

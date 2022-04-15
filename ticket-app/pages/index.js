@@ -1,20 +1,30 @@
-import Head from "next/head";
-import Image from "next/image";
-import Navbar from "../src/compontents/layout/Navbar";
 import styles from "../styles/Home.module.css";
 import Link from "next/link";
 
+import { useRouter } from "next/router";
+
 export default function Home() {
+  const router = useRouter();
   return (
     <div className={styles.container}>
-      <h1> NFT Based tickets</h1>
+      <h1 className="font-bold"> NFT Based tickets</h1>
       <h4>Providing extra trust and security for attending events</h4>
-      <Link href="/events/create">
-        <a className="mr-6">Create Event</a>
-      </Link>
-      <Link href="/events/">
-        <a className="mr-6">Find Event</a>
-      </Link>
+      <button
+        onClick={() => {
+          router.push("/events/create");
+        }}
+        className="font-bold mt-4 mr-4 bg-primary text-white rounded p-4 shadow-lg"
+      >
+        Create Event
+      </button>
+      <button
+        onClick={() => {
+          router.push("/events/");
+        }}
+        className="font-bold mt-4 mr-4 bg-white text-primary border rounded p-4 shadow-lg"
+      >
+        Find Event
+      </button>
     </div>
   );
 }

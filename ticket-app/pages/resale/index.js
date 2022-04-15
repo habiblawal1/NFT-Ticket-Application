@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Web3Modal from "web3modal";
 import axios from "axios";
 
+import PoundPrice from "../../components/price/Pound";
+
 import { nftaddress, nftmarketaddress } from "../../config";
 
 import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
@@ -55,6 +57,7 @@ export default function myResaleListings() {
             i.resalePrice.toString(),
             "ether"
           );
+          let gbpPrice = await PoundPrice(price);
           let currListing = {
             resaleId: i.resaleId.toNumber(),
             eventId,
@@ -65,6 +68,7 @@ export default function myResaleListings() {
             ticketName: ticketData.name,
             tokenId,
             price,
+            gbpPrice,
           };
           return currListing;
         })
@@ -142,17 +146,31 @@ export default function myResaleListings() {
                     style={{ height: "64px" }}
                     className="text-3xl font-semibold"
                   >
-                    Resale Price: {ticket.price} MATIC
+                    Resale Price: £{ticket.gbpPrice}
                   </p>
+                  <div style={{ height: "70px", overflow: "hidden" }}>
+                    <p className="text-3xl">= {ticket.price} MATIC</p>
+                  </div>
                 </div>
               </div>
             ))
           ) : (
-            <h1>You have no tickets listed for resale</h1>
+            <div>
+              <h1>You have no tickets listed for resale</h1>
+              <p>Go to the My Tickets page to list your ticket for resale</p>
+              <p
+                style={{ height: "64px" }}
+                className="text-primary font-semibold"
+              >
+                <Link href={`/tickets/`}>
+                  <a className="mr-6">My Tickets -&gt;</a>
+                </Link>
+              </p>
+            </div>
           )}
         </div>
         {err && (
-          <p style={{ height: "64px" }} className="text-red-500 font-semibold">
+          <p style={{ height: "64px" }} className="text-red font-semibold">
             {err}
           </p>
         )}

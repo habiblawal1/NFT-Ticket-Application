@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { useRouter } from "next/router";
-import { ethers, providers } from "ethers";
+import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import Web3Modal from "web3modal";
 import axios from "axios";
+
+import PoundPrice from "../../components/price/Pound";
 
 import { nftaddress, nftmarketaddress } from "../../config";
 
@@ -85,10 +86,12 @@ export default function eventResaleListings() {
     const tickets = await Promise.all(
       data.map(async (i) => {
         let price = ethers.utils.formatUnits(i.resalePrice.toString(), "ether");
+        let gbpPrice = await PoundPrice(price);
         let _ticket = {
           resaleId: i.resaleId.toNumber(),
           seller: i.seller,
           price,
+          gbpPrice,
         };
         return _ticket;
       })
@@ -121,6 +124,7 @@ export default function eventResaleListings() {
       }
     );
     await transaction.wait();
+    //TODO - You don't redericted
     router.push("/tickets");
   }
 
@@ -190,15 +194,18 @@ export default function eventResaleListings() {
                   style={{ height: "64px" }}
                   className="text-3xl font-semibold"
                 >
-                  List Price: {_ticket.price} MATIC
+                  List Price: £{_ticket.gbpPrice}
                 </p>
+              </div>
+              <div style={{ height: "70px", overflow: "hidden" }}>
+                <p className="text-3xl">= {_ticket.price} MATIC</p>
               </div>
 
               <button
                 onClick={() => {
                   buyTicket(_ticket.resaleId, _ticket.price);
                 }}
-                className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+                className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
               >
                 Buy Ticket
               </button>

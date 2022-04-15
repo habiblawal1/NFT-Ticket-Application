@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ethers, providers } from "ethers";
-import QR from "../../src/compontents/QR";
+import QR from "../../components/QR";
 import Web3Modal from "web3modal";
 
 import { nftaddress, nftmarketaddress } from "../../config";
@@ -33,14 +33,14 @@ export default function ticketDetails() {
         />
       </div>
       <div className="p-4">
-        <p style={{ height: "64px" }} className="text-blue-500 font-semibold">
+        <p style={{ height: "64px" }} className="text-primary font-semibold">
           <Link href={`/resale/create/${ticketId}`}>
             <a className="mr-6">Resell Ticket</a>
           </Link>
         </p>
       </div>
       <div className="p-4">
-        <p style={{ height: "64px" }} className="text-blue-500 font-semibold">
+        <p style={{ height: "64px" }} className="text-primary font-semibold">
           <Link href={`/tickets/send`}>
             <a className="mr-6">Send Ticket</a>
           </Link>

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Web3Modal from "web3modal";
 
+import PoundPrice from "../../components/price/Pound";
+
 import { nftaddress, nftmarketaddress } from "../../config";
 
 import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
@@ -50,6 +52,7 @@ export default function myTickets() {
         // console.log("Ticket Data: ", ticketData);
 
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+        let gbpPrice = await PoundPrice(price);
         let qty = await tokenContract.balanceOf(userAddress, tokenId);
 
         let _ticket = {
@@ -61,6 +64,7 @@ export default function myTickets() {
           tokenId,
           ticketName: ticketData.name,
           price,
+          gbpPrice,
           quantity: qty.toNumber(),
         };
         return _ticket;
@@ -137,13 +141,16 @@ export default function myTickets() {
                   style={{ height: "64px" }}
                   className="text-3xl font-semibold"
                 >
-                  Original Price: {ticket.price} MATIC
+                  Original Price: £{ticket.gbpPrice}
                 </p>
+                <div style={{ height: "70px", overflow: "hidden" }}>
+                  <p className="text-3xl">= {ticket.price} MATIC</p>
+                </div>
               </div>
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-blue-500 font-semibold"
+                  className="text-primary font-semibold"
                 >
                   {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
                   <Link href={`/tickets/${ticket.tokenId}`}>
