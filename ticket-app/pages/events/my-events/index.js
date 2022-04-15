@@ -1,56 +1,34 @@
 import Link from "next/link";
-import { ethers, providers } from "ethers";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Web3Modal from "web3modal";
 
-import { nftaddress, nftmarketaddress } from "../../../config";
-
-import NFT from "../../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { signers } from "../../../components/contracts";
 
 export default function myEvents() {
   const [events, setEvents] = useState([]);
   const [loadingState, setLoadingState] = useState(false);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
     loadEvents();
   }, []);
 
   async function loadEvents() {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
+    const contracts = await signers();
+    const { signedMarketContract } = contracts;
 
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-    //We need to povide a signer instead of JSONRPC so we know who the signer is
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
-
-    const data = await marketContract.getMyEvents();
+    const data = await signedMarketContract.getMyEvents();
     console.log(data);
 
     const allEvents = await Promise.all(
       data.map(async (i) => {
         const eventUri = await i.uri;
         if (!eventUri) {
-          //TODO - Proper error msg for no URI
-          let currEvent = {
-            eventId: "NO EVENT URI",
-            name: "NO EVENT URI",
-            description: "NO EVENT URI",
-            imageUri: "NO EVENT URI",
-            location: "NO EVENT URI",
-            startDate: "NO EVENT URI",
-            owner: "NO EVENT URI",
-          };
-          return currEvent;
+          setErr(
+            `Event URI does not exist for Event Id ${i.eventId.toNumber()}`
+          );
+          return;
         }
-        console.log("URI = ", eventUri);
         const eventRequest = await axios.get(eventUri);
         const eventData = eventRequest.data;
 
@@ -79,13 +57,24 @@ export default function myEvents() {
   if (!loadingState) {
     return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
   }
-  if (loadingState && !events.length) {
+
+  if (err) {
+    <div className="flex justify-center">
+      <div className="px-4" style={{ maxWidth: "1600px" }}>
+        <h1>Your Events</h1>
+        <p style={{ height: "64px" }} className="text-red font-semibold">
+          {err}
+        </p>
+      </div>
+    </div>;
+  }
+
+  if (!events.length) {
     return (
       <>
         <h1 className="px-20 py-10 text-3xl">You have created no events</h1>
         <div className="p-4">
-          <p style={{ height: "64px" }} className="text-blue-500 font-semibold">
-            {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
+          <p style={{ height: "64px" }} className="text-primary font-semibold">
             <Link href={`/events/create`}>
               <a className="mr-6">Create Event</a>
             </Link>
@@ -94,6 +83,7 @@ export default function myEvents() {
       </>
     );
   }
+
   return (
     <div className="flex justify-center">
       <div className="px-4" style={{ maxWidth: "1600px" }}>
@@ -107,7 +97,7 @@ export default function myEvents() {
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-blue-500 font-semibold"
+                  className="text-primary font-semibold"
                 >
                   <Link href={`/events/validate/${event.eventId}`}>
                     Validate Event-&gt;
@@ -117,7 +107,7 @@ export default function myEvents() {
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-blue-500 font-semibold"
+                  className="text-primary font-semibold"
                 >
                   <Link href={`/events/my-events/${event.eventId}`}>
                     View Event Details -&gt;
@@ -168,7 +158,7 @@ export default function myEvents() {
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-black-500 font-semibold"
+                  className="text-black font-semibold"
                 >
                   Tickets Supplied: {event.ticketTotal}
                 </p>
@@ -176,7 +166,7 @@ export default function myEvents() {
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-yellow-500 font-semibold"
+                  className="text-green font-semibold"
                 >
                   Tickets Remaining: {event.ticketTotal - event.ticketsSold}
                 </p>
@@ -184,10 +174,9 @@ export default function myEvents() {
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-blue-500 font-semibold"
+                  className="text-primary font-semibold"
                 >
-                  {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
-                  <Link href="/tickets/create">
+                  <Link href={`/tickets/create/${event.eventId}`}>
                     <a className="mr-6">Create Ticket For Event</a>
                   </Link>
                 </p>
@@ -197,9 +186,8 @@ export default function myEvents() {
           <div className="p-4">
             <p
               style={{ height: "64px" }}
-              className="text-blue-500 font-semibold"
+              className="text-primary font-semibold"
             >
-              {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
               <Link href={`/events/create`}>
                 <a className="mr-6">Create Event</a>
               </Link>

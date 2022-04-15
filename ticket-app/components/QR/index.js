@@ -53,27 +53,30 @@ const QR = (props) => {
       {!show ? (
         <button
           onClick={calculateQR}
-          className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+          className="font-bold m-4 h-28 w-28 bg-secondary text-black rounded p-4 shadow-lg"
         >
           Click to Reveal QR Code
         </button>
       ) : (
-        <div>
-          <Qrcode id="qrCode" value={qr} />
-          <button
-            onClick={downloadQR}
-            className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
-          >
-            Download Ticket
-          </button>
-          <button
-            onClick={() => setShow(false)}
-            className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
-          >
-            Hide Ticket
-          </button>
-          <h1>{qr}</h1>
-        </div>
+        <>
+          <div className="flex justify-center">
+            <Qrcode className="m-4 h-44 w-44" id="qrCode" value={qr} />
+          </div>
+          <div>
+            <button
+              onClick={downloadQR}
+              className="font-bold m-1 bg-primary text-white rounded p-4 shadow-lg"
+            >
+              Download Ticket
+            </button>
+            <button
+              onClick={() => setShow(false)}
+              className="font-bold m-1 bg-white text-primary border rounded p-4 shadow-lg"
+            >
+              Hide Ticket
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

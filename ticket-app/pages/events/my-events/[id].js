@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import Web3Modal from "web3modal";
 import axios from "axios";
 
+import PoundPrice from "../../../components/price/Pound";
+
 import { nftaddress, nftmarketaddress } from "../../../config";
 
 import NFT from "../../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
@@ -90,6 +92,9 @@ export default function adminEvent() {
         const ticketData = ticketRequest.data;
 
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+        let gbpPrice = await PoundPrice(price);
+        let maxResalePrice = ticketData.properties.maxResalePrice;
+        let maxResalePriceGBP = await PoundPrice(maxResalePrice);
         let qty = await tokenContract.balanceOf(nftmarketaddress, tokenId);
         let supply = i.totalSupply.toNumber();
         let _ticket = {
@@ -97,9 +102,11 @@ export default function adminEvent() {
           name: ticketData.name,
           description: ticketData.description,
           price,
+          gbpPrice,
           limit: i.purchaseLimit.toNumber(),
           royaltyFee: ticketData.properties.royaltyFee,
-          maxResalePrice: ticketData.properties.maxResalePrice,
+          maxResalePrice,
+          maxResalePriceGBP,
           supply,
           remaining: qty.toNumber(),
           add: 0,
@@ -142,7 +149,7 @@ export default function adminEvent() {
 
   if (err == "not-owner") {
     return (
-      <p style={{ height: "64px" }} className="text-red-500 font-semibold">
+      <p style={{ height: "64px" }} className="text-red font-semibold">
         You do not have access to this page as you do not own Event ID #
         {eventId}
       </p>
@@ -188,7 +195,7 @@ export default function adminEvent() {
             <div className="p-4">
               <p
                 style={{ height: "64px" }}
-                className="text-blue-500 font-semibold"
+                className="text-primary font-semibold"
               >
                 <Link href={`/events/validate/${event.eventId}`}>
                   <a className="mr-6">Validate Tickets -&gt;</a>
@@ -227,8 +234,11 @@ export default function adminEvent() {
                     style={{ height: "64px" }}
                     className="text-3xl font-semibold"
                   >
-                    Price: {ticket.price} MATIC
+                    Price: £{ticket.gbpPrice}
                   </p>
+                </div>
+                <div style={{ height: "70px", overflow: "hidden" }}>
+                  <p className="text-3xl">= {ticket.price} MATIC</p>
                 </div>
                 <div style={{ height: "70px", overflow: "hidden" }}>
                   <p
@@ -251,8 +261,11 @@ export default function adminEvent() {
                     style={{ height: "64px" }}
                     className="text-3xl font-semibold"
                   >
-                    Max Resale Price: {ticket.maxResalePrice} MATIC
+                    Max Resale Price: £{ticket.maxResalePriceGBP}
                   </p>
+                </div>
+                <div style={{ height: "70px", overflow: "hidden" }}>
+                  <p className="text-3xl">= {ticket.maxResalePrice} MATIC</p>
                 </div>
                 <div className="p-4">
                   <p
@@ -265,7 +278,7 @@ export default function adminEvent() {
                 <div className="p-4">
                   <p
                     style={{ height: "64px" }}
-                    className="text-yellow-500 font-semibold"
+                    className="text-green font-semibold"
                   >
                     Tickets Remaining: {ticket.remaining}
                   </p>
@@ -286,7 +299,7 @@ export default function adminEvent() {
                       ? addTickets(ticket.tokenId, ticket.add)
                       : alert("Please select quantity");
                   }}
-                  className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+                  className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
                 >
                   Add Ticket
                 </button>
@@ -302,7 +315,7 @@ export default function adminEvent() {
           onClick={() => {
             router.push("/tickets/create");
           }}
-          className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+          className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
         >
           Create Tickets
         </button>

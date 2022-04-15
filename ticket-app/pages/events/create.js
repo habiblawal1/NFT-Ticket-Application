@@ -1,25 +1,19 @@
-import { ethers } from "ethers";
 import { useState } from "react";
 import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { useRouter } from "next/router"; //allows us to programatically route to different routes and read values off of route uri
-import Web3Modal from "web3modal";
 
 const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we can use that sets and pins items to ipfs
 
-import { nftmarketaddress } from "../../config";
-
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { signers } from "../../components/contracts";
 
 export default function createEvent() {
   //const [fileUrl, setFileUrl] = useState(null);
   const [eventPic, setEventPic] = useState(null);
   const [err, setErr] = useState([]);
-  const [eventDate, setEventDate] = useState(
-    formatDate(new Date().toLocaleString())
-  );
+  const [eventDate, setEventDate] = useState(formatDate(Date.now()));
   const [formInput, updateFormInput] = useState({
     name: "",
     description: "",
@@ -39,7 +33,7 @@ export default function createEvent() {
     return new Date(newDate);
   }
   async function uploadToPictureToIPFS() {
-    //TODO - If no file is added, then use placeholder picture instead
+    //TODO - If no file is added, then use placeholder picture instead. You can put the placeholder image in public, or upload one pic to ipfs and re-use that
     //Upload Event Picture
     try {
       const added = await client.add(eventPic, {
@@ -83,31 +77,17 @@ export default function createEvent() {
   }
 
   async function addEvent() {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-
+    const contracts = await signers();
+    const { signedMarketContract } = contracts;
     /* create the event  */
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
-
     try {
       formatDate(eventDate);
       const url = await uploadToIPFS();
-      const transaction = await marketContract.createEvent(
+      const transaction = await signedMarketContract.createEvent(
         url,
         Math.floor(new Date(eventDate).getTime() / 1000)
       );
-      let tx = await transaction.wait();
-      let event = tx.events[0];
-      let eventId = event.args.eventId.toNumber();
-      //await marketContract.setEventUri(eventId, url);
-
-      //TODO - Find a way to calculate price of creating an event, this will be by having a listing fee which is the same price as the cost to list on blockchain
+      await transaction.wait();
       router.push("/events/my-events");
     } catch (error) {
       setErr((oldErr) => [...oldErr, "Check console for new error with ETH"]);
@@ -167,13 +147,13 @@ export default function createEvent() {
           )}
           <button
             onClick={addEvent}
-            className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+            className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
           >
             Create Event
           </button>
           <div>
             {err.map((error) => (
-              <p className="mr-6 text-red-500">{error}</p>
+              <p className="mr-6 text-red">{error}</p>
             ))}
           </div>
         </div>

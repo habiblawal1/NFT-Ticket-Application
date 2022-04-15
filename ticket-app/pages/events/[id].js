@@ -1,19 +1,23 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { ethers, providers } from "ethers";
 import { useEffect, useState } from "react";
-import Web3Modal from "web3modal";
+import { ethers } from "ethers";
 import axios from "axios";
+
+import PoundPrice from "../../components/price/Pound";
 
 import { nftaddress, nftmarketaddress } from "../../config";
 
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import {
+  signers,
+  tokenContract,
+  marketContract,
+} from "../../components/contracts";
 
-export default function eventDetails() {
+export default function eventDetails({ eId }) {
+  console.log("EID = ", eId);
   const [event, setEvent] = useState(null);
   const [tickets, setTickets] = useState([]);
-  const [qty, setQty] = useState(0);
   const [loadingState, setLoadingState] = useState(false);
   const router = useRouter();
   const eventId = router.query["id"];
@@ -28,13 +32,6 @@ export default function eventDetails() {
   }
 
   async function loadEvent() {
-    const provider = new ethers.providers.JsonRpcProvider();
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      provider
-    );
-
     const data = await marketContract.getEvent(eventId);
     const eventUri = await data.uri;
     if (!eventUri) {
@@ -59,14 +56,9 @@ export default function eventDetails() {
   }
 
   async function loadTickets() {
-    const provider = new ethers.providers.JsonRpcProvider();
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      provider
-    );
-
+    const contract = await signers();
+    const { signer } = contract;
+    const address = await signer.getAddress();
     const data = await marketContract.getEventTickets(eventId);
     const eventTickets = await Promise.all(
       data.map(async (i) => {
@@ -79,15 +71,21 @@ export default function eventDetails() {
         let resaleAvail;
         resaleTickets.length > 0 ? (resaleAvail = true) : (resaleAvail = false);
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+        let gbpPrice = await PoundPrice(price);
+        console.log("In Pounds", gbpPrice);
         let qty = await tokenContract.balanceOf(nftmarketaddress, tokenId);
+        let myQty = await tokenContract.balanceOf(address, tokenId);
         let _ticket = {
           tokenId,
           name: ticketData.name,
           description: ticketData.description,
           price,
+          gbpPrice,
           limit: i.purchaseLimit.toNumber(),
           quantity: qty.toNumber(),
           resaleAvail,
+          buyQty: 0,
+          myQty,
         };
         return _ticket;
       })
@@ -97,26 +95,21 @@ export default function eventDetails() {
     setLoadingState(true);
   }
 
-  async function buyTicket(id, price) {
+  async function buyTicket(id, price, qty) {
+    const signedContracts = await signers();
+    const { signedMarketContract } = signedContracts;
     /* needs the user to sign the transaction, so will use Web3Provider and sign it */
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
-
-    //TODO - Can't use my current way of storing qty as use state because if you have multiple tickets and change qty, all the tickets' qty will be the same
     /* user will be prompted to pay the asking proces to complete the transaction */
     console.log("PRICE, ", price);
     const ticketPrice = ethers.utils.parseUnits(price, "ether");
-    const transaction = await marketContract.buyTicket(nftaddress, id, qty, {
-      value: ticketPrice.mul(qty),
-    });
+    const transaction = await signedMarketContract.buyTicket(
+      nftaddress,
+      id,
+      qty,
+      {
+        value: ticketPrice.mul(qty),
+      }
+    );
     await transaction.wait();
     router.push("/tickets");
   }
@@ -208,40 +201,37 @@ export default function eventDetails() {
                     style={{ height: "64px" }}
                     className="text-3xl font-semibold"
                   >
-                    Price: {ticket.price} MATIC
+                    Price: £{ticket.gbpPrice}
                   </p>
+                </div>
+                <div style={{ height: "70px", overflow: "hidden" }}>
+                  <p className="text-3xl">= {ticket.price} MATIC</p>
                 </div>
                 {ticket.quantity > 1 ? (
                   <>
                     <div>
                       <label>
-                        Qty:
-                        <select
-                          value={qty}
-                          onChange={(e) => setQty(e.target.value)}
-                        >
-                          {/* need both e and i as e is the value of the array and i is the index (which is what we actually want) */}
-                          {[
-                            ...Array(
-                              Math.min(ticket.limit, ticket.quantity) + 1
-                            ),
-                          ].map((e, i) => {
-                            return (
-                              <option key={i} value={i}>
-                                {i}
-                              </option>
-                            );
-                          })}
-                        </select>
+                        Qty: (Max=
+                        {Math.min(ticket.quantity, ticket.limit - ticket.myQty)}
+                        )
+                        <input
+                          placeholder="Quantity"
+                          className="mt-4 border rounded p-4"
+                          onChange={(e) => (ticket.buyQty = e.target.value)}
+                        />
                       </label>
                     </div>
                     <button
                       onClick={() => {
-                        qty > 0
-                          ? buyTicket(ticket.tokenId, ticket.price)
+                        ticket.buyQty > 0
+                          ? buyTicket(
+                              ticket.tokenId,
+                              ticket.price,
+                              ticket.buyQty
+                            )
                           : alert("Please select quantity");
                       }}
-                      className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+                      className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
                     >
                       Buy Ticket
                     </button>
@@ -249,7 +239,7 @@ export default function eventDetails() {
                       <div className="p-4">
                         <p
                           style={{ height: "64px" }}
-                          className="text-blue-500 font-semibold"
+                          className="text-primary font-semibold"
                         >
                           <Link href={`/resale/${ticket.tokenId}`}>
                             <a className="mr-6">Available on resale -&gt;</a>

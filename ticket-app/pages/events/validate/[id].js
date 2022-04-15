@@ -102,7 +102,7 @@ export default function validate() {
           <h3>Signature = {sig}</h3>
           <button
             onClick={verifyTicket}
-            className="font-bold mt-4 bg-blue-500 text-white rounded p-4 shadow-lg"
+            className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
           >
             Verfiy
           </button>
@@ -111,7 +111,7 @@ export default function validate() {
       )}
 
       {err && (
-        <p style={{ height: "64px" }} className="text-red-500 font-semibold">
+        <p style={{ height: "64px" }} className="text-red font-semibold">
           {err}
         </p>
       )}

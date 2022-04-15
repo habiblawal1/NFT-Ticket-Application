@@ -19,7 +19,11 @@ How do I solve issue if multiple users hacking the system by creating loads of d
 
 ## Tailwind Notes
 
-- bordeer-b = bottom border
+- border-b = bottom border
+- h-28 = height of 28
+- flex = makes the whole section go to the right//TODO
+- flex justify cenre willl give max space between items
+- flex items.center = centre an item
 - p-6 = padding of 6
 - text-4xl = Setting the size of text, 4xl is 4 times extra large
 - mt-4 = margin top size 5

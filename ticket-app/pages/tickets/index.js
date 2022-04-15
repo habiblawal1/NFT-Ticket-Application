@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { ethers, providers } from "ethers";
+import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Web3Modal from "web3modal";
 
-import { nftaddress, nftmarketaddress } from "../../config";
+import PoundPrice from "../../components/price/Pound";
 
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { tokenContract, signers } from "../../components/contracts";
+import { nftaddress } from "../../config";
 
 export default function myTickets() {
   const [tickets, setTickets] = useState([]);
@@ -18,21 +17,13 @@ export default function myTickets() {
   }, []);
 
   async function loadTickets() {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
+    const signedContracts = await signers();
+    const { signedMarketContract, signer } = signedContracts;
     const userAddress = await signer.getAddress();
 
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-    //We need to povide a signer instead of JSONRPC so we know who the signer is
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
+    const ticketContractData = await signedMarketContract.getMyTickets(
+      nftaddress
     );
-
-    const ticketContractData = await marketContract.getMyTickets(nftaddress);
     const myTickets = await Promise.all(
       ticketContractData.map(async (i) => {
         const tokenId = i.tokenId.toNumber();
@@ -42,7 +33,7 @@ export default function myTickets() {
         console.log("Ticket Data: ", ticketData);
 
         const eventId = i.eventId.toNumber();
-        const eventContractData = await marketContract.getEvent(eventId);
+        const eventContractData = await signedMarketContract.getEvent(eventId);
         const eventUri = await eventContractData.uri;
         const eventRequest = await axios.get(eventUri);
         const eventData = eventRequest.data;
@@ -50,6 +41,7 @@ export default function myTickets() {
         // console.log("Ticket Data: ", ticketData);
 
         let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+        let gbpPrice = await PoundPrice(price);
         let qty = await tokenContract.balanceOf(userAddress, tokenId);
 
         let _ticket = {
@@ -61,6 +53,7 @@ export default function myTickets() {
           tokenId,
           ticketName: ticketData.name,
           price,
+          gbpPrice,
           quantity: qty.toNumber(),
         };
         return _ticket;
@@ -137,13 +130,16 @@ export default function myTickets() {
                   style={{ height: "64px" }}
                   className="text-3xl font-semibold"
                 >
-                  Original Price: {ticket.price} MATIC
+                  Original Price: £{ticket.gbpPrice}
                 </p>
+                <div style={{ height: "70px", overflow: "hidden" }}>
+                  <p className="text-3xl">= {ticket.price} MATIC</p>
+                </div>
               </div>
               <div className="p-4">
                 <p
                   style={{ height: "64px" }}
-                  className="text-blue-500 font-semibold"
+                  className="text-primary font-semibold"
                 >
                   {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
                   <Link href={`/tickets/${ticket.tokenId}`}>
