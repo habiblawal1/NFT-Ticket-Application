@@ -153,6 +153,7 @@ export default function createTicket() {
       nftTransaction = await signedTokenContract.setTokenUri(tokenId, url);
       nftTx = await nftTransaction.wait();
 
+      //TODO - Redirect people to page
       //TODO - User has to sign making token, setting uri, and creating market ticket, find a way so that a user only needs to do it once
       //TODO - Don't allow user to click the button twice, disable it after having it clicked once otherwise you accidently create multiple tokens
       //TODO - Auto fill event ID and name

@@ -56,6 +56,9 @@ export default function eventDetails({ eId }) {
   }
 
   async function loadTickets() {
+    const contract = await signers();
+    const { signer } = contract;
+    const address = await signer.getAddress();
     const data = await marketContract.getEventTickets(eventId);
     const eventTickets = await Promise.all(
       data.map(async (i) => {
@@ -71,6 +74,7 @@ export default function eventDetails({ eId }) {
         let gbpPrice = await PoundPrice(price);
         console.log("In Pounds", gbpPrice);
         let qty = await tokenContract.balanceOf(nftmarketaddress, tokenId);
+        let myQty = await tokenContract.balanceOf(address, tokenId);
         let _ticket = {
           tokenId,
           name: ticketData.name,
@@ -81,6 +85,7 @@ export default function eventDetails({ eId }) {
           quantity: qty.toNumber(),
           resaleAvail,
           buyQty: 0,
+          myQty,
         };
         return _ticket;
       })
@@ -94,7 +99,6 @@ export default function eventDetails({ eId }) {
     const signedContracts = await signers();
     const { signedMarketContract } = signedContracts;
     /* needs the user to sign the transaction, so will use Web3Provider and sign it */
-    //TODO - Can't use my current way of storing qty as use state because if you have multiple tickets and change qty, all the tickets' qty will be the same
     /* user will be prompted to pay the asking proces to complete the transaction */
     console.log("PRICE, ", price);
     const ticketPrice = ethers.utils.parseUnits(price, "ether");
@@ -207,7 +211,9 @@ export default function eventDetails({ eId }) {
                   <>
                     <div>
                       <label>
-                        Qty: (Max={Math.min(ticket.limit, ticket.quantity) + 1})
+                        Qty: (Max=
+                        {Math.min(ticket.quantity, ticket.limit - ticket.myQty)}
+                        )
                         <input
                           placeholder="Quantity"
                           className="mt-4 border rounded p-4"

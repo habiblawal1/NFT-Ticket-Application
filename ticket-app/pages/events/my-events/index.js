@@ -75,7 +75,6 @@ export default function myEvents() {
         <h1 className="px-20 py-10 text-3xl">You have created no events</h1>
         <div className="p-4">
           <p style={{ height: "64px" }} className="text-primary font-semibold">
-            {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
             <Link href={`/events/create`}>
               <a className="mr-6">Create Event</a>
             </Link>
@@ -177,7 +176,6 @@ export default function myEvents() {
                   style={{ height: "64px" }}
                   className="text-primary font-semibold"
                 >
-                  {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
                   <Link href={`/tickets/create/${event.eventId}`}>
                     <a className="mr-6">Create Ticket For Event</a>
                   </Link>
@@ -190,7 +188,6 @@ export default function myEvents() {
               style={{ height: "64px" }}
               className="text-primary font-semibold"
             >
-              {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
               <Link href={`/events/create`}>
                 <a className="mr-6">Create Event</a>
               </Link>
