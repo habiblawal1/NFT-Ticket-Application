@@ -167,8 +167,8 @@ export default function ticketDetails() {
                 {/* TODO, put actual event */}
                 <QR
                   tokenId={tokenId}
-                  event={"#2 - Chelsea Vs Arsenal"}
-                  ticket={`#${tokenId} - Student Ticket`}
+                  event={`${ticket.eventName} - #${ticket.eventId}`}
+                  ticket={`${ticket.ticketName} - #${tokenId}`}
                 />
               </div>
               <div className="flex justify-center m-2 underline">

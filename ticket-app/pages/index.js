@@ -1,5 +1,7 @@
-import styles from "../styles/Home.module.css";
+import styles from "../styles/Home.module.scss";
 import Link from "next/link";
+import Head from "next/head";
+import Image from "next/image";
 
 import { useRouter } from "next/router";
 
@@ -7,21 +9,25 @@ export default function Home() {
   const router = useRouter();
   return (
     <div className={styles.container}>
-      <h1 className="font-bold"> NFT Based tickets</h1>
-      <h4>Providing extra trust and security for attending events</h4>
+      <h1> NFT Based tickets</h1>
+      <p className="lead">
+        Providing extra trust and security for attending events
+      </p>
+      <img src="/event.png" />
       <button
         onClick={() => {
           router.push("/events/create");
         }}
-        className="font-bold mt-4 mr-4 bg-primary text-white rounded p-4 shadow-lg"
+        className="btn btn-primary"
       >
         Create Event
       </button>
       <button
+        type="button"
         onClick={() => {
           router.push("/events/");
         }}
-        className="font-bold mt-4 mr-4 bg-white text-primary border rounded p-4 shadow-lg"
+        className="btn btn-outline-primary"
       >
         Find Event
       </button>
