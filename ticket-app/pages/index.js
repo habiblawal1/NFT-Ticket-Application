@@ -8,29 +8,33 @@ import { useRouter } from "next/router";
 export default function Home() {
   const router = useRouter();
   return (
-    <div className={styles.container}>
-      <h1> NFT Based tickets</h1>
-      <p className="lead">
-        Providing extra trust and security for attending events
-      </p>
-      <img src="/event.png" />
-      <button
-        onClick={() => {
-          router.push("/events/create");
-        }}
-        className="btn btn-primary"
-      >
-        Create Event
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          router.push("/events/");
-        }}
-        className="btn btn-outline-primary"
-      >
-        Find Event
-      </button>
+    <div className="container min-vh-100 d-flex justify-content-center text-center align-items-center">
+      <div className="col">
+        <h1> NFT Based tickets</h1>
+        <p className="lead">
+          Providing extra trust and security for attending events
+        </p>
+        <button
+          onClick={() => {
+            router.push("/events/create");
+          }}
+          className="btn btn-lg btn-primary m-2"
+        >
+          Create Event
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            router.push("/events/");
+          }}
+          className="btn btn-lg btn-outline-primary m-2"
+        >
+          Find Event
+        </button>
+      </div>
+      <div className="col">
+        <img className="img-fluid" src="/event.png" />
+      </div>
     </div>
   );
 }

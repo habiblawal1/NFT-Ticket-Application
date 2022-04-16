@@ -8,9 +8,6 @@ Not all contracts support ERC1155 tokens, so in order for a contract to be able 
 
 Its used to see if another contract that you are talking to implements a certain interface. Again its another must have requirement for the conctract to be able to receive ERC1155 tokens.
 
-//TODO
-How do I solve issue if multiple users hacking the system by creating loads of duplicate events - I guess by showing eventID which can't be duplicated
-
 ## Next JS Code Notes
 
 - Props.children are used to apply something to all things within the tag E.g. you make a layout component and wrap some elements arounds it by doing <-Layout->myText<-/Layout->, to access the things within the layout tags, when defining your component you access it through props.children
@@ -21,7 +18,7 @@ How do I solve issue if multiple users hacking the system by creating loads of d
 
 - border-b = bottom border
 - h-28 = height of 28
-- flex = makes the whole section go to the right//TODO
+- flex = makes the whole section go to the right
 - flex justify cenre willl give max space between items
 - flex items.center = centre an item
 - p-6 = padding of 6

@@ -78,7 +78,6 @@ contract TicketMarket is ERC1155Holder{
     bool sold
   );
 
-//TODO - Create function to edit event start date
   /* Places an item for sale on the marketplace */
   function createEvent(
     string memory uri, uint64 startDate
@@ -434,26 +433,7 @@ contract TicketMarket is ERC1155Holder{
       }
     }
     return resaleTickets;
-
   }
-  //TODO - MAJOR When a user buys a single ticket, its no longer on the market, this should only happen once all quantity of that ticket is gone
-
-//TODO - When a resoldticket is sold, how do I reassign the ID, instead of having endless resold tickets
-  //   // TODO - I don't think this is needed
-  // function getEventUri(uint256 eventId) public view returns (string memory) {
-  //     require(bytes(idToMarketEvent[eventId].uri).length != 0, "No uri exists for the event, please create one using the setEventUri function");
-  //     return(idToMarketEvent[eventId].uri);
-  // }
-
-  // function setEventUri(uint256 eventId, string memory uri) public{
-  //     //allow you to only ever set the token uri once by requiring that the string mapped to the tokenId is empty
-  //     //TODO - Add check to ensure event ID exists
-  //     //TODO - Decide if I need to actually give a min number of times I can set event URI, for now so I'm not stuck on blocker, I'm making it immutable so you can't modify events, but need to decide what to do QUICK
-  //     //require(bytes(_uris[tokenId]).length == 0, "You cannot set token uri twice");
-  //     //TODO - Can I do the thing they did in the NFT paper strings where common custom checks were done elsewhere and then you can include them in the header of other functions. I could do this with the event owner check re
-  //     require(idToMarketEvent[eventId].owner == msg.sender, "You do not own this event");
-  //     idToMarketEvent[eventId].uri = uri;
-  // }
 
   function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Receiver) returns (bool) {
       return super.supportsInterface(interfaceId);

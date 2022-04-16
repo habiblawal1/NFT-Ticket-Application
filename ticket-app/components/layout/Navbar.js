@@ -3,7 +3,7 @@ import "../../styles/Navbar.module.scss";
 import Link from "next/link";
 const Navbar = () => {
   return (
-    <nav className="navbar navbar-expand-sm navbar-light bg-cream">
+    <nav className="navbar sticky-top navbar-expand-sm navbar-light bg-cream">
       <Link href="/">
         <a className="navbar-brand mx-3 fw-bold">NFTickets</a>
       </Link>
