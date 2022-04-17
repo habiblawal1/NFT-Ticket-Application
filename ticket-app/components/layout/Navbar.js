@@ -5,7 +5,7 @@ const Navbar = () => {
   return (
     <nav className="navbar sticky-top navbar-expand-sm navbar-light bg-cream">
       <Link href="/">
-        <a className="navbar-brand mx-3 fw-bold">NFTickets</a>
+        <a className="navbar-brand fw-bold">NFTickets</a>
       </Link>
       <button
         className="navbar-toggler"

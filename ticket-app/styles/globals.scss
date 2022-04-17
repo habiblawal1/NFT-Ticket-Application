@@ -2,12 +2,14 @@
   background-color: #eee8a9;
 }
 .navbar-brand {
+  margin-left: 20px;
   color: #0d6efd !important;
   &:hover {
     text-decoration: underline;
   }
 }
 .nav-link {
+  margin-left: 20px;
   color: #0d6efd !important;
   &:hover {
     color: white !important;

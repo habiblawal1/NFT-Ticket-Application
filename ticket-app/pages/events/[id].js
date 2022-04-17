@@ -14,11 +14,11 @@ import {
   marketContract,
 } from "../../components/contracts";
 
-export default function eventDetails({ eId }) {
-  console.log("EID = ", eId);
+export default function eventDetails() {
   const [event, setEvent] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [loadingState, setLoadingState] = useState(false);
+  const [err, setErr] = useState("");
   const router = useRouter();
   const eventId = router.query["id"];
   useEffect(() => {
@@ -28,71 +28,82 @@ export default function eventDetails({ eId }) {
 
   async function loadData() {
     await loadEvent();
-    await loadTickets();
+    !err && (await loadTickets());
   }
 
   async function loadEvent() {
-    const data = await marketContract.getEvent(eventId);
-    const eventUri = await data.uri;
-    if (!eventUri) {
-      //TODO - Proper error msg for no URI
-    }
-    console.log("URI = ", eventUri);
-    const eventRequest = await axios.get(eventUri);
-    const eventData = eventRequest.data;
+    try {
+      const data = await marketContract.getEvent(eventId);
+      const eventUri = await data.uri;
+      if (!eventUri) {
+        setErr(`Could not find URI for the Event ID #${eventId}`);
+      }
+      console.log("URI = ", eventUri);
+      const eventRequest = await axios.get(eventUri);
+      const eventData = eventRequest.data;
 
-    //console.log("EVENT DATA = ", eventData);
-    const currEvent = {
-      eventId: data.eventId.toNumber(),
-      name: eventData.name,
-      description: eventData.description,
-      imageUri: eventData.image,
-      location: eventData.location,
-      startDate: eventData.eventDate,
-      owner: data.owner,
-    };
-    console.log("Event: ", currEvent);
-    setEvent(currEvent);
+      //console.log("EVENT DATA = ", eventData);
+      const currEvent = {
+        eventId: data.eventId.toNumber(),
+        name: eventData.name,
+        description: eventData.description,
+        imageUri: eventData.image,
+        location: eventData.location,
+        startDate: eventData.eventDate,
+        owner: data.owner,
+      };
+      console.log("Event: ", currEvent);
+      setEvent(currEvent);
+    } catch (error) {
+      console.error(error);
+      setErr("Error fetching event, see console for details");
+    }
   }
 
   async function loadTickets() {
     const contract = await signers();
     const { signer } = contract;
-    const address = await signer.getAddress();
-    const data = await marketContract.getEventTickets(eventId);
-    const eventTickets = await Promise.all(
-      data.map(async (i) => {
-        const tokenId = i.tokenId.toNumber();
-        const tokenUri = await tokenContract.uri(tokenId);
-        const ticketRequest = await axios.get(tokenUri);
-        const ticketData = ticketRequest.data;
+    try {
+      const address = await signer.getAddress();
+      const data = await marketContract.getEventTickets(eventId);
+      const eventTickets = await Promise.all(
+        data.map(async (i) => {
+          const tokenId = i.tokenId.toNumber();
+          const tokenUri = await tokenContract.uri(tokenId);
+          const ticketRequest = await axios.get(tokenUri);
+          const ticketData = ticketRequest.data;
 
-        const resaleTickets = await marketContract.getResaleTickets(tokenId);
-        let resaleAvail;
-        resaleTickets.length > 0 ? (resaleAvail = true) : (resaleAvail = false);
-        let price = ethers.utils.formatUnits(i.price.toString(), "ether");
-        let gbpPrice = await PoundPrice(price);
-        console.log("In Pounds", gbpPrice);
-        let qty = await tokenContract.balanceOf(nftmarketaddress, tokenId);
-        let myQty = await tokenContract.balanceOf(address, tokenId);
-        let _ticket = {
-          tokenId,
-          name: ticketData.name,
-          description: ticketData.description,
-          price,
-          gbpPrice,
-          limit: i.purchaseLimit.toNumber(),
-          quantity: qty.toNumber(),
-          resaleAvail,
-          buyQty: 0,
-          myQty,
-        };
-        return _ticket;
-      })
-    );
-    console.log("Tickets: ", eventTickets);
-    setTickets(eventTickets);
-    setLoadingState(true);
+          const resaleTickets = await marketContract.getResaleTickets(tokenId);
+          let resaleAvail;
+          resaleTickets.length > 0
+            ? (resaleAvail = true)
+            : (resaleAvail = false);
+          let price = ethers.utils.formatUnits(i.price.toString(), "ether");
+          let gbpPrice = await PoundPrice(price);
+          console.log("In Pounds", gbpPrice);
+          let qty = await tokenContract.balanceOf(nftmarketaddress, tokenId);
+          let myQty = await tokenContract.balanceOf(address, tokenId);
+          let _ticket = {
+            tokenId,
+            name: ticketData.name,
+            description: ticketData.description,
+            price,
+            gbpPrice,
+            limit: i.purchaseLimit.toNumber(),
+            quantity: qty.toNumber(),
+            resaleAvail,
+            buyQty: 0,
+            myQty,
+          };
+          return _ticket;
+        })
+      );
+      setTickets(eventTickets);
+      setLoadingState(true);
+    } catch (error) {
+      console.error(error);
+      setErr("Error loading the event's tickets, see console for details");
+    }
   }
 
   async function buyTicket(id, price, qty) {
@@ -100,22 +111,30 @@ export default function eventDetails({ eId }) {
     const { signedMarketContract } = signedContracts;
     /* needs the user to sign the transaction, so will use Web3Provider and sign it */
     /* user will be prompted to pay the asking proces to complete the transaction */
-    console.log("PRICE, ", price);
-    const ticketPrice = ethers.utils.parseUnits(price, "ether");
-    const transaction = await signedMarketContract.buyTicket(
-      nftaddress,
-      id,
-      qty,
-      {
-        value: ticketPrice.mul(qty),
-      }
-    );
-    await transaction.wait();
-    router.push("/tickets");
+    try {
+      const ticketPrice = ethers.utils.parseUnits(price, "ether");
+      const transaction = await signedMarketContract.buyTicket(
+        nftaddress,
+        id,
+        qty,
+        {
+          value: ticketPrice.mul(qty),
+        }
+      );
+      await transaction.wait();
+      router.push("/tickets");
+    } catch (error) {
+      console.error(error);
+      setErr("Error loading the buying tickets, see console for details");
+    }
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
+    return <h1 className="px-20 display-1">Loading...</h1>;
+  }
+
+  if (err) {
+    return <p className="text-red display-6">{err}</p>;
   }
   return (
     <div className="flex justify-center">
