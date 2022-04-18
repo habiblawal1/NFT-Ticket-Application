@@ -24,6 +24,7 @@ export default function eventDetails() {
   useEffect(() => {
     if (!router.isReady) return;
     loadData();
+    setLoadingState(true);
   }, [router.isReady]);
 
   async function loadData() {
@@ -33,10 +34,13 @@ export default function eventDetails() {
 
   async function loadEvent() {
     try {
+      if (!Number.isInteger(parseInt(eventId))) {
+        throw new Error(`Event ID '${eventId}' is not valid`);
+      }
       const data = await marketContract.getEvent(eventId);
       const eventUri = await data.uri;
       if (!eventUri) {
-        setErr(`Could not find URI for the Event ID #${eventId}`);
+        throw new Error(`Could not find URI for the Event ID #${eventId}`);
       }
       console.log("URI = ", eventUri);
       const eventRequest = await axios.get(eventUri);
@@ -55,15 +59,17 @@ export default function eventDetails() {
       console.log("Event: ", currEvent);
       setEvent(currEvent);
     } catch (error) {
-      console.error(error);
-      setErr("Error fetching event, see console for details");
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
   async function loadTickets() {
-    const contract = await signers();
-    const { signer } = contract;
     try {
+      const contract = await signers();
+      const { signer } = contract;
       const address = await signer.getAddress();
       const data = await marketContract.getEventTickets(eventId);
       const eventTickets = await Promise.all(
@@ -99,19 +105,21 @@ export default function eventDetails() {
         })
       );
       setTickets(eventTickets);
-      setLoadingState(true);
     } catch (error) {
-      console.error(error);
-      setErr("Error loading the event's tickets, see console for details");
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
   async function buyTicket(id, price, qty) {
-    const signedContracts = await signers();
-    const { signedMarketContract } = signedContracts;
-    /* needs the user to sign the transaction, so will use Web3Provider and sign it */
-    /* user will be prompted to pay the asking proces to complete the transaction */
     try {
+      setLoadingState(false);
+      const signedContracts = await signers();
+      const { signedMarketContract } = signedContracts;
+      /* needs the user to sign the transaction, so will use Web3Provider and sign it */
+      /* user will be prompted to pay the asking proces to complete the transaction */
       const ticketPrice = ethers.utils.parseUnits(price, "ether");
       const transaction = await signedMarketContract.buyTicket(
         nftaddress,
@@ -122,10 +130,14 @@ export default function eventDetails() {
         }
       );
       await transaction.wait();
+      setLoadingState(true);
       router.push("/tickets");
     } catch (error) {
-      console.error(error);
-      setErr(error.data.message);
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
+      setLoadingState(true);
     }
   }
 

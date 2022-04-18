@@ -11,70 +11,77 @@ export default function myEvents() {
 
   useEffect(() => {
     loadEvents();
+    setLoadingState(true);
   }, []);
 
   async function loadEvents() {
-    const contracts = await signers();
-    const { signedMarketContract } = contracts;
+    try {
+      const contracts = await signers();
+      const { signedMarketContract } = contracts;
 
-    const data = await signedMarketContract.getMyEvents();
-    console.log(data);
+      const data = await signedMarketContract.getMyEvents();
+      console.log(data);
 
-    const allEvents = await Promise.all(
-      data.map(async (i) => {
-        const eventUri = await i.uri;
-        if (!eventUri) {
-          setErr(
-            `Event URI does not exist for Event Id ${i.eventId.toNumber()}`
+      const allEvents = await Promise.all(
+        data.map(async (i) => {
+          const eventUri = await i.uri;
+          if (!eventUri) {
+            throw new Error(
+              `Event URI does not exist for Event Id ${i.eventId.toNumber()}`
+            );
+          }
+          const eventRequest = await axios.get(eventUri);
+          const eventData = eventRequest.data;
+
+          console.log("EVENT DATA = ", eventData);
+          let currEvent = {
+            eventId: i.eventId.toNumber(),
+            name: eventData.name,
+            description: eventData.description,
+            imageUri: eventData.image,
+            location: eventData.location,
+            startDate: eventData.eventDate,
+            ticketTotal: i.ticketTotal.toNumber(),
+            ticketsSold: i.ticketsSold.toNumber(),
+            owner: i.owner,
+          };
+          console.log(
+            "Event ",
+            currEvent.eventId,
+            " owner = ",
+            currEvent.owner
           );
-          return;
-        }
-        const eventRequest = await axios.get(eventUri);
-        const eventData = eventRequest.data;
+          return currEvent;
+        })
+      );
 
-        console.log("EVENT DATA = ", eventData);
-        let currEvent = {
-          eventId: i.eventId.toNumber(),
-          name: eventData.name,
-          description: eventData.description,
-          imageUri: eventData.image,
-          location: eventData.location,
-          startDate: eventData.eventDate,
-          ticketTotal: i.ticketTotal.toNumber(),
-          ticketsSold: i.ticketsSold.toNumber(),
-          owner: i.owner,
-        };
-        console.log("Event ", currEvent.eventId, " owner = ", currEvent.owner);
-        return currEvent;
-      })
-    );
-
-    console.log("ALL EVENTS: ", allEvents);
-    setEvents(allEvents);
-    setLoadingState(true);
+      console.log("ALL EVENTS: ", allEvents);
+      setEvents(allEvents);
+    } catch (error) {
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
+    }
   }
 
   if (!loadingState) {
-    return <h1 className="display-1">Loading...</h1>;
+    return <h1 className="container display-1">Loading...</h1>;
   }
 
   if (err) {
-    <div className="flex justify-center">
-      <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <h1>Your Events</h1>
-        <p style={{ height: "64px" }} className="text-red font-semibold">
-          {err}
-        </p>
-      </div>
+    <div className="container text-center">
+      <h1>Your Events</h1>
+      <p className="text-red display-6">{err}</p>
     </div>;
   }
 
   if (!events.length) {
     return (
       <>
-        <h1 className="px-20 py-10 text-3xl">You have created no events</h1>
+        <h1 className="container display-6">You have created no events</h1>
         <div className="p-4">
-          <p style={{ height: "64px" }} className="text-primary font-semibold">
+          <p className="fw-bold">
             <Link href={`/events/create`}>
               <a className="mr-6">Create Event</a>
             </Link>
