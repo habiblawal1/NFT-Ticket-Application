@@ -30,8 +30,7 @@ export default function adminEvent() {
     if (success) {
       await loadTickets();
     }
-  }
-
+  } //TODO - Will show theres tickets tickets supplied and remaining but then won't show that there's any ticketts left in marketplace
   async function loadEvent() {
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
@@ -144,15 +143,21 @@ export default function adminEvent() {
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
+    return (
+      <div className="container">
+        <h1 className="display-1">Loading...</h1>
+      </div>
+    );
   }
 
   if (err == "not-owner") {
     return (
-      <p style={{ height: "64px" }} className="text-red font-semibold">
-        You do not have access to this page as you do not own Event ID #
-        {eventId}
-      </p>
+      <div className="container">
+        <p className="text-red display-6">
+          You do not have access to this page as you do not own Event ID #
+          {eventId}
+        </p>
+      </div>
     );
   }
 

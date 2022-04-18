@@ -55,7 +55,7 @@ export default function myEvents() {
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
+    return <h1 className="display-1">Loading...</h1>;
   }
 
   if (err) {

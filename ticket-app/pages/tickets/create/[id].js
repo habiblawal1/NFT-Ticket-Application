@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
 import { NFTStorage } from "nft.storage";
-import { create as ipfsHttpClient } from "ipfs-http-client";
 import { useRouter } from "next/router"; //allows us to programatically route to different routes and read values off of route uri
 import axios from "axios";
 
@@ -11,20 +10,23 @@ const client = new NFTStorage({
   token: process.env.NEXT_PUBLIC_NFT_STORAGE_TOKEN,
 });
 
+import { nftaddress } from "../../../config";
 import { signers } from "../../../components/contracts";
+import { positiveInt } from "../../../components/validation";
 
 export default function createTicket() {
-  const [err, setErr] = useState([]);
+  const [err, setErr] = useState("");
+  const [loadingState, setLoadingState] = useState(false);
   const [formInput, updateFormInput] = useState({
     name: "",
     description: "",
     price: "",
-    priceMATIC: "",
+    priceMATIC: "0",
     purchaseLimit: "",
     amount: "",
     royaltyFee: "",
     maxResalePrice: "",
-    maxResalePriceMATIC: "",
+    maxResalePriceMATIC: "0",
   });
   const [eventName, setEventName] = useState("");
   const router = useRouter();
@@ -34,32 +36,39 @@ export default function createTicket() {
   useEffect(() => {
     if (!router.isReady) return;
     loadData();
+    setLoadingState(true);
   }, [router.isReady]);
 
   async function loadData() {
-    const contracts = await signers();
-    const { signedMarketContract, signer } = contracts;
     let eventData = "";
     try {
+      const contracts = await signers();
+      const { signedMarketContract, signer } = contracts;
+      if (!Number.isInteger(parseInt(eventId))) {
+        throw new Error("Event ID used to create ticket was not valid");
+      }
       const data = await signedMarketContract.getEvent(eventId);
       const eventUri = await data.uri;
       const address = await signer.getAddress();
       if (!eventUri) {
-        setErr((oldErr) => [...oldErr, "Could not find Event URI"]);
+        throw new Error("Could not find Event URI");
       } else if (data.owner != address) {
-        console.log();
-        setErr((oldErr) => [
-          ...oldErr,
-          "You do not own the event that you are trying to create a ticket for",
-        ]);
+        throw new Error(
+          "You do not own the event that you are trying to create a ticket for"
+        );
       }
+
       const eventRequest = await axios.get(eventUri);
       eventData = eventRequest.data;
       setEventName(eventData.name);
     } catch (error) {
-      setErr((oldErr) => [...oldErr, error.data.message]);
       console.log(error);
+      error.data === undefined
+        ? setErr((oldErr) => [...oldErr, error.message])
+        : setErr((oldErr) => [...oldErr, error.data.message]);
     }
+    setLoadingState(true);
+    return;
   }
 
   async function getPlaceholderImage() {
@@ -102,6 +111,11 @@ export default function createTicket() {
       });
       throw new Error("Please check you have completed all fields");
     }
+    positiveInt([amount, purchaseLimit, royaltyFee, price, maxResalePrice]);
+    if (Number(amount) < 1) {
+      throw new Error("Number of tickets to be created must be higher than 0");
+    }
+
     const image = await getPlaceholderImage();
 
     //TODO - Form validation
@@ -132,17 +146,17 @@ export default function createTicket() {
       royaltyFee,
       maxResalePriceMATIC,
     } = formInput;
-    //TODO - Add error check for if ticket creater matches event owner
     const contracts = await signers();
     const { signedMarketContract, signedTokenContract } = contracts;
 
     try {
+      setLoadingState(false);
       const url = await uploadToIPFS();
       const ticketPrice = ethers.utils.parseUnits(priceMATIC, "ether");
       const resalePrice = ethers.utils.parseUnits(maxResalePriceMATIC, "ether");
 
-      let nftTransaction = await signedTokenContract.createToken(amount);
       let tokenId = -1;
+      let nftTransaction = await signedTokenContract.createToken(url, amount);
       let nftTx = await nftTransaction.wait();
       nftTx.events.forEach((element) => {
         if (element.event == "NFTTicketCreated") {
@@ -150,27 +164,16 @@ export default function createTicket() {
         }
       });
       console.log("Token ID = ", tokenId);
-      nftTransaction = await signedTokenContract.setTokenUri(tokenId, url);
-      nftTx = await nftTransaction.wait();
 
       //TODO - Redirect people to page
+      //TODO - Check you can't have negatve prices inputted
       //TODO - User has to sign making token, setting uri, and creating market ticket, find a way so that a user only needs to do it once
       //TODO - Don't allow user to click the button twice, disable it after having it clicked once otherwise you accidently create multiple tokens
-      //TODO - Auto fill event ID and name
-      /**
-    uint256 eventId,
-    uint256 tokenId,
-    address nftContract,
-    uint256 purchaseLimit,
-    uint256 totalSupply,
-    uint256 price,
-    uint256 royaltyFee,
-    uint256 maxResalePrice
-       */
+
       const marketTransaction = await signedMarketContract.createMarketTicket(
         eventId,
         tokenId,
-        signedTokenContract.address,
+        nftaddress,
         purchaseLimit,
         amount,
         ticketPrice,
@@ -181,9 +184,12 @@ export default function createTicket() {
 
       router.push("/events/my-events");
     } catch (error) {
-      setErr((oldErr) => [...oldErr, err.data.message]);
       console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
+    setLoadingState(true);
   }
 
   async function updatePrice(type, value) {
@@ -199,82 +205,144 @@ export default function createTicket() {
     }
   }
 
-  return (
-    <div>
-      <h1>Create Tickets Page</h1>
-      <div className="flex justify-center">
-        <p style={{ height: "64px" }} className="text-3xl">
-          <span className="text-primary font-semibold">{eventName}</span> - #
-          {eventId}
-        </p>
-      </div>
-      <div className="flex justify-center">
-        <div className="w-1/2 flex flex-col pb-12">
-          <input
-            placeholder="Ticket Name"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, name: e.target.value })
-            }
-          />
-          <textarea
-            placeholder="Ticket Description"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, description: e.target.value })
-            }
-          />
-          {/** TODO - Declare which fields are required*/}
-          <input
-            placeholder="Ticket Price (GBP)"
-            className="mt-4 border rounded p-4"
-            onChange={(e) => {
-              updatePrice("ticket", e.target.value);
-            }}
-          />
+  if (!loadingState) {
+    return <h1 className="px-20 display-1">Loading...</h1>;
+  }
 
-          <p> = {formInput.priceMATIC} MATIC</p>
-          <input
-            placeholder="Maximum tickets a user can purchase at once"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, purchaseLimit: e.target.value })
-            }
-          />
-          <input
-            placeholder="Number of tickets"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, amount: e.target.value })
-            }
-          />
-          <input
-            placeholder="Royalty fee (%)"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, royaltyFee: e.target.value })
-            }
-          />
-          <input
-            placeholder="Maximum Resale Price (GBP)"
-            className="mt-4 border rounded p-4"
-            onChange={(e) => updatePrice("resale", e.target.value)}
-          />
-          <p>= {formInput.maxResalePriceMATIC} MATIC</p>
-          <button
-            onClick={addTicket}
-            className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
-          >
-            Create Ticket
-          </button>
-          <div>
-            {err.map((error) => (
-              <p key={error} className="mr-6 text-red">
-                {error}
-              </p>
-            ))}
-          </div>
-        </div>
+  if (!eventName && err.length > 0) {
+    return <p className="display-6 text-red">{err}</p>;
+  }
+
+  return (
+    <div className="container">
+      <h1 className="text-center">Create Ticket</h1>
+      <p className="display-6 text-center">
+        <span className="text-primary fw-bold">{eventName}</span> - ID:{" "}
+        {eventId}
+      </p>
+      <div className="mb-3">
+        <label htmlFor="ticketName" className="form-label">
+          Ticket Name
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="ticketName"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, name: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="description" className="form-label">
+          Description
+        </label>
+        <textarea
+          id="description"
+          className="form-control"
+          aria-label="description"
+          rows="3"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, description: e.target.value })
+          }
+        ></textarea>
+      </div>
+      <label htmlFor="price" className="form-label">
+        Price
+      </label>
+      <div className="input-group mb-3">
+        <span className="input-group-text" id="pound">
+          £
+        </span>
+        <input
+          type="text"
+          className="form-control"
+          aria-label="price"
+          aria-describedby="pound"
+          onChange={(e) => {
+            updatePrice("ticket", e.target.value);
+          }}
+          required
+        />
+      </div>
+      <div style={{ marginBottom: "20px" }} className="form-text">
+        = {formInput.priceMATIC} MATIC
+      </div>
+      <div className="mb-3">
+        <label htmlFor="limit" className="form-label">
+          Purchase Limit
+        </label>
+        <input
+          type="text"
+          placeholder="Maximum tickets a user can own at once"
+          className="form-control"
+          id="limit"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, purchaseLimit: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="amount" className="form-label">
+          Number of Tickets
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="amount"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, amount: e.target.value })
+          }
+          required
+        />
+      </div>
+      <label htmlFor="royalty" className="form-label">
+        Royalty Fee
+      </label>
+      <div className="input-group mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Percentage received if ticket is resold"
+          aria-label="royalty"
+          aria-describedby="percent"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, royaltyFee: e.target.value })
+          }
+          required
+        />
+        <span className="input-group-text" id="percent">
+          %
+        </span>
+      </div>
+      <label htmlFor="resle" className="form-label">
+        Max Resale Price
+      </label>
+      <div className="input-group mb-3">
+        <span className="input-group-text" id="pound">
+          £
+        </span>
+        <input
+          type="text"
+          className="form-control"
+          aria-label="resle"
+          aria-describedby="pound"
+          onChange={(e) => updatePrice("resale", e.target.value)}
+          required
+        />
+      </div>
+      <div className="form-text">= {formInput.maxResalePriceMATIC} MATIC</div>
+      <button
+        onClick={addTicket}
+        style={{ marginTop: "20px" }}
+        className="btn btn-primary"
+      >
+        Create Tickets
+      </button>
+      <div>
+        <p className="display-6 text-red">{err}</p>
       </div>
     </div>
   );

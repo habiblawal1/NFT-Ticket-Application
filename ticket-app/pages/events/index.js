@@ -55,11 +55,17 @@ export default function allEvents() {
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
+    return (
+      <div className="container">
+        <p className="display-1">Loading...</p>
+      </div>
+    );
   }
   if (loadingState && !events.length) {
     return (
-      <h1 className="px-20 py-10 text-3xl">No Events In the Marketplace</h1>
+      <div className="container">
+        <p className="display-4">No Events In the Marketplace</p>
+      </div>
     );
   }
 

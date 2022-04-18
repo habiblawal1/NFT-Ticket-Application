@@ -247,6 +247,7 @@ contract TicketMarket is ERC1155Holder{
   function listOnResale(address nftContract, uint256 _tokenId, uint256 price) public returns (uint) {
     require(IERC1155(nftContract).balanceOf(msg.sender, _tokenId) > 0, "You do not own the ticket you are trying to list");
     require(price <= idToMarketTicket[_tokenId].maxResalePrice, "Resale price should not exceed the max resale price for this ticket");
+    require(idToValidated[_tokenId][msg.sender]==false, "This ticket has already been used for event");
 
     uint resaleId;
     uint256 totalIdCount = _resaleIds.current();
@@ -294,6 +295,7 @@ contract TicketMarket is ERC1155Holder{
   /* A view doesn't do any transactional stuff, i think its used when u return stuff idk */
   /* Returns only events that a user has created */
   function getMyEvents() public view returns (MarketEvent[] memory) {
+    //TODO - Don't show ones where date has passed
     uint totalEventCount = _eventIds.current();
     uint eventCount = 0;
     uint currentIndex = 0;

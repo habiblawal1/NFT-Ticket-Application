@@ -90,7 +90,7 @@ export default function myResaleListings() {
     return <h1>Loading...</h1>;
   }
   return (
-    <div className="flex justify-center">
+    <div className="container text-center">
       <div className="px-4" style={{ maxWidth: "1600px" }}>
         <h1>My Resale Listings</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
@@ -156,14 +156,18 @@ export default function myResaleListings() {
             ))
           ) : (
             <div>
-              <h1>You have no tickets listed for resale</h1>
-              <p>Go to the My Tickets page to list your ticket for resale</p>
+              <h1 className="display-4">
+                You have no tickets listed for resale
+              </h1>
+              <p class>
+                Go to the My Tickets page to list your ticket for resale
+              </p>
               <p
                 style={{ height: "64px" }}
                 className="text-primary font-semibold"
               >
                 <Link href={`/tickets/`}>
-                  <a className="mr-6">My Tickets -&gt;</a>
+                  <a className="fw-bold">My Tickets -&gt;</a>
                 </Link>
               </p>
             </div>

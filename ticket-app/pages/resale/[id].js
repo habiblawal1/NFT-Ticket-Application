@@ -129,12 +129,12 @@ export default function eventResaleListings() {
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
+    return <h1 className="container display-1">Loading...</h1>;
   }
 
   if (loadingState && !resaleTickets.length) {
     return (
-      <h1 className="px-20 py-10 text-3xl">
+      <h1 className="container display-6">
         No resale tickets available for the ticket "{ticket.name} - #
         {ticket.tokenId}"
       </h1>

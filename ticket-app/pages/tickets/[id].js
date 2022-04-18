@@ -21,25 +21,22 @@ export default function ticketDetails() {
   useEffect(() => {
     if (!router.isReady) return;
     loadData();
+    setLoadingState(true);
   }, [router.isReady]);
 
   async function loadData() {
-    const contracts = await signers();
-    const { signedMarketContract, signer } = contracts;
-    const address = await signer.getAddress();
-    let myBalance = await tokenContract.balanceOf(address, tokenId);
-    myBalance = myBalance.toNumber();
-    console.log("My balance = ", myBalance);
-    if (myBalance < 1) {
-      setLoadingState(true);
-      setErr(`You do not own the Ticket Id #${tokenId}`);
-      return;
-    }
     try {
+      const contracts = await signers();
+      const { signer } = contracts;
+      const address = await signer.getAddress();
+      let myBalance = await tokenContract.balanceOf(address, tokenId);
+      myBalance = myBalance.toNumber();
+      if (myBalance < 1) {
+        throw new Error(`You do not own the Ticket Id #${tokenId}`);
+      }
       const ticketUri = await tokenContract.uri(tokenId);
       if (!ticketUri) {
-        setErr("Could not find Token URI");
-        return;
+        throw new Error("Could not find Token URI");
       }
       const ticketRequest = await axios.get(ticketUri);
       const ticketData = ticketRequest.data;
@@ -74,24 +71,23 @@ export default function ticketDetails() {
 
       console.log(_ticket);
       setTicket(_ticket);
-      setLoadingState(true);
     } catch (error) {
-      setErr(error);
       console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
+    return <h1 className="container display-1">Loading...</h1>;
   }
 
-  if (!!err) {
+  if (err) {
     return (
-      <div className="flex justify-center">
-        <p style={{ height: "64px" }} className="text-red font-semibold">
-          {err}
-        </p>
-        <p style={{ height: "64px" }} className="text-primary font-semibold">
+      <div className="container text-center">
+        <p className="text-red display-6">{err}</p>
+        <p>
           <Link href={`/tickets/`}>My Tickets-&gt;</Link>
         </p>
       </div>
@@ -174,7 +170,7 @@ export default function ticketDetails() {
               <div className="flex justify-center m-2 underline">
                 <p className="font-semibold">
                   <Link href={`/resale/create/${tokenId}`}>
-                    <a className="mr-6">Resell Ticket -&gt;</a>
+                    <a className="mr-6 text-black">Resell Ticket -&gt;</a>
                   </Link>
                 </p>
               </div>

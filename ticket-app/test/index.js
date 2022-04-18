@@ -62,7 +62,9 @@ describe("Market", function () {
     eventId2 = eventId2.events[0].args.eventId.toNumber();
     //await market.connect(sellerAddress2).setEventUri(eventId2, "url/event/2.json");
 
-    const createTokenEvent = await nft.connect(sellerAddress).createToken(10);
+    const createTokenEvent = await nft
+      .connect(sellerAddress)
+      .createToken("url/1.json", 10);
     let tokenId = await createTokenEvent.wait();
     tokenId.events.forEach((element) => {
       if (element.event == "NFTTicketCreated") {
@@ -70,7 +72,6 @@ describe("Market", function () {
       }
     });
     console.log("Token ID = ", tokenId);
-    await nft.connect(sellerAddress).setTokenUri(tokenId, "url/1.json");
     const nftURI = await nft.uri(tokenId);
     console.log("URI For Token ID 1 =", nftURI);
 
@@ -231,10 +232,6 @@ describe("Market", function () {
     );
     console.log("My tickets after adding extra: ", myTickets2);
 
-    await market
-      .connect(sellerAddress)
-      .validateTicket(nftContract, buyerAddress.address, 1);
-
     //EXPLANATION - https://ethereum.stackexchange.com/questions/117944/why-do-i-keep-receiving-this-error-revert-erc721-transfer-caller-is-not-owner
     //You need to give the market approval again for some reason before being able to resale ticket
     await nft.connect(buyerAddress).giveResaleApproval(1);
@@ -337,6 +334,11 @@ describe("Market", function () {
         return _ticket;
       })
     );
+
+    await market
+      .connect(sellerAddress)
+      .validateTicket(nftContract, buyerAddress.address, 1);
+
     console.log("Resale tickets after new resale: ", resaleTickets);
     console.log(new Date(1649422882 * 1000).toLocaleString());
     const myDate = new Date("04/08/22, 23:59:59").toLocaleString();

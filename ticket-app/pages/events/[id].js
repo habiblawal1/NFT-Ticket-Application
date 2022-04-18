@@ -125,7 +125,7 @@ export default function eventDetails() {
       router.push("/tickets");
     } catch (error) {
       console.error(error);
-      setErr("Error loading the buying tickets, see console for details");
+      setErr(error.data.message);
     }
   }
 
@@ -133,78 +133,24 @@ export default function eventDetails() {
     return <h1 className="px-20 display-1">Loading...</h1>;
   }
 
-  if (err) {
-    return <p className="text-red display-6">{err}</p>;
-  }
   return (
     <div className="flex justify-center">
       <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          {event && (
-            <div
-              key={event.eventId}
-              className="border shadow rounded-l overflow-hidden"
-            >
-              <img src={event.imageUri} />
-
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Name: {event.name}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Id: {event.eventId}
-                </p>
-              </div>
-              <div style={{ height: "70px", overflow: "hidden" }}>
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Description: {event.description}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Date: {event.startDate}
-                </p>
-              </div>
-              <div style={{ height: "70px", overflow: "hidden" }}>
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Location: {event.location}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <h1>Tickets</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          {tickets.length > 0 &&
-            tickets.map((ticket) => (
+        {event && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
               <div
-                key={ticket.tokenId}
+                key={event.eventId}
                 className="border shadow rounded-l overflow-hidden"
               >
+                <img src={event.imageUri} />
+
                 <div className="p-4">
                   <p
                     style={{ height: "64px" }}
                     className="text-3xl font-semibold"
                   >
-                    Ticket: {`#${ticket.tokenId} ${ticket.name}`}
+                    Name: {event.name}
                   </p>
                 </div>
                 <div className="p-4">
@@ -212,7 +158,7 @@ export default function eventDetails() {
                     style={{ height: "64px" }}
                     className="text-3xl font-semibold"
                   >
-                    Description: {ticket.description}
+                    Id: {event.eventId}
                   </p>
                 </div>
                 <div style={{ height: "70px", overflow: "hidden" }}>
@@ -220,64 +166,122 @@ export default function eventDetails() {
                     style={{ height: "64px" }}
                     className="text-3xl font-semibold"
                   >
-                    Price: £{ticket.gbpPrice}
+                    Description: {event.description}
+                  </p>
+                </div>
+                <div className="p-4">
+                  <p
+                    style={{ height: "64px" }}
+                    className="text-3xl font-semibold"
+                  >
+                    Date: {event.startDate}
                   </p>
                 </div>
                 <div style={{ height: "70px", overflow: "hidden" }}>
-                  <p className="text-3xl">= {ticket.price} MATIC</p>
+                  <p
+                    style={{ height: "64px" }}
+                    className="text-3xl font-semibold"
+                  >
+                    Location: {event.location}
+                  </p>
                 </div>
-                {ticket.quantity > 1 ? (
-                  <>
-                    <div>
-                      <label>
-                        Qty: (Max=
-                        {Math.min(ticket.quantity, ticket.limit - ticket.myQty)}
-                        )
-                        <input
-                          placeholder="Quantity"
-                          className="mt-4 border rounded p-4"
-                          onChange={(e) => (ticket.buyQty = e.target.value)}
-                        />
-                      </label>
-                    </div>
-                    <button
-                      onClick={() => {
-                        ticket.buyQty > 0
-                          ? buyTicket(
-                              ticket.tokenId,
-                              ticket.price,
-                              ticket.buyQty
-                            )
-                          : alert("Please select quantity");
-                      }}
-                      className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
-                    >
-                      Buy Ticket
-                    </button>
-                    {ticket.resaleAvail && (
-                      <div className="p-4">
-                        <p
-                          style={{ height: "64px" }}
-                          className="text-primary font-semibold"
-                        >
-                          <Link href={`/resale/${ticket.tokenId}`}>
-                            <a className="mr-6">Available on resale -&gt;</a>
-                          </Link>
-                        </p>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <h1>SOLD OUT</h1>
-                )}
               </div>
-            ))}
-          {tickets.length < 1 && (
-            <h1 className="px-20 py-10 text-3xl">
-              No Tickets currently for this event
-            </h1>
-          )}
-        </div>
+            </div>
+            <h1>Tickets</h1>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
+              {tickets.length > 0 &&
+                tickets.map((ticket) => (
+                  <div
+                    key={ticket.tokenId}
+                    className="border shadow rounded-l overflow-hidden"
+                  >
+                    <div className="p-4">
+                      <p
+                        style={{ height: "64px" }}
+                        className="text-3xl font-semibold"
+                      >
+                        Ticket: {`#${ticket.tokenId} ${ticket.name}`}
+                      </p>
+                    </div>
+                    <div className="p-4">
+                      <p
+                        style={{ height: "64px" }}
+                        className="text-3xl font-semibold"
+                      >
+                        Description: {ticket.description}
+                      </p>
+                    </div>
+                    <div style={{ height: "70px", overflow: "hidden" }}>
+                      <p
+                        style={{ height: "64px" }}
+                        className="text-3xl font-semibold"
+                      >
+                        Price: £{ticket.gbpPrice}
+                      </p>
+                    </div>
+                    <div style={{ height: "70px", overflow: "hidden" }}>
+                      <p className="text-3xl">= {ticket.price} MATIC</p>
+                    </div>
+                    {ticket.quantity > 1 ? (
+                      <>
+                        <div>
+                          <label>
+                            Qty: (Max=
+                            {Math.min(
+                              ticket.quantity,
+                              ticket.limit - ticket.myQty
+                            )}
+                            )
+                            <input
+                              placeholder="Quantity"
+                              className="mt-4 border rounded p-4"
+                              onChange={(e) => (ticket.buyQty = e.target.value)}
+                            />
+                          </label>
+                        </div>
+                        <button
+                          onClick={() => {
+                            ticket.buyQty > 0
+                              ? buyTicket(
+                                  ticket.tokenId,
+                                  ticket.price,
+                                  ticket.buyQty
+                                )
+                              : alert("Please select quantity");
+                          }}
+                          className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
+                        >
+                          Buy Ticket
+                        </button>
+                        {ticket.resaleAvail && (
+                          <div className="p-4">
+                            <p
+                              style={{ height: "64px" }}
+                              className="text-primary font-semibold"
+                            >
+                              <Link href={`/resale/${ticket.tokenId}`}>
+                                <a className="mr-6">
+                                  Available on resale -&gt;
+                                </a>
+                              </Link>
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <h1>SOLD OUT</h1>
+                    )}
+                  </div>
+                ))}
+              {tickets.length < 1 && (
+                <h1 className="px-20 py-10 text-3xl">
+                  No Tickets currently for this event
+                </h1>
+              )}
+            </div>{" "}
+          </>
+        )}
+        {err && <p className="text-red display-6">{err}</p>}
       </div>
     </div>
   );

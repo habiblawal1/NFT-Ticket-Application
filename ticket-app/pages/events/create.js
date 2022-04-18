@@ -12,7 +12,7 @@ import { signers } from "../../components/contracts";
 export default function createEvent() {
   //const [fileUrl, setFileUrl] = useState(null);
   const [eventPic, setEventPic] = useState(null);
-  const [err, setErr] = useState([]);
+  const [err, setErr] = useState("");
   const [eventDate, setEventDate] = useState(formatDate(Date.now()));
   const [formInput, updateFormInput] = useState({
     name: "",
@@ -47,8 +47,10 @@ export default function createEvent() {
       });
       return `https://ipfs.infura.io/ipfs/${added.path}`;
     } catch (error) {
-      setErr((oldErr) => [...oldErr, error.message]);
-      console.log(err);
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
@@ -75,8 +77,10 @@ export default function createEvent() {
       console.log("EVENT URL = ", url);
       return url;
     } catch (error) {
-      setErr((oldErr) => [...oldErr, error.message]);
-      console.log("Error uploading file: line 58", error);
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
@@ -94,118 +98,114 @@ export default function createEvent() {
       await transaction.wait();
       router.push("/events/my-events");
     } catch (error) {
-      setErr((oldErr) => [...oldErr, error.message]);
       console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
   return (
-    <>
-      <div className="container">
-        <h1 className="text-center">Create New Event</h1>
-        <div className="mb-3">
-          <label htmlFor="eventName" className="form-label">
-            Event Name
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="eventName"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, name: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="description" className="form-label">
-            Description
-          </label>
-          <textarea
-            id="description"
-            className="form-control"
-            aria-label="description"
-            rows="3"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, description: e.target.value })
-            }
-          ></textarea>
-        </div>
-        <label htmlFor="eventDate" className="form-label">
-          Start Date
+    <div className="container">
+      <h1 className="text-center">Create New Event</h1>
+      <div className="mb-3">
+        <label htmlFor="eventName" className="form-label">
+          Event Name
         </label>
-        <div className="input-group mb-3">
-          <DatePicker
-            id="eventDate"
-            className="form-control"
-            selected={eventDate}
-            onChange={(date) => setEventDate(formatDate(date))}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="address" className="form-label">
-            Event Address
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="address"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, address: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="postcode" className="form-label">
-            Event Postcode
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="postcode"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, postcode: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="Picture">Event Picture</label>
-          <input
-            type="file"
-            name="Picture"
-            className="form-control"
-            onChange={(e) => setEventPic(e.target.files[0])}
-          />
-        </div>
-        <div>
-          {/**If there is a file uploaded then show a preview of it */}
-          {eventPic && (
-            <img
-              className="rounded mt-4"
-              width="350"
-              src={URL.createObjectURL(eventPic)}
-            />
-          )}
-        </div>
-        <button
-          type="submit"
-          onClick={addEvent}
-          style={{ marginTop: "20px" }}
-          className="btn btn-primary"
-        >
-          Create Event
-        </button>
-        <div>
-          {err.map((error) => (
-            <p key={error} className="mr-6 text-red">
-              {error}
-            </p>
-          ))}
-        </div>
+        <input
+          type="text"
+          className="form-control"
+          id="eventName"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, name: e.target.value })
+          }
+          required
+        />
       </div>
-    </>
+      <div className="mb-3">
+        <label htmlFor="description" className="form-label">
+          Description
+        </label>
+        <textarea
+          id="description"
+          className="form-control"
+          aria-label="description"
+          rows="3"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, description: e.target.value })
+          }
+        ></textarea>
+      </div>
+      <label htmlFor="eventDate" className="form-label">
+        Start Date
+      </label>
+      <div className="input-group mb-3">
+        <DatePicker
+          id="eventDate"
+          className="form-control"
+          selected={eventDate}
+          onChange={(date) => setEventDate(formatDate(date))}
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="address" className="form-label">
+          Event Address
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="address"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, address: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="postcode" className="form-label">
+          Event Postcode
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="postcode"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, postcode: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="Picture">Event Picture</label>
+        <input
+          type="file"
+          name="Picture"
+          className="form-control"
+          onChange={(e) => setEventPic(e.target.files[0])}
+        />
+      </div>
+      <div>
+        {/**If there is a file uploaded then show a preview of it */}
+        {eventPic && (
+          <img
+            className="rounded mt-4"
+            width="350"
+            src={URL.createObjectURL(eventPic)}
+          />
+        )}
+      </div>
+      <button
+        type="submit"
+        onClick={addEvent}
+        style={{ marginTop: "20px" }}
+        className="btn btn-primary"
+      >
+        Create Event
+      </button>
+      <div>
+        <p className="display-6 text-red">{err}</p>
+      </div>
+    </div>
   );
 }
