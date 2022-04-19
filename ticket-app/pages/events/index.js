@@ -8,6 +8,7 @@ import { marketContract } from "../../components/contracts";
 export default function allEvents() {
   const router = useRouter();
   const [events, setEvents] = useState([]);
+  const [err, setErr] = useState("");
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -62,6 +63,14 @@ export default function allEvents() {
       </div>
     );
   }
+
+  if (err) {
+    <div className="container text-center">
+      <h1>All Events</h1>
+      <p className="text-red display-6">{err}</p>
+    </div>;
+  }
+
   if (loadingState && !events.length) {
     return (
       <div className="container">
@@ -77,7 +86,7 @@ export default function allEvents() {
         {events.map((event) => (
           <div
             key={event.eventId}
-            className="col-7 col-lg-3 col-md-5 card border shadow rounded-l overflow-scroll m-3 pt-3"
+            className="col-7 col-lg-3 col-md-5 card border border-secondary shadow rounded-l overflow-scroll m-3 pt-3"
           >
             <img src={event.imageUri} className={styles.cardImgTop} />
             <div className="card-body">

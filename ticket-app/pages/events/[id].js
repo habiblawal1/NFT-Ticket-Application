@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import axios from "axios";
+import styles from "../../styles/Card.module.scss";
 
 import PoundPrice from "../../components/price/Pound";
 
@@ -24,12 +25,12 @@ export default function eventDetails() {
   useEffect(() => {
     if (!router.isReady) return;
     loadData();
-    setLoadingState(true);
   }, [router.isReady]);
 
   async function loadData() {
     await loadEvent();
     !err && (await loadTickets());
+    setLoadingState(true);
   }
 
   async function loadEvent() {
@@ -145,156 +146,138 @@ export default function eventDetails() {
     return <h1 className="container display-1">Loading...</h1>;
   }
 
-  return (
-    <div className="flex justify-center">
-      <div className="px-4" style={{ maxWidth: "1600px" }}>
-        {event && (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-              <div
-                key={event.eventId}
-                className="border shadow rounded-l overflow-hidden"
-              >
-                <img src={event.imageUri} />
+  if (err) {
+    <div className="container text-center">
+      <p className="text-red display-6">{err}</p>
+    </div>;
+  }
 
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Name: {event.name}
-                  </p>
-                </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Id: {event.eventId}
-                  </p>
-                </div>
-                <div style={{ height: "70px", overflow: "hidden" }}>
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Description: {event.description}
-                  </p>
-                </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Date: {event.startDate}
-                  </p>
-                </div>
-                <div style={{ height: "70px", overflow: "hidden" }}>
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Location: {event.location}
-                  </p>
+  return (
+    event && (
+      <>
+        <section>
+          <div className="container justify-content-center align-items-center border-bottom  border-secondary">
+            <div className="row justify-content-center align-items-center">
+              <div className="col-8 col-lg-4 col-md-6  text-center card shadow border border-dark rounded-l overflow-scroll m-3 pt-3">
+                <img src={event.imageUri} className={styles.cardImgTop} />
+                <div className="card-body">
+                  <div style={{ height: "60px", overflow: "auto" }}>
+                    <h3 className="card-title text-center">
+                      <span className="fw-bold text-primary">{event.name}</span>{" "}
+                      - ID: {event.eventId}
+                    </h3>
+                  </div>
+                  <div style={{ height: "55px", overflow: "auto" }}>
+                    <p className="">{event.description}</p>
+                  </div>
+                  <div style={{ height: "40px", overflow: "auto" }}>
+                    <p className="">
+                      <i className="bi bi-calendar3"></i> {event.startDate}
+                    </p>
+                  </div>
+                  <div style={{ height: "65px", overflow: "auto" }}>
+                    <p className="">
+                      <i className="bi bi-geo-alt-fill"></i> {event.location}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-            <h1>Tickets</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
+          </div>
+        </section>
+        <section>
+          <div className="container justify-content-center align-items-center">
+            <h1 className="text-center m-3">Tickets</h1>
+            <div className="row justify-content-center align-items-center">
               {tickets.length > 0 &&
                 tickets.map((ticket) => (
                   <div
                     key={ticket.tokenId}
-                    className="border shadow rounded-l overflow-hidden"
+                    style={{ height: "160px", overflow: "auto" }}
+                    className="col-12 border-bottom border-dark d-flex justify-content-between m-3"
                   >
-                    <div className="p-4">
-                      <p
-                        style={{ height: "64px" }}
-                        className="text-3xl font-semibold"
-                      >
-                        Ticket: {`#${ticket.tokenId} ${ticket.name}`}
-                      </p>
+                    <div className="w-50 text-center">
+                      <h3>
+                        <span className="fw-bold">{ticket.name}</span>
+                        {` - ID :${ticket.tokenId} `}
+                      </h3>
+                      <div style={{ height: "55px", overflow: "auto" }}>
+                        <h6 className="">Description: {event.description}</h6>
+                      </div>
                     </div>
-                    <div className="p-4">
-                      <p
-                        style={{ height: "64px" }}
-                        className="text-3xl font-semibold"
-                      >
-                        Description: {ticket.description}
-                      </p>
-                    </div>
-                    <div style={{ height: "70px", overflow: "hidden" }}>
-                      <p
-                        style={{ height: "64px" }}
-                        className="text-3xl font-semibold"
-                      >
-                        Price: £{ticket.gbpPrice}
-                      </p>
-                    </div>
-                    <div style={{ height: "70px", overflow: "hidden" }}>
-                      <p className="text-3xl">= {ticket.price} MATIC</p>
-                    </div>
-                    {ticket.quantity > 1 ? (
-                      <>
-                        <div>
-                          <label>
-                            Qty: (Max=
-                            {Math.min(
-                              ticket.quantity,
-                              ticket.limit - ticket.myQty
-                            )}
-                            )
-                            <input
-                              placeholder="Quantity"
-                              className="mt-4 border rounded p-4"
-                              onChange={(e) => (ticket.buyQty = e.target.value)}
-                            />
-                          </label>
+                    <div className="w-50 justify-content-center align-items-center text-center m-3">
+                      <div className="d-flex justify-content-between">
+                        <div className="w-50">
+                          <h4 className="text-primary fw-bold">
+                            Price: £{ticket.gbpPrice}
+                          </h4>
+                          <p className="text-secondary">
+                            = {ticket.price} MATIC
+                          </p>
                         </div>
-                        <button
-                          onClick={() => {
-                            ticket.buyQty > 0
-                              ? buyTicket(
-                                  ticket.tokenId,
-                                  ticket.price,
-                                  ticket.buyQty
-                                )
-                              : alert("Please select quantity");
-                          }}
-                          className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
-                        >
-                          Buy Ticket
-                        </button>
-                        {ticket.resaleAvail && (
-                          <div className="p-4">
-                            <p
-                              style={{ height: "64px" }}
-                              className="text-primary font-semibold"
-                            >
-                              <Link href={`/resale/${ticket.tokenId}`}>
-                                <a className="mr-6">
-                                  Available on resale -&gt;
-                                </a>
-                              </Link>
-                            </p>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <h1>SOLD OUT</h1>
-                    )}
+                        <div className="text-center w-50 m-2">
+                          {ticket.quantity > 1 ? (
+                            <>
+                              <div className="input-group mb-3">
+                                <span className="input-group-text" id="qty">
+                                  Qty (Max ={" "}
+                                  {Math.min(
+                                    ticket.quantity,
+                                    ticket.limit - ticket.myQty
+                                  )}
+                                  )
+                                </span>
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  aria-label="qty"
+                                  onChange={(e) =>
+                                    (ticket.buyQty = e.target.value)
+                                  }
+                                />
+                              </div>
+                              <button
+                                onClick={() => {
+                                  ticket.buyQty > 0
+                                    ? buyTicket(
+                                        ticket.tokenId,
+                                        ticket.price,
+                                        ticket.buyQty
+                                      )
+                                    : alert("Please select quantity");
+                                }}
+                                className="btn btn-primary"
+                              >
+                                Buy Tickets
+                              </button>
+                            </>
+                          ) : (
+                            <h5 className="text-secondary">SOLD OUT</h5>
+                          )}
+                        </div>
+                      </div>
+                      {ticket.resaleAvail && (
+                        <Link href={`/resale/${ticket.tokenId}`}>
+                          <a className="text-dark fw-bold text-center">
+                            Available on resale{" "}
+                            <i className="bi bi-arrow-right"></i>
+                          </a>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 ))}
               {tickets.length < 1 && (
-                <h1 className="px-20 py-10 text-3xl">
-                  No Tickets currently for this event
+                <h1 className="display-5 text-center text-secondary">
+                  No tickets available for this event
                 </h1>
               )}
-            </div>{" "}
-          </>
-        )}
+            </div>
+          </div>
+        </section>
+
         {err && <p className="text-red display-6">{err}</p>}
-      </div>
-    </div>
+      </>
+    )
   );
 }
