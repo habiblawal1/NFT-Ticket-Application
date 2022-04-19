@@ -6,7 +6,7 @@ import axios from "axios";
 import MaticPrice from "../../../components/price/Matic";
 import PoundPrice from "../../../components/price/Pound";
 import { positiveInt } from "../../../components/validation";
-
+import { nftaddress } from "../../../config";
 import { signers, tokenContract } from "../../../components/contracts";
 
 export default function resellTicket() {
@@ -52,7 +52,6 @@ export default function resellTicket() {
         : setErr(error.data.message);
     }
   }
-  //TODO - Just do the testing to check you can't list a ticket for resale that has already been validated
   async function listForResale() {
     try {
       setLoadingState(false);
@@ -60,6 +59,9 @@ export default function resellTicket() {
         throw new Error("Please check you have completed all fields");
       }
       positiveInt([resalePrice.gbp]);
+      if (Number(resalePrice.gbp) > Number(maxPrice.gbp)) {
+        throw new Error("Resale price must be less than the maximum");
+      }
       console.log("RESALE GBP = ", resalePrice.gbp);
       const contracts = await signers();
       const { signedMarketContract, signedTokenContract } = contracts;
@@ -143,7 +145,7 @@ export default function resellTicket() {
       </div>
 
       <label htmlFor="price" className="form-label">
-        Choose Resell Price
+        Choose Resale Price
       </label>
       <div className="input-group mb-3">
         <span className="input-group-text" id="pound">
@@ -155,7 +157,7 @@ export default function resellTicket() {
           aria-label="price"
           aria-describedby="pound"
           onChange={(e) => {
-            updatePrice("ticket", e.target.value);
+            updatePrice(e.target.value);
           }}
           required
         />

@@ -1,6 +1,7 @@
 import "../styles/globals.scss";
 import "tailwindcss/tailwind.css";
-import "bootstrap/dist/css/bootstrap.css"; // Add this line
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import Layout from "../components/layout/Layout";
 import Head from "next/head";
 import { useEffect, useState } from "react";

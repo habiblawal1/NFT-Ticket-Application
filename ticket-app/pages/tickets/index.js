@@ -157,7 +157,6 @@ export default function myTickets() {
                   style={{ height: "64px" }}
                   className="text-primary font-semibold"
                 >
-                  {/**TODO - Link takes you to creat ticket page which should already have the eventId filled out */}
                   <Link href={`/tickets/${ticket.tokenId}`}>
                     <a className="mr-6">View Ticket Details</a>
                   </Link>

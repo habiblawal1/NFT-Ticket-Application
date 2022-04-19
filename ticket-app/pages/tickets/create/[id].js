@@ -118,7 +118,6 @@ export default function createTicket() {
 
     const image = await getPlaceholderImage();
 
-    //TODO - Form validation
     /* first, upload metadata to IPFS */
     const data = {
       name,
@@ -166,9 +165,6 @@ export default function createTicket() {
       console.log("Token ID = ", tokenId);
 
       //TODO - Redirect people to page
-      //TODO - Check you can't have negatve prices inputted
-      //TODO - User has to sign making token, setting uri, and creating market ticket, find a way so that a user only needs to do it once
-      //TODO - Don't allow user to click the button twice, disable it after having it clicked once otherwise you accidently create multiple tokens
 
       const marketTransaction = await signedMarketContract.createMarketTicket(
         eventId,
@@ -275,7 +271,7 @@ export default function createTicket() {
         </label>
         <input
           type="text"
-          placeholder="Maximum tickets a user can own at once"
+          placeholder="Maximum tickets a buyer can own at once"
           className="form-control"
           id="limit"
           onChange={(e) =>
@@ -305,7 +301,7 @@ export default function createTicket() {
         <input
           type="text"
           className="form-control"
-          placeholder="Percentage received if ticket is resold"
+          placeholder="% fee received if buyer resells ticket"
           aria-label="royalty"
           aria-describedby="percent"
           onChange={(e) =>

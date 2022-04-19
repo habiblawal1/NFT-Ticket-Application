@@ -1,8 +1,3 @@
-import styles from "../styles/Home.module.scss";
-import Link from "next/link";
-import Head from "next/head";
-import Image from "next/image";
-
 import { useRouter } from "next/router";
 
 export default function Home() {
@@ -32,7 +27,7 @@ export default function Home() {
           Find Event
         </button>
       </div>
-      <div className="col">
+      <div className="col d-none d-md-block">
         <img className="img-fluid" src="/event.png" />
       </div>
     </div>

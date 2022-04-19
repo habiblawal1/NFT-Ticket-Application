@@ -159,9 +159,7 @@ export default function myResaleListings() {
               <h1 className="display-4">
                 You have no tickets listed for resale
               </h1>
-              <p class>
-                Go to the My Tickets page to list your ticket for resale
-              </p>
+              <p>Go to the My Tickets page to list your ticket for resale</p>
               <p
                 style={{ height: "64px" }}
                 className="text-primary font-semibold"

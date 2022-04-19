@@ -10,7 +10,7 @@ const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we 
 import { signers } from "../../components/contracts";
 
 export default function createEvent() {
-  //const [fileUrl, setFileUrl] = useState(null);
+  const [loadingState, setLoadingState] = useState(true);
   const [eventPic, setEventPic] = useState(null);
   const [err, setErr] = useState("");
   const [eventDate, setEventDate] = useState(formatDate(Date.now()));
@@ -36,7 +36,6 @@ export default function createEvent() {
   async function uploadToPictureToIPFS() {
     const placeholderUrl =
       "https://ipfs.infura.io/ipfs/QmZcjqFN4iEHSpXU3ou1LLMFNhiP1uXcpBobDJFgHfuABP";
-    //TODO - If no file is added, then use placeholder picture instead. You can put the placeholder image in public, or upload one pic to ipfs and re-use that
     //Upload Event Picture
     if (!eventPic) {
       return placeholderUrl;
@@ -85,6 +84,7 @@ export default function createEvent() {
   }
 
   async function addEvent() {
+    setLoadingState(false);
     const contracts = await signers();
     const { signedMarketContract } = contracts;
     /* create the event  */
@@ -96,13 +96,19 @@ export default function createEvent() {
         Math.floor(new Date(eventDate).getTime() / 1000)
       );
       await transaction.wait();
+      setLoadingState(true);
       router.push("/events/my-events");
     } catch (error) {
       console.log(error);
       error.data === undefined
         ? setErr(error.message)
         : setErr(error.data.message);
+      setLoadingState(true);
     }
+  }
+
+  if (!loadingState) {
+    return <h1 className="container display-1">Loading...</h1>;
   }
 
   return (

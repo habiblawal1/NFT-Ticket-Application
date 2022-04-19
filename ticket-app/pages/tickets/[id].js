@@ -94,7 +94,6 @@ export default function ticketDetails() {
     );
   }
 
-  // TODO - Add message for if a user who doesn't own the token tries to access the page
   return (
     <>
       <div className="flex justify-center">
@@ -160,11 +159,10 @@ export default function ticketDetails() {
             </div>
             <div>
               <div className="flex justify-center ">
-                {/* TODO, put actual event */}
                 <QR
                   tokenId={tokenId}
-                  event={`${ticket.eventName} - #${ticket.eventId}`}
-                  ticket={`${ticket.ticketName} - #${tokenId}`}
+                  event={`${ticket.eventName} - ID: ${ticket.eventId}`}
+                  ticket={`${ticket.ticketName} - ID: ${tokenId}`}
                 />
               </div>
               <div className="flex justify-center m-2 underline">

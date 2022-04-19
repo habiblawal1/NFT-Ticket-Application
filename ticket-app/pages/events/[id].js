@@ -142,7 +142,7 @@ export default function eventDetails() {
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 display-1">Loading...</h1>;
+    return <h1 className="container display-1">Loading...</h1>;
   }
 
   return (

@@ -1,7 +1,7 @@
 import { server } from "../../config";
 const Matic = async (price) => {
   try {
-    if (!price || price == "0") {
+    if (!price || !(Number.isInteger(Number(price)) && Number(price) > 0)) {
       return 0;
     }
     // const res = await fetch(`${server}/api/conversion/matic/${price}`);

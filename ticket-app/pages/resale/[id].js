@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import PoundPrice from "../../components/price/Pound";
-
+import { nftaddress } from "../../config";
 import {
   marketContract,
   tokenContract,
@@ -118,7 +118,6 @@ export default function eventResaleListings() {
       );
       await transaction.wait();
       setLoadingState(true);
-      //TODO - You don't redericted
       router.push("/tickets");
     } catch (error) {
       console.log(error);

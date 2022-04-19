@@ -11,7 +11,6 @@ export default function myEvents() {
 
   useEffect(() => {
     loadEvents();
-    setLoadingState(true);
   }, []);
 
   async function loadEvents() {
@@ -54,14 +53,15 @@ export default function myEvents() {
           return currEvent;
         })
       );
-
       console.log("ALL EVENTS: ", allEvents);
       setEvents(allEvents);
+      setLoadingState(true);
     } catch (error) {
       console.log(error);
       error.data === undefined
         ? setErr(error.message)
         : setErr(error.data.message);
+      setLoadingState(true);
     }
   }
 
@@ -78,16 +78,14 @@ export default function myEvents() {
 
   if (!events.length) {
     return (
-      <>
-        <h1 className="container display-6">You have created no events</h1>
-        <div className="p-4">
-          <p className="fw-bold">
-            <Link href={`/events/create`}>
-              <a className="mr-6">Create Event</a>
-            </Link>
-          </p>
-        </div>
-      </>
+      <div className="container">
+        <h1 className="display-6">You have created no events</h1>
+        <p className="fw-bold">
+          <Link href={`/events/create`}>
+            <a className="mr-6">Create Event -&gt;</a>
+          </Link>
+        </p>
+      </div>
     );
   }
 
