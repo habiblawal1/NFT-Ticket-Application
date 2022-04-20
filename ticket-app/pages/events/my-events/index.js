@@ -130,7 +130,7 @@ export default function myEvents() {
                 </div>
                 <Link href={`/events/validate/${event.eventId}`}>
                   <a>
-                    Validate Event{" "}
+                    Validate Event's Tickets{" "}
                     <i className="bi bi-arrow-right-circle-fill"></i>
                   </a>
                 </Link>
@@ -155,7 +155,7 @@ export default function myEvents() {
                     router.push(`/tickets/create/${event.eventId}`);
                   }}
                 >
-                  Create Ticket
+                  Create Tickets
                 </button>
               </div>
             </div>

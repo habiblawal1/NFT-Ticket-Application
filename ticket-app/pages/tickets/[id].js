@@ -27,6 +27,9 @@ export default function ticketDetails() {
 
   async function loadData() {
     try {
+      if (!Number.isInteger(parseInt(tokenId))) {
+        throw new Error(`Ticket ID '${tokenId}' is not valid`);
+      }
       const contracts = await signers();
       const { signer } = contracts;
       const address = await signer.getAddress();
