@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import styles from "../../../styles/Card.module.scss";
 import axios from "axios";
 
 import { signers } from "../../../components/contracts";
 
 export default function myEvents() {
+  const router = useRouter();
   const [events, setEvents] = useState([]);
   const [loadingState, setLoadingState] = useState(false);
   const [err, setErr] = useState("");
@@ -31,7 +34,8 @@ export default function myEvents() {
           }
           const eventRequest = await axios.get(eventUri);
           const eventData = eventRequest.data;
-
+          let ticketRemaining =
+            i.ticketTotal.toNumber() - i.ticketsSold.toNumber();
           console.log("EVENT DATA = ", eventData);
           let currEvent = {
             eventId: i.eventId.toNumber(),
@@ -41,7 +45,7 @@ export default function myEvents() {
             location: eventData.location,
             startDate: eventData.eventDate,
             ticketTotal: i.ticketTotal.toNumber(),
-            ticketsSold: i.ticketsSold.toNumber(),
+            ticketRemaining,
             owner: i.owner,
           };
           console.log(
@@ -90,116 +94,82 @@ export default function myEvents() {
   }
 
   return (
-    <div className="flex justify-center">
-      <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <h1>Your Events</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          {events.map((event) => (
-            <div
-              key={event.eventId}
-              className="border shadow rounded-l overflow-hidden"
-            >
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-primary font-semibold"
-                >
-                  <Link href={`/events/validate/${event.eventId}`}>
-                    Validate Event-&gt;
-                  </Link>
-                </p>
+    <div className="container justify-content-center text-center align-items-center">
+      <h1 className="">All Events</h1>
+      <div className="row justify-content-center align-items-center">
+        {events.map((event) => (
+          <div key={event.eventId} className="col-7 col-md-5 col-lg-3 ">
+            <div className="card border border-secondary shadow rounded-l overflow-scroll m-3 w-100">
+              <div className="card-header mb-2">
+                <Link href={`/events/my-events/${event.eventId}`}>
+                  <a>
+                    View Event Details <i className="bi bi-eye-fill"></i>
+                  </a>
+                </Link>
               </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-primary font-semibold"
-                >
-                  <Link href={`/events/my-events/${event.eventId}`}>
-                    View Event Details -&gt;
-                  </Link>
-                </p>
+              <img src={event.imageUri} className={styles.cardImgTop} />
+              <div className="card-body">
+                <div style={{ height: "60px", overflow: "auto" }}>
+                  <h5 className="card-title text-center">
+                    <span className="fw-bold text-primary">{event.name}</span> -
+                    ID: {event.eventId}
+                  </h5>
+                </div>
+                <div style={{ height: "55px", overflow: "auto" }}>
+                  <p className="">{event.description}</p>
+                </div>
+                <div style={{ height: "40px", overflow: "auto" }}>
+                  <p className="">
+                    <i className="bi bi-calendar3"></i> {event.startDate}
+                  </p>
+                </div>
+                <div style={{ height: "40", overflow: "auto" }}>
+                  <p className="">
+                    <i className="bi bi-geo-alt-fill"></i> {event.location}
+                  </p>
+                </div>
+                <Link href={`/events/validate/${event.eventId}`}>
+                  <a>
+                    Validate Event{" "}
+                    <i className="bi bi-arrow-right-circle-fill"></i>
+                  </a>
+                </Link>
               </div>
-              <img src={event.imageUri} />
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Id: {event.eventId}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Name: {event.name}
-                </p>
-              </div>
-              <div style={{ height: "70px", overflow: "hidden" }}>
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Description: {event.description}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Date: {event.startDate}
-                </p>
-              </div>
-              <div style={{ height: "70px", overflow: "hidden" }}>
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Location: {event.location}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-black font-semibold"
-                >
+              <div className="card-footer bg-primary">
+                <p className="text-black fw-bold">
                   Tickets Supplied: {event.ticketTotal}
                 </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-green font-semibold"
+                {event.ticketRemaining > 0 ? (
+                  <p className="text-cream fw-bold">
+                    Tickets Remaining: {event.ticketRemaining}
+                  </p>
+                ) : (
+                  <p className="text-light fw-bold">
+                    Tickets Remaining: {event.ticketRemaining}
+                  </p>
+                )}
+                <button
+                  style={{ backgroundColor: "#eee8a9" }}
+                  className="btn text-primary"
+                  onClick={() => {
+                    router.push(`/tickets/create/${event.eventId}`);
+                  }}
                 >
-                  Tickets Remaining: {event.ticketTotal - event.ticketsSold}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-primary font-semibold"
-                >
-                  <Link href={`/tickets/create/${event.eventId}`}>
-                    <a className="mr-6">Create Ticket For Event</a>
-                  </Link>
-                </p>
+                  Create Ticket
+                </button>
               </div>
             </div>
-          ))}
-          <div className="p-4">
-            <p
-              style={{ height: "64px" }}
-              className="text-primary font-semibold"
-            >
-              <Link href={`/events/create`}>
-                <a className="mr-6">Create Event</a>
-              </Link>
-            </p>
           </div>
-        </div>
+        ))}
       </div>
+      <button
+        className="btn btn-lg btn-primary"
+        onClick={() => {
+          router.push("/events/create/");
+        }}
+      >
+        Create Event
+      </button>
     </div>
   );
 }

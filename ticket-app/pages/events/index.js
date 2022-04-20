@@ -84,42 +84,41 @@ export default function allEvents() {
       <h1 className="">All Events</h1>
       <div className="row justify-content-center align-items-center">
         {events.map((event) => (
-          <div
-            key={event.eventId}
-            className="col-7 col-lg-3 col-md-5 card border border-secondary shadow rounded-l overflow-scroll m-3 pt-3"
-          >
-            <img src={event.imageUri} className={styles.cardImgTop} />
-            <div className="card-body">
-              <div style={{ height: "60px", overflow: "auto" }}>
-                <h5 className="card-title text-center">
-                  <span className="fw-bold text-primary">{event.name}</span> -
-                  ID: {event.eventId}
-                </h5>
-              </div>
-              <div style={{ height: "55px", overflow: "auto" }}>
-                <p className="">{event.description}</p>
-              </div>
-              <div style={{ height: "40px", overflow: "auto" }}>
-                <p className="">
-                  <i className="bi bi-calendar3"></i> {event.startDate}
-                </p>
-              </div>
-              <div style={{ height: "65px", overflow: "auto" }}>
-                <p className="">
-                  <i className="bi bi-geo-alt-fill"></i> {event.location}
-                </p>
+          <div key={event.eventId} className="col-7 col-md-5 col-lg-3 ">
+            <div className="card border border-secondary shadow rounded-l overflow-scroll m-3 pt-3 w-100">
+              <img src={event.imageUri} className={styles.cardImgTop} />
+              <div className="card-body">
+                <div style={{ height: "60px", overflow: "auto" }}>
+                  <h5 className="card-title text-center">
+                    <span className="fw-bold text-primary">{event.name}</span> -
+                    ID: {event.eventId}
+                  </h5>
+                </div>
+                <div style={{ height: "55px", overflow: "auto" }}>
+                  <p className="">{event.description}</p>
+                </div>
+                <div style={{ height: "40px", overflow: "auto" }}>
+                  <p className="">
+                    <i className="bi bi-calendar3"></i> {event.startDate}
+                  </p>
+                </div>
+                <div style={{ height: "40", overflow: "auto" }}>
+                  <p className="">
+                    <i className="bi bi-geo-alt-fill"></i> {event.location}
+                  </p>
+                </div>
               </div>
               {!event.soldOut ? (
                 <button
                   onClick={() => {
                     router.push(`/events/${event.eventId}`);
                   }}
-                  className="btn btn-primary mt-1 w-100"
+                  className="btn btn-primary card-footer"
                 >
                   Book Now
                 </button>
               ) : (
-                <button className="btn btn-secondary mt-1 w-100" disabled>
+                <button className="btn btn-secondary card-footer" disabled>
                   Sold Out
                 </button>
               )}
