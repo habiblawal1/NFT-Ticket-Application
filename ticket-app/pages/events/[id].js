@@ -164,7 +164,7 @@ export default function eventDetails() {
                   <div style={{ height: "60px", overflow: "auto" }}>
                     <h3 className="card-title text-center">
                       <span className="fw-bold text-primary">{event.name}</span>{" "}
-                      - ID: {event.eventId}
+                      - ID: #{event.eventId}
                     </h3>
                   </div>
                   <div style={{ height: "55px", overflow: "auto" }}>

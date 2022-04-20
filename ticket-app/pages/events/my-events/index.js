@@ -150,7 +150,7 @@ export default function myEvents() {
                 )}
                 <button
                   style={{ backgroundColor: "#eee8a9" }}
-                  className="btn text-primary"
+                  className="btn fw-bold text-primary"
                   onClick={() => {
                     router.push(`/tickets/create/${event.eventId}`);
                   }}

@@ -53,7 +53,8 @@ const QR = (props) => {
       {!show ? (
         <button
           onClick={calculateQR}
-          className="font-bold m-4 bg-cream text-black rounded p-4 shadow-lg"
+          style={{ backgroundColor: "#eee8a9" }}
+          className="btn text-black p-4 fw-bold shadow-lg"
         >
           Click to Reveal QR Code
         </button>

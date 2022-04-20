@@ -104,8 +104,8 @@ export default function resellTicket() {
 
   return (
     <div className="container">
-      <h1 className="text-center">
-        Create Resale Listing for Ticket ID: {ticketId}
+      <h1 className="text-center m-4">
+        Create Resale Listing for Ticket ID: #{ticketId}
       </h1>
       <label htmlFor="royalty" className="form-label">
         Royalty Fee

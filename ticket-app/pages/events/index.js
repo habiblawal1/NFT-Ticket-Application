@@ -94,7 +94,7 @@ export default function allEvents() {
                     ID: {event.eventId}
                   </h5>
                 </div>
-                <div style={{ height: "55px", overflow: "auto" }}>
+                <div style={{ height: "64px", overflow: "auto" }}>
                   <p>{event.description}</p>
                 </div>
                 <div style={{ height: "40px", overflow: "auto" }}>
