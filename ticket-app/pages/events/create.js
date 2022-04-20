@@ -113,7 +113,7 @@ export default function createEvent() {
 
   return (
     <div className="container">
-      <h1 className="text-center">Create New Event</h1>
+      <h1 className="text-center m-4">Create New Event</h1>
       <div className="mb-3">
         <label htmlFor="eventName" className="form-label">
           Event Name

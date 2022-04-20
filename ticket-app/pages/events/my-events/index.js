@@ -95,7 +95,7 @@ export default function myEvents() {
 
   return (
     <div className="container justify-content-center text-center align-items-center">
-      <h1 className="">All Events</h1>
+      <h1 className="m-4">All Events</h1>
       <div className="row justify-content-center align-items-center">
         {events.map((event) => (
           <div key={event.eventId} className="col-7 col-md-5 col-lg-3 ">
@@ -136,7 +136,7 @@ export default function myEvents() {
                 </Link>
               </div>
               <div className="card-footer bg-primary">
-                <p className="text-black fw-bold">
+                <p className="text-light fw-bold">
                   Tickets Supplied: {event.ticketTotal}
                 </p>
                 {event.ticketRemaining > 0 ? (

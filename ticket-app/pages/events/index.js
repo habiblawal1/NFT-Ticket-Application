@@ -95,15 +95,15 @@ export default function allEvents() {
                   </h5>
                 </div>
                 <div style={{ height: "55px", overflow: "auto" }}>
-                  <p className="">{event.description}</p>
+                  <p>{event.description}</p>
                 </div>
                 <div style={{ height: "40px", overflow: "auto" }}>
-                  <p className="">
+                  <p>
                     <i className="bi bi-calendar3"></i> {event.startDate}
                   </p>
                 </div>
                 <div style={{ height: "40", overflow: "auto" }}>
-                  <p className="">
+                  <p>
                     <i className="bi bi-geo-alt-fill"></i> {event.location}
                   </p>
                 </div>
@@ -113,12 +113,12 @@ export default function allEvents() {
                   onClick={() => {
                     router.push(`/events/${event.eventId}`);
                   }}
-                  className="btn btn-primary card-footer"
+                  className="card-footer bg-primary btn btn-primary "
                 >
                   Book Now
                 </button>
               ) : (
-                <button className="btn btn-secondary card-footer" disabled>
+                <button className="card-footer btn btn-secondary " disabled>
                   Sold Out
                 </button>
               )}
