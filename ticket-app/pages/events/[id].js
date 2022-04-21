@@ -158,24 +158,24 @@ export default function eventDetails() {
         <section>
           <div className="container justify-content-center align-items-center border-bottom  border-secondary">
             <div className="row justify-content-center align-items-center">
-              <div className="col-8 col-lg-4 col-md-6  text-center card shadow border border-dark rounded-l overflow-scroll m-3 pt-3">
+              <div className="col-auto text-center card shadow border border-dark rounded-l overflow-scroll m-3 pt-3">
                 <img src={event.imageUri} className={styles.cardImgTop} />
                 <div className="card-body">
-                  <div style={{ height: "60px", overflow: "auto" }}>
+                  <div style={{ maxHeight: "60px", overflow: "auto" }}>
                     <h3 className="card-title text-center">
                       <span className="fw-bold text-primary">{event.name}</span>{" "}
                       - ID: #{event.eventId}
                     </h3>
                   </div>
-                  <div style={{ height: "55px", overflow: "auto" }}>
+                  <div style={{ maxHeight: "55px", overflow: "auto" }}>
                     <p className="">{event.description}</p>
                   </div>
-                  <div style={{ height: "40px", overflow: "auto" }}>
+                  <div style={{ maxHeight: "40px", overflow: "auto" }}>
                     <p className="">
                       <i className="bi bi-calendar3"></i> {event.startDate}
                     </p>
                   </div>
-                  <div style={{ height: "65px", overflow: "auto" }}>
+                  <div style={{ maxHeight: "65px", overflow: "auto" }}>
                     <p className="">
                       <i className="bi bi-geo-alt-fill"></i> {event.location}
                     </p>

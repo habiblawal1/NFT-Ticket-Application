@@ -98,7 +98,7 @@ export default function myEvents() {
       <h1 className="m-4">All Events</h1>
       <div className="row justify-content-center align-items-center">
         {events.map((event) => (
-          <div key={event.eventId} className="col-7 col-md-5 col-lg-3 ">
+          <div key={event.eventId} className="col-7 col-md-5 col-lg-4 ">
             <div className="card border border-secondary shadow rounded-l overflow-scroll m-3 w-100">
               <div className="card-header mb-2">
                 <Link href={`/events/my-events/${event.eventId}`}>
@@ -115,7 +115,7 @@ export default function myEvents() {
                     ID: {event.eventId}
                   </h5>
                 </div>
-                <div style={{ height: "55px", overflow: "auto" }}>
+                <div style={{ height: "65px", overflow: "auto" }}>
                   <p className="">{event.description}</p>
                 </div>
                 <div style={{ height: "40px", overflow: "auto" }}>
