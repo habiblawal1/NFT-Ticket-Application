@@ -4,7 +4,7 @@
 
 - **npx hardhat test** = Compile the test scripts
 - **npx hardhat node** = Run blockchain on local node
-- **npx hardhat run scripts/deploy.ts --network localhost** = Initial startup scripts to upload my smart contracts for ticketing app
+- **npx hardhat run scripts/deploy.js --network localhost** = Initial startup scripts to upload my smart contracts for ticketing app
 - **npm run dev** = Start up application
 
 ## IERC1155Receiver

@@ -5,7 +5,6 @@ import axios from "axios";
 
 import MaticPrice from "../../../components/price/Matic";
 import PoundPrice from "../../../components/price/Pound";
-import { positiveInt } from "../../../components/validation";
 import { nftaddress } from "../../../config";
 import { signers, tokenContract } from "../../../components/contracts";
 
@@ -54,12 +53,12 @@ export default function resellTicket() {
   async function listForResale() {
     try {
       setLoadingState(false);
-      if (!resalePrice.gbp) {
-        throw new Error("Please check you have completed all fields");
+      if (!resalePrice.gbp || !(resalePrice.gbp >= 0)) {
+        throw new Error("Please enter a postive price");
       }
-      positiveInt([resalePrice.gbp]);
-      if (Number(resalePrice.gbp) > Number(maxPrice.gbp)) {
-        throw new Error("Resale price must be less than the maximum");
+
+      if (resalePrice.gbp > maxPrice.gbp) {
+        throw new Error("Resale price must be less than the max price");
       }
       console.log("RESALE GBP = ", resalePrice.gbp);
       const contracts = await signers();

@@ -363,7 +363,5 @@ describe("Market", function () {
     console.log(new Date(1649422882 * 1000).toLocaleString());
     const myDate = new Date("04/08/22, 23:59:59").toLocaleString();
     console.log(myDate.toLocaleString());
-
-    //TODO - Transction runs out of gas when I create multiple resale tickets at once
   });
 });

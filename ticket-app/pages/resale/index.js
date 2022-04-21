@@ -70,7 +70,7 @@ export default function myResaleListings() {
         : setErr(error.data.message);
     }
   }
-  //TODO - Check how the UI looks for when I list multiple tickets on resale
+
   if (!loadingState) {
     return <h1>Loading...</h1>;
   }
@@ -97,7 +97,10 @@ export default function myResaleListings() {
       ) : (
         <div className="row justify-content-center align-items-center">
           {resaleTickets.map((ticket) => (
-            <div key={ticket.tokenId} className="card shadow">
+            <div
+              key={ticket.resaleId}
+              className="card shadow border border-dark rounded-l m-2"
+            >
               <div className="row card-body">
                 <div className="col-3 d-none d-md-block">
                   <img src={ticket.imageUri} className={styles.cardImgTop} />

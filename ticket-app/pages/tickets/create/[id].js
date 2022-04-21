@@ -111,9 +111,12 @@ export default function createTicket() {
       });
       throw new Error("Please check you have completed all fields");
     }
-    positiveInt([amount, purchaseLimit, royaltyFee, price, maxResalePrice]);
-    if (Number(amount) < 1) {
+    positiveInt([amount, purchaseLimit]);
+    if (amount < 1) {
       throw new Error("Number of tickets to be created must be higher than 0");
+    }
+    if (!(royaltyFee >= 0 && price >= 0 && maxResalePrice >= 0)) {
+      throw new Error("Please ensure all inputs are positive numbers");
     }
 
     const image = await getPlaceholderImage();
