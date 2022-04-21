@@ -213,7 +213,7 @@ export default function createTicket() {
     <div className="container">
       <h1 className="text-center m-4">Create Ticket</h1>
       <p className="display-6 text-center">
-        <span className="text-primary fw-bold">{eventName}</span> - ID:{" "}
+        <span className="text-primary fw-bold">{eventName}</span> - ID:#{" "}
         {eventId}
       </p>
       <div className="mb-3">

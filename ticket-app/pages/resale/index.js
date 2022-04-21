@@ -1,16 +1,11 @@
-import Link from "next/link";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
-import Web3Modal from "web3modal";
 import axios from "axios";
 import styles from "../../styles/Card.module.scss";
 
 import PoundPrice from "../../components/price/Pound";
 
-import { nftaddress, nftmarketaddress } from "../../config";
-
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { signers, tokenContract } from "../../components/contracts";
 
 export default function myResaleListings() {
   const [err, setErr] = useState("");
@@ -22,21 +17,10 @@ export default function myResaleListings() {
   }, []);
 
   async function loadListings() {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-    //We need to povide a signer instead of JSONRPC so we know who the signer is
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
-
     try {
-      const data = await marketContract.getMyResaleListings();
+      const contracts = await signers();
+      const { signedMarketContract } = contracts;
+      const data = await signedMarketContract.getMyResaleListings();
       console.log(data);
 
       const allListings = await Promise.all(
@@ -48,7 +32,7 @@ export default function myResaleListings() {
           const ticketData = ticketRequest.data;
 
           let eventId = ticketData.properties.eventId;
-          const currEvent = await marketContract.getEvent(eventId);
+          const currEvent = await signedMarketContract.getEvent(eventId);
           const eventUri = currEvent.uri;
           console.log("Event URI: ", eventUri);
           const eventRequest = await axios.get(eventUri);
@@ -78,18 +62,21 @@ export default function myResaleListings() {
       setResaleTickets(allListings);
       setLoadingState(true);
     } catch (error) {
-      console.error(error);
-      if (error.data) {
-        setErr(error.data.message);
-      } else {
-        setErr(error.message);
-      }
+      setLoadingState(true);
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
   //TODO - Check how the UI looks for when I list multiple tickets on resale
   if (!loadingState) {
     return <h1>Loading...</h1>;
   }
+  if (err) {
+    return <p className="container text-red display-6">{err}</p>;
+  }
+
   return (
     <div className="container justify-content-center align-items-center">
       <h1 className="text-center m-4">Your Resale Listings</h1>

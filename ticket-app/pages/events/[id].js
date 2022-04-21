@@ -205,7 +205,7 @@ export default function eventDetails() {
                         {ticket.description && <h6>{ticket.description}</h6>}
                       </div>
                     </div>
-                    <div className="w-50 justify-content-center align-items-center text-center m-3">
+                    <div className="w-50 justify-content-center align-items-center text-center m-2">
                       <div className="d-flex justify-content-between">
                         <div className="w-50">
                           <h4 className="text-primary fw-bold">
@@ -220,7 +220,7 @@ export default function eventDetails() {
                             <>
                               <div className="input-group mb-3">
                                 <span className="input-group-text" id="qty">
-                                  Qty (Max ={" "}
+                                  Qty (Max=
                                   {Math.min(
                                     ticket.quantity,
                                     ticket.limit - ticket.myQty
@@ -246,7 +246,7 @@ export default function eventDetails() {
                                       )
                                     : alert("Please select quantity");
                                 }}
-                                className="btn btn-primary"
+                                className="btn btn-sm btn-primary"
                               >
                                 Buy Tickets
                               </button>

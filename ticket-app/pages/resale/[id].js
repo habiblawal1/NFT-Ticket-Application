@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import styles from "../../styles/Card.module.scss";
 
 import PoundPrice from "../../components/price/Pound";
 import { nftaddress } from "../../config";
@@ -27,7 +28,7 @@ export default function eventResaleListings() {
 
   async function loadData() {
     if (!Number.isInteger(parseInt(tokenId))) {
-      setErr(`Token ID '${tokenId}' is not valid`);
+      setErr(`Ticket ID '${tokenId}' is not valid`);
     } else {
       await loadEvent();
       await loadResaleTickets();
@@ -82,6 +83,7 @@ export default function eventResaleListings() {
             i.resalePrice.toString(),
             "ether"
           );
+          console.log("SELLER = ", i.seller);
           let gbpPrice = await PoundPrice(price);
           let _ticket = {
             resaleId: i.resaleId.toNumber(),
@@ -131,90 +133,72 @@ export default function eventResaleListings() {
   if (!loadingState) {
     return <h1 className="container display-1">Loading...</h1>;
   }
-  if (err) {
-    return <p className="container text-red display-6">{err}</p>;
-  }
+
   if (!resaleTickets.length) {
-    return (
+    return err ? (
+      <p className="container text-red display-6">{err}</p>
+    ) : (
       <h1 className="container text-center display-6">
-        No resale tickets available for the Ticket ID: {tokenId}"
+        No resale tickets available for the Ticket ID: {tokenId}
       </h1>
     );
   }
 
   return (
-    <div className="flex justify-center">
-      <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <h1>Resale Tickets available for Ticket: #{tokenId}</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          <div
-            key={event.eventId}
-            className="border shadow rounded-l overflow-hidden"
-          >
-            <div className="p-4">
-              <p style={{ height: "64px" }} className="text-3xl font-semibold">
-                Event: {event.name} - #{event.eventId}
-              </p>
-            </div>
-            <img src={event.imageUri} />
-
-            <div className="p-4">
-              <p style={{ height: "64px" }} className="text-3xl font-semibold">
-                Ticket: {ticket.name} - #{ticket.tokenId}
-              </p>
-            </div>
-            {ticket.description && (
-              <div style={{ height: "70px", overflow: "hidden" }}>
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Description: {ticket.description}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <h1>Tickets</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          {resaleTickets.map((_ticket) => (
-            <div
-              key={_ticket.resaleId}
-              className="border shadow rounded-l overflow-hidden"
-            >
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Seller: {_ticket.seller}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  List Price: £{_ticket.gbpPrice}
-                </p>
-              </div>
-              <div style={{ height: "70px", overflow: "hidden" }}>
-                <p className="text-3xl">= {_ticket.price} MATIC</p>
-              </div>
-
-              <button
-                onClick={() => {
-                  buyTicket(_ticket.resaleId, _ticket.price);
-                }}
-                className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
-              >
-                Buy Ticket
-              </button>
-            </div>
-          ))}
+    <div className="container justify-content-center align-items-center">
+      <h1 className="text-center m-4">Resale Listings</h1>
+      <div className="row justify-content-center align-items-center">
+        <div className="card col-auto bg-cream p-3 shadow">
+          <h3 className="card-title display-6 text-center">
+            <span className="text-primary fw-bold">{event.name}</span> - ID: #
+            {event.eventId}
+          </h3>
+          <img
+            style={{ height: "22vh", overflow: "auto" }}
+            src={event.imageUri}
+            className={styles.cardImgTop}
+          />
         </div>
       </div>
+      <div className="text-center mt-10">
+        <h2>
+          <i className="bi bi-ticket-fill"></i>{" "}
+          <span className="fw-bold">{ticket.name}</span> - ID: #{ticket.tokenId}
+        </h2>
+        <h6>{ticket.description}</h6>
+      </div>
+      {resaleTickets.map((_ticket) => (
+        <div
+          key={_ticket.resaleId}
+          className="row justify-content-center align-items-center"
+        >
+          <div className="col-auto card shadow border border-dark rounded-l overflow-scroll m-3 pt-3">
+            <div className="card-body">
+              <div className="row">
+                <div className="col-7">
+                  <h4>Seller Address:</h4>
+                  <p>{_ticket.seller}</p>
+                </div>
+                <div className="col-5 text-center">
+                  <h4 className="text-primary fw-bold">
+                    Resale Price: £{_ticket.gbpPrice}
+                  </h4>
+                  <p className="text-secondary">= {_ticket.price} MATIC</p>
+                  <button
+                    onClick={() => {
+                      buyTicket(_ticket.resaleId, _ticket.price);
+                    }}
+                    className="btn btn-primary"
+                  >
+                    Buy Ticket
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+      {err && <p className="text-red text-center display-6">{err}</p>}
     </div>
   );
 }
