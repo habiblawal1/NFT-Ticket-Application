@@ -26,7 +26,6 @@ export default function validate() {
     loadEvent();
   }, [router.isReady]);
 
-  // TODO - Add message for if a user who doesn't own the event tries to access the page
   const handleErrorWebCam = (error) => {
     alert(error);
     console.log(error);

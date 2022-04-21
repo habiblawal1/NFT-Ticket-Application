@@ -24,7 +24,6 @@ export default function resellTicket() {
     loadResaleDetails();
     setLoadingState(true);
   }, [router.isReady]);
-  //TODO - Once a ticket has been validated, don't allow them to set the ticket on resale
   async function loadResaleDetails() {
     try {
       if (!Number.isInteger(parseInt(ticketId))) {

@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { useState, useEffect } from "react";
 import Web3Modal from "web3modal";
 import axios from "axios";
+import styles from "../../styles/Card.module.scss";
 
 import PoundPrice from "../../components/price/Pound";
 
@@ -85,98 +86,69 @@ export default function myResaleListings() {
       }
     }
   }
-
+  //TODO - Check how the UI looks for when I list multiple tickets on resale
   if (!loadingState) {
     return <h1>Loading...</h1>;
   }
   return (
-    <div className="container text-center">
-      <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <h1>My Resale Listings</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          {resaleTickets.length > 0 ? (
-            resaleTickets.map((ticket) => (
-              <div
-                key={ticket.resaleId}
-                className="border shadow rounded-l overflow-hidden"
-              >
-                <img src={ticket.imageUri} />
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Event: #{ticket.eventId} - {ticket.eventName}
-                  </p>
+    <div className="container justify-content-center align-items-center">
+      <h1 className="text-center m-4">Your Resale Listings</h1>
+      {resaleTickets.length < 1 ? (
+        <p className="display-5 text-center">
+          You do not own any tickets right now
+        </p>
+      ) : (
+        <div className="row justify-content-center align-items-center">
+          {resaleTickets.map((ticket) => (
+            <div key={ticket.tokenId} className="card shadow">
+              <div className="row card-body">
+                <div className="col-3 d-none d-md-block">
+                  <img src={ticket.imageUri} className={styles.cardImgTop} />
                 </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
+                <div className="col-7 col-md-6">
+                  <div style={{ height: "65px", overflow: "auto" }}>
+                    <h3 className="card-title">
+                      <span className="fw-bold text-primary">
+                        {ticket.eventName}
+                      </span>{" "}
+                      - ID: {ticket.eventId}
+                    </h3>
+                  </div>
+                  <div
+                    className="mt-2"
+                    style={{ height: "50px", overflow: "auto" }}
                   >
-                    Event Date: {ticket.startDate}
-                  </p>
+                    <h5>
+                      <i className="bi bi-calendar3"></i> {ticket.startDate}
+                    </h5>
+                  </div>
+                  <div style={{ height: "60", overflow: "auto" }}>
+                    <h5>
+                      <i className="bi bi-geo-alt-fill"></i> {ticket.location}
+                    </h5>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Location: {ticket.location}
-                  </p>
-                </div>
-                <div style={{ height: "70px", overflow: "hidden" }}>
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Location: {ticket.location}
-                  </p>
-                </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Ticket: #{ticket.tokenId} - {ticket.ticketName}
-                  </p>
-                </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Resale Price: £{ticket.gbpPrice}
-                  </p>
-                  <div style={{ height: "70px", overflow: "hidden" }}>
-                    <p className="text-3xl">= {ticket.price} MATIC</p>
+                <div className="col-5 col-md-3">
+                  <div style={{ height: "60px", overflow: "auto" }}>
+                    <h4>
+                      <i className="bi bi-ticket-fill"></i> {ticket.ticketName}
+                    </h4>
+                  </div>
+                  <div style={{ height: "32px", overflow: "auto" }}>
+                    <h5>ID: #{ticket.tokenId}</h5>
+                  </div>
+                  <div style={{ height: "100px", overflow: "auto" }}>
+                    <h5 className="text-primary fw-bold">
+                      Resale Price: £{ticket.gbpPrice}
+                    </h5>
+                    <p className="text-secondary">= {ticket.price} MATIC</p>
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <div>
-              <h1 className="display-4">
-                You have no tickets listed for resale
-              </h1>
-              <p>Go to the My Tickets page to list your ticket for resale</p>
-              <p
-                style={{ height: "64px" }}
-                className="text-primary font-semibold"
-              >
-                <Link href={`/tickets/`}>
-                  <a className="fw-bold">My Tickets -&gt;</a>
-                </Link>
-              </p>
             </div>
-          )}
+          ))}
         </div>
-        {err && (
-          <p style={{ height: "64px" }} className="text-red font-semibold">
-            {err}
-          </p>
-        )}
-      </div>
+      )}
     </div>
   );
 }

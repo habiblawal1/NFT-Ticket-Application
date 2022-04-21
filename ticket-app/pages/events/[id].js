@@ -260,7 +260,7 @@ export default function eventDetails() {
                         <Link href={`/resale/${ticket.tokenId}`}>
                           <a className="text-dark fw-bold text-center">
                             Available on resale{" "}
-                            <i className="bi bi-arrow-right"></i>
+                            <i className="bi bi-arrow-right-circle-fill"></i>
                           </a>
                         </Link>
                       )}
