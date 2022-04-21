@@ -261,6 +261,7 @@ contract TicketMarket is ERC1155Holder{
         noSoldIds=false;
         resaleId = currentIndex;
       }
+      currentIndex++;
     }
     if(noSoldIds){
       _resaleIds.increment();

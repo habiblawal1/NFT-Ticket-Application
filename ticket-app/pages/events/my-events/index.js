@@ -82,11 +82,14 @@ export default function myEvents() {
 
   if (!events.length) {
     return (
-      <div className="container">
-        <h1 className="display-6">You have created no events</h1>
+      <div className="container text-center">
+        <h1 className="m-4">Your Events</h1>
+        <p className="display-6">You have created no events</p>
         <p className="fw-bold">
           <Link href={`/events/create`}>
-            <a className="mr-6">Create Event -&gt;</a>
+            <a className="mr-6">
+              Create Event <i className="bi bi-arrow-right-circle-fill"></i>
+            </a>
           </Link>
         </p>
       </div>
@@ -95,7 +98,7 @@ export default function myEvents() {
 
   return (
     <div className="container justify-content-center text-center align-items-center">
-      <h1 className="m-4">All Events</h1>
+      <h1 className="m-4">Your Events</h1>
       <div className="row justify-content-center align-items-center">
         {events.map((event) => (
           <div key={event.eventId} className="col-7 col-md-5 col-lg-4 ">

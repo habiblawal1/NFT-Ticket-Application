@@ -234,6 +234,7 @@ describe("Market", function () {
 
     //EXPLANATION - https://ethereum.stackexchange.com/questions/117944/why-do-i-keep-receiving-this-error-revert-erc721-transfer-caller-is-not-owner
     //You need to give the market approval again for some reason before being able to resale ticket
+
     await nft.connect(buyerAddress).giveResaleApproval(1);
     const listForResealEvent = await market
       .connect(buyerAddress)
@@ -245,6 +246,18 @@ describe("Market", function () {
       }
     });
     console.log("resaleId = ", resaleId);
+
+    await nft.connect(buyerAddress).giveResaleApproval(1);
+    const listForResealEvent2 = await market
+      .connect(buyerAddress)
+      .listOnResale(nftContract, 1, resalePrice);
+    let resaleId2 = await listForResealEvent2.wait();
+    resaleId2.events.forEach((element) => {
+      if (element.event == "ResaleTicketCreated") {
+        resaleId2 = element.args.resaleId.toNumber();
+      }
+    });
+    console.log("resaleId = ", resaleId2);
 
     let myResaleListings = await market
       .connect(buyerAddress)
@@ -309,16 +322,18 @@ describe("Market", function () {
 
     const newResalePrice = ethers.utils.parseUnits("125", "ether");
     await nft.connect(buyerAddress2).giveResaleApproval(1);
-    const listForResellEvent2 = await market
+    const listForResellEvent3 = await market
       .connect(buyerAddress2)
       .listOnResale(nftContract, 1, newResalePrice);
-    resaleId = await listForResellEvent2.wait();
-    resaleId.events.forEach((element) => {
+    const bal = await nft.balanceOf(buyerAddress.address, 1);
+    console.log("HIS BAL IS", bal);
+    let resaleId3 = await listForResellEvent3.wait();
+    resaleId3.events.forEach((element) => {
       if (element.event == "ResaleTicketCreated") {
-        resaleId = element.args.resaleId.toNumber();
+        resaleId3 = element.args.resaleId.toNumber();
       }
     });
-    console.log("resaleId = ", resaleId);
+    console.log("resaleId3 = ", resaleId3);
 
     resaleTickets = await market.getResaleTickets(1);
     resaleTickets = await Promise.all(
@@ -335,13 +350,20 @@ describe("Market", function () {
       })
     );
 
-    await market
-      .connect(sellerAddress)
-      .validateTicket(nftContract, buyerAddress.address, 1);
+    console.log(
+      "Resale tickeets for ticket 1 after listing, buying and re-listing:",
+      resaleTickets
+    );
 
-    console.log("Resale tickets after new resale: ", resaleTickets);
+    //Running this will throw expected error as address has already listed all its tokens
+    // await market
+    //   .connect(sellerAddress)
+    //   .validateTicket(nftContract, buyerAddress.address, 1);
+
     console.log(new Date(1649422882 * 1000).toLocaleString());
     const myDate = new Date("04/08/22, 23:59:59").toLocaleString();
     console.log(myDate.toLocaleString());
+
+    //TODO - Transction runs out of gas when I create multiple resale tickets at once
   });
 });

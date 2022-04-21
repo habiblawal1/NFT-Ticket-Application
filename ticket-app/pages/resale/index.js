@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -81,9 +82,18 @@ export default function myResaleListings() {
     <div className="container justify-content-center align-items-center">
       <h1 className="text-center m-4">Your Resale Listings</h1>
       {resaleTickets.length < 1 ? (
-        <p className="display-5 text-center">
-          You do not own any tickets right now
-        </p>
+        <>
+          <p className="display-5 text-center">
+            You have not listed any tickets for resale
+          </p>
+          <p className="fw-bold text-center">
+            <Link href={`/tickets/`}>
+              <a>
+                My Tickets <i className="bi bi-arrow-right-circle-fill"></i>
+              </a>
+            </Link>
+          </p>
+        </>
       ) : (
         <div className="row justify-content-center align-items-center">
           {resaleTickets.map((ticket) => (
