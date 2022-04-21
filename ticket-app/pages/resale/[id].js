@@ -1,21 +1,24 @@
 import { useRouter } from "next/router";
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
-import Web3Modal from "web3modal";
 import axios from "axios";
+import styles from "../../styles/Card.module.scss";
 
 import PoundPrice from "../../components/price/Pound";
-
-import { nftaddress, nftmarketaddress } from "../../config";
-
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { nftaddress } from "../../config";
+import {
+  marketContract,
+  tokenContract,
+  signers,
+} from "../../components/contracts";
 
 export default function eventResaleListings() {
   const [event, setEvent] = useState();
   const [ticket, setTicket] = useState();
   const [resaleTickets, setResaleTickets] = useState([]);
   const [loadingState, setLoadingState] = useState(false);
+  const [err, setErr] = useState("");
+
   const router = useRouter();
   const tokenId = router.query["id"];
   useEffect(() => {
@@ -24,195 +27,178 @@ export default function eventResaleListings() {
   }, [router.isReady]);
 
   async function loadData() {
-    await loadEvent();
-    await loadResaleTickets();
-  }
-
-  async function loadEvent() {
-    const provider = new ethers.providers.JsonRpcProvider();
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      provider
-    );
-
-    const ticketUri = await tokenContract.uri(tokenId);
-    console.log("Ticket URI: ", ticketUri);
-    const ticketRequest = await axios.get(ticketUri);
-    const ticketData = ticketRequest.data;
-
-    let eventId = ticketData.properties.eventId;
-    const thisEvent = await marketContract.getEvent(eventId);
-    console.log("SOOOOOO ");
-
-    const eventUri = thisEvent.uri;
-    console.log("Event URI: ", eventUri);
-    const eventRequest = await axios.get(eventUri);
-    const eventData = eventRequest.data;
-
-    console.log("EVENT DATA = ", eventData);
-    const currEvent = {
-      eventId,
-      name: eventData.name,
-      imageUri: eventData.image,
-    };
-    const currTicket = {
-      tokenId,
-      name: ticketData.name,
-      description: ticketData.description,
-    };
-    console.log("Event: ", currEvent);
-    console.log("Ticket: ", currTicket);
-    setEvent(currEvent);
-    setTicket(currTicket);
-  }
-
-  async function loadResaleTickets() {
-    const provider = new ethers.providers.JsonRpcProvider();
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      provider
-    );
-
-    // uint indexed resaleId,
-    // uint indexed tokenId,
-    // address seller,
-    // uint256 resalePrice,
-    // bool sold
-    const data = await marketContract.getResaleTickets(tokenId);
-    console.log("SOLIDITY Resale Ticket Data: ", data);
-    const tickets = await Promise.all(
-      data.map(async (i) => {
-        let price = ethers.utils.formatUnits(i.resalePrice.toString(), "ether");
-        let gbpPrice = await PoundPrice(price);
-        let _ticket = {
-          resaleId: i.resaleId.toNumber(),
-          seller: i.seller,
-          price,
-          gbpPrice,
-        };
-        return _ticket;
-      })
-    );
-    console.log("Resale Tickets: ", tickets);
-    setResaleTickets(tickets);
+    if (!Number.isInteger(parseInt(tokenId))) {
+      setErr(`Ticket ID '${tokenId}' is not valid`);
+    } else {
+      await loadEvent();
+      await loadResaleTickets();
+    }
     setLoadingState(true);
   }
 
-  async function buyTicket(resaleId, price) {
-    /* needs the user to sign the transaction, so will use Web3Provider and sign it */
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
+  async function loadEvent() {
+    try {
+      const ticketUri = await tokenContract.uri(tokenId);
+      console.log("Ticket URI: ", ticketUri);
+      const ticketRequest = await axios.get(ticketUri);
+      const ticketData = ticketRequest.data;
 
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
-    /* user will be prompted to pay the asking price to complete the transaction */
-    console.log("PRICE, ", price);
-    const ticketPrice = ethers.utils.parseUnits(price, "ether");
-    const transaction = await marketContract.buyResaleTicket(
-      nftaddress,
-      resaleId,
-      {
-        value: ticketPrice,
-      }
-    );
-    await transaction.wait();
-    //TODO - You don't redericted
-    router.push("/tickets");
+      let eventId = ticketData.properties.eventId;
+      const thisEvent = await marketContract.getEvent(eventId);
+
+      const eventUri = thisEvent.uri;
+      console.log("Event URI: ", eventUri);
+      const eventRequest = await axios.get(eventUri);
+      const eventData = eventRequest.data;
+
+      console.log("EVENT DATA = ", eventData);
+      const currEvent = {
+        eventId,
+        name: eventData.name,
+        imageUri: eventData.image,
+      };
+      const currTicket = {
+        tokenId,
+        name: ticketData.name,
+        description: ticketData.description,
+      };
+      console.log("Event: ", currEvent);
+      console.log("Ticket: ", currTicket);
+      setEvent(currEvent);
+      setTicket(currTicket);
+    } catch (error) {
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
+    }
+  }
+
+  async function loadResaleTickets() {
+    try {
+      const data = await marketContract.getResaleTickets(tokenId);
+      const tickets = await Promise.all(
+        data.map(async (i) => {
+          let price = ethers.utils.formatUnits(
+            i.resalePrice.toString(),
+            "ether"
+          );
+          console.log("SELLER = ", i.seller);
+          let gbpPrice = await PoundPrice(price);
+          let _ticket = {
+            resaleId: i.resaleId.toNumber(),
+            seller: i.seller,
+            price,
+            gbpPrice,
+          };
+          return _ticket;
+        })
+      );
+      console.log("Resale Tickets: ", tickets);
+      setResaleTickets(tickets);
+    } catch (error) {
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
+    }
+  }
+
+  async function buyTicket(resaleId, price) {
+    try {
+      setLoadingState(false);
+      const signedContracts = await signers();
+      const { signedMarketContract } = signedContracts;
+
+      const ticketPrice = ethers.utils.parseUnits(price, "ether");
+      const transaction = await signedMarketContract.buyResaleTicket(
+        nftaddress,
+        resaleId,
+        {
+          value: ticketPrice,
+        }
+      );
+      await transaction.wait();
+      setLoadingState(true);
+      router.push("/tickets");
+    } catch (error) {
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
+    }
+    setLoadingState(true);
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 py-10 text-3xl">Loading...</h1>;
+    return <h1 className="container display-1">Loading...</h1>;
   }
 
-  if (loadingState && !resaleTickets.length) {
-    return (
-      <h1 className="px-20 py-10 text-3xl">
-        No resale tickets available for the ticket "{ticket.name} - #
-        {ticket.tokenId}"
+  if (!resaleTickets.length) {
+    return err ? (
+      <p className="container text-red display-6">{err}</p>
+    ) : (
+      <h1 className="container text-center display-6">
+        No resale tickets available for the Ticket ID: {tokenId}
       </h1>
     );
   }
+
   return (
-    <div className="flex justify-center">
-      <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <h1>Resale Tickets available for Ticket: #{tokenId}</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          <div
-            key={event.eventId}
-            className="border shadow rounded-l overflow-hidden"
-          >
-            <div className="p-4">
-              <p style={{ height: "64px" }} className="text-3xl font-semibold">
-                Event: {event.name} - #{event.eventId}
-              </p>
-            </div>
-            <img src={event.imageUri} />
-
-            <div className="p-4">
-              <p style={{ height: "64px" }} className="text-3xl font-semibold">
-                Ticket: {ticket.name} - #{ticket.tokenId}
-              </p>
-            </div>
-            {ticket.description && (
-              <div style={{ height: "70px", overflow: "hidden" }}>
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Description: {ticket.description}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <h1>Tickets</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          {resaleTickets.map((_ticket) => (
-            <div
-              key={_ticket.resaleId}
-              className="border shadow rounded-l overflow-hidden"
-            >
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  Seller: {_ticket.seller}
-                </p>
-              </div>
-              <div className="p-4">
-                <p
-                  style={{ height: "64px" }}
-                  className="text-3xl font-semibold"
-                >
-                  List Price: £{_ticket.gbpPrice}
-                </p>
-              </div>
-              <div style={{ height: "70px", overflow: "hidden" }}>
-                <p className="text-3xl">= {_ticket.price} MATIC</p>
-              </div>
-
-              <button
-                onClick={() => {
-                  buyTicket(_ticket.resaleId, _ticket.price);
-                }}
-                className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
-              >
-                Buy Ticket
-              </button>
-            </div>
-          ))}
+    <div className="container justify-content-center align-items-center">
+      <h1 className="text-center m-4">Resale Listings</h1>
+      <div className="row justify-content-center align-items-center">
+        <div className="card col-auto bg-cream p-3 shadow">
+          <h3 className="card-title display-6 text-center">
+            <span className="text-primary fw-bold">{event.name}</span> - ID: #
+            {event.eventId}
+          </h3>
+          <img
+            style={{ height: "22vh", overflow: "auto" }}
+            src={event.imageUri}
+            className={styles.cardImgTop}
+          />
         </div>
       </div>
+      <div className="text-center mt-10">
+        <h2>
+          <i className="bi bi-ticket-fill"></i>{" "}
+          <span className="fw-bold">{ticket.name}</span> - ID: #{ticket.tokenId}
+        </h2>
+        <h6>{ticket.description}</h6>
+      </div>
+      {resaleTickets.map((_ticket) => (
+        <div
+          key={_ticket.resaleId}
+          className="row justify-content-center align-items-center"
+        >
+          <div className="col-auto card shadow border border-dark rounded-l overflow-scroll m-3 pt-3">
+            <div className="card-body">
+              <div className="row">
+                <div className="col-7">
+                  <h4>Seller Address:</h4>
+                  <p>{_ticket.seller}</p>
+                </div>
+                <div className="col-5 text-center">
+                  <h4 className="text-primary fw-bold">
+                    Resale Price: £{_ticket.gbpPrice}
+                  </h4>
+                  <p className="text-secondary">= {_ticket.price} MATIC</p>
+                  <button
+                    onClick={() => {
+                      buyTicket(_ticket.resaleId, _ticket.price);
+                    }}
+                    className="btn btn-primary"
+                  >
+                    Buy Ticket
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+      {err && <p className="text-red text-center display-6">{err}</p>}
     </div>
   );
 }

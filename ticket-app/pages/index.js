@@ -1,30 +1,35 @@
-import styles from "../styles/Home.module.css";
-import Link from "next/link";
-
 import { useRouter } from "next/router";
 
 export default function Home() {
   const router = useRouter();
   return (
-    <div className={styles.container}>
-      <h1 className="font-bold"> NFT Based tickets</h1>
-      <h4>Providing extra trust and security for attending events</h4>
-      <button
-        onClick={() => {
-          router.push("/events/create");
-        }}
-        className="font-bold mt-4 mr-4 bg-primary text-white rounded p-4 shadow-lg"
-      >
-        Create Event
-      </button>
-      <button
-        onClick={() => {
-          router.push("/events/");
-        }}
-        className="font-bold mt-4 mr-4 bg-white text-primary border rounded p-4 shadow-lg"
-      >
-        Find Event
-      </button>
+    <div className="container min-vh-100 d-flex justify-content-center text-center align-items-center">
+      <div className="col">
+        <h1> NFT Based tickets</h1>
+        <p className="lead">
+          Providing extra trust and security for attending events
+        </p>
+        <button
+          onClick={() => {
+            router.push("/events/create");
+          }}
+          className="btn btn-lg btn-primary m-2"
+        >
+          Create Event
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            router.push("/events/");
+          }}
+          className="btn btn-lg btn-outline-primary m-2"
+        >
+          Find Event
+        </button>
+      </div>
+      <div className="col d-none d-md-block">
+        <img className="img-fluid" src="/event.png" />
+      </div>
     </div>
   );
 }

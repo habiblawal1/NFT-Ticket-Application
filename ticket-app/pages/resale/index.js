@@ -1,15 +1,12 @@
 import Link from "next/link";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
-import Web3Modal from "web3modal";
 import axios from "axios";
+import styles from "../../styles/Card.module.scss";
 
 import PoundPrice from "../../components/price/Pound";
 
-import { nftaddress, nftmarketaddress } from "../../config";
-
-import NFT from "../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { signers, tokenContract } from "../../components/contracts";
 
 export default function myResaleListings() {
   const [err, setErr] = useState("");
@@ -21,21 +18,10 @@ export default function myResaleListings() {
   }, []);
 
   async function loadListings() {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-    //We need to povide a signer instead of JSONRPC so we know who the signer is
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
-
     try {
-      const data = await marketContract.getMyResaleListings();
+      const contracts = await signers();
+      const { signedMarketContract } = contracts;
+      const data = await signedMarketContract.getMyResaleListings();
       console.log(data);
 
       const allListings = await Promise.all(
@@ -47,7 +33,7 @@ export default function myResaleListings() {
           const ticketData = ticketRequest.data;
 
           let eventId = ticketData.properties.eventId;
-          const currEvent = await marketContract.getEvent(eventId);
+          const currEvent = await signedMarketContract.getEvent(eventId);
           const eventUri = currEvent.uri;
           console.log("Event URI: ", eventUri);
           const eventRequest = await axios.get(eventUri);
@@ -77,104 +63,92 @@ export default function myResaleListings() {
       setResaleTickets(allListings);
       setLoadingState(true);
     } catch (error) {
-      console.error(error);
-      if (error.data) {
-        setErr(error.data.message);
-      } else {
-        setErr(error.message);
-      }
+      setLoadingState(true);
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
   if (!loadingState) {
     return <h1>Loading...</h1>;
   }
+  if (err) {
+    return <p className="container text-red display-6">{err}</p>;
+  }
+
   return (
-    <div className="flex justify-center">
-      <div className="px-4" style={{ maxWidth: "1600px" }}>
-        <h1>My Resale Listings</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-          {resaleTickets.length > 0 ? (
-            resaleTickets.map((ticket) => (
-              <div
-                key={ticket.resaleId}
-                className="border shadow rounded-l overflow-hidden"
-              >
-                <img src={ticket.imageUri} />
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Event: #{ticket.eventId} - {ticket.eventName}
-                  </p>
+    <div className="container justify-content-center align-items-center">
+      <h1 className="text-center m-4">Your Resale Listings</h1>
+      {resaleTickets.length < 1 ? (
+        <>
+          <p className="display-5 text-center">
+            You have not listed any tickets for resale
+          </p>
+          <p className="fw-bold text-center">
+            <Link href={`/tickets/`}>
+              <a>
+                My Tickets <i className="bi bi-arrow-right-circle-fill"></i>
+              </a>
+            </Link>
+          </p>
+        </>
+      ) : (
+        <div className="row justify-content-center align-items-center">
+          {resaleTickets.map((ticket) => (
+            <div
+              key={ticket.resaleId}
+              className="card shadow border border-dark rounded-l m-2"
+            >
+              <div className="row card-body">
+                <div className="col-3 d-none d-md-block">
+                  <img src={ticket.imageUri} className={styles.cardImgTop} />
                 </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
+                <div className="col-7 col-md-6">
+                  <div style={{ height: "65px", overflow: "auto" }}>
+                    <h3 className="card-title">
+                      <span className="fw-bold text-primary">
+                        {ticket.eventName}
+                      </span>{" "}
+                      - ID: {ticket.eventId}
+                    </h3>
+                  </div>
+                  <div
+                    className="mt-2"
+                    style={{ height: "50px", overflow: "auto" }}
                   >
-                    Event Date: {ticket.startDate}
-                  </p>
+                    <h5>
+                      <i className="bi bi-calendar3"></i> {ticket.startDate}
+                    </h5>
+                  </div>
+                  <div style={{ height: "60", overflow: "auto" }}>
+                    <h5>
+                      <i className="bi bi-geo-alt-fill"></i> {ticket.location}
+                    </h5>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Location: {ticket.location}
-                  </p>
-                </div>
-                <div style={{ height: "70px", overflow: "hidden" }}>
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Location: {ticket.location}
-                  </p>
-                </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Ticket: #{ticket.tokenId} - {ticket.ticketName}
-                  </p>
-                </div>
-                <div className="p-4">
-                  <p
-                    style={{ height: "64px" }}
-                    className="text-3xl font-semibold"
-                  >
-                    Resale Price: £{ticket.gbpPrice}
-                  </p>
-                  <div style={{ height: "70px", overflow: "hidden" }}>
-                    <p className="text-3xl">= {ticket.price} MATIC</p>
+                <div className="col-5 col-md-3">
+                  <div style={{ height: "60px", overflow: "auto" }}>
+                    <h4>
+                      <i className="bi bi-ticket-fill"></i> {ticket.ticketName}
+                    </h4>
+                  </div>
+                  <div style={{ height: "32px", overflow: "auto" }}>
+                    <h5>ID: #{ticket.tokenId}</h5>
+                  </div>
+                  <div style={{ height: "100px", overflow: "auto" }}>
+                    <h5 className="text-primary fw-bold">
+                      Resale Price: £{ticket.gbpPrice}
+                    </h5>
+                    <p className="text-secondary">= {ticket.price} MATIC</p>
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <div>
-              <h1>You have no tickets listed for resale</h1>
-              <p>Go to the My Tickets page to list your ticket for resale</p>
-              <p
-                style={{ height: "64px" }}
-                className="text-primary font-semibold"
-              >
-                <Link href={`/tickets/`}>
-                  <a className="mr-6">My Tickets -&gt;</a>
-                </Link>
-              </p>
             </div>
-          )}
+          ))}
         </div>
-        {err && (
-          <p style={{ height: "64px" }} className="text-red font-semibold">
-            {err}
-          </p>
-        )}
-      </div>
+      )}
     </div>
   );
 }

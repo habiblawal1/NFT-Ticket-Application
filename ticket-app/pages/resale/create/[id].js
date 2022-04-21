@@ -1,87 +1,89 @@
 import { useRouter } from "next/router";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
-import Web3Modal from "web3modal";
 import axios from "axios";
 
 import MaticPrice from "../../../components/price/Matic";
 import PoundPrice from "../../../components/price/Pound";
-
-import { nftaddress, nftmarketaddress } from "../../../config";
-
-import NFT from "../../../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
-import Market from "../../../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
+import { nftaddress } from "../../../config";
+import { signers, tokenContract } from "../../../components/contracts";
 
 export default function resellTicket() {
   const router = useRouter();
   const ticketId = router.query["id"];
 
   const [err, setErr] = useState("");
-  const [resalePrice, setResalePrice] = useState({ matic: "0", gbp: "0" });
-  const [royaltyFee, setRoyaltyFee] = useState("0");
+  const [loadingState, setLoadingState] = useState(false);
+  const [resalePrice, setResalePrice] = useState({ matic: "0", gbp: "" });
+  const [royaltyFee, setRoyaltyFee] = useState("");
   const [maxPrice, setMaxPrice] = useState({ matic: "", gbp: "0" });
 
   useEffect(() => {
     if (!router.isReady) return;
     loadResaleDetails();
+    setLoadingState(true);
   }, [router.isReady]);
-  //TODO - Check tokenId exists
-  //TODO - Once a ticket has been validated, don't allow them to set the ticket on resale
   async function loadResaleDetails() {
-    const provider = new ethers.providers.JsonRpcProvider();
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-
-    const ticketUri = await tokenContract.uri(ticketId);
-    const ticketRequest = await axios.get(ticketUri);
-    const ticketData = ticketRequest.data;
-    const maxResalePrice = ticketData.properties.maxResalePrice;
-    const gbpMaxPrice = await PoundPrice(maxResalePrice);
-    setMaxPrice({ matic: maxResalePrice, gbp: gbpMaxPrice });
-    setRoyaltyFee(ticketData.properties.royaltyFee);
-    console.log(ticketData);
-  }
-
-  async function listForResale() {
-    if (!resalePrice.gbp) {
-      console.error("Please check you have completed all fields");
-      setErr("Please check you have completed all fields");
-      return;
-    }
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, signer);
-    //We need to povide a signer instead of JSONRPC so we know who the signer is
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
-
     try {
+      if (!Number.isInteger(parseInt(ticketId))) {
+        throw new Error("Ticket ID was not valid");
+      }
+      const contracts = await signers();
+      const { signer } = contracts;
+      const address = signer.getAddress();
+      const qty = await tokenContract.balanceOf(address, ticketId);
+      if (qty < 1) {
+        throw new Error(`You do not own the Ticked ID: ${ticketId}`);
+      }
+      const ticketUri = await tokenContract.uri(ticketId);
+      const ticketRequest = await axios.get(ticketUri);
+      const ticketData = ticketRequest.data;
+      const maxResalePrice = ticketData.properties.maxResalePrice;
+      const gbpMaxPrice = await PoundPrice(maxResalePrice);
+      setMaxPrice({ matic: maxResalePrice, gbp: gbpMaxPrice });
+      setRoyaltyFee(ticketData.properties.royaltyFee);
+      console.log(ticketData);
+    } catch (error) {
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
+    }
+  }
+  async function listForResale() {
+    try {
+      setLoadingState(false);
+      if (!resalePrice.gbp || !(resalePrice.gbp >= 0)) {
+        throw new Error("Please enter a postive price");
+      }
+
+      if (resalePrice.gbp > maxPrice.gbp) {
+        throw new Error("Resale price must be less than the max price");
+      }
+      console.log("RESALE GBP = ", resalePrice.gbp);
+      const contracts = await signers();
+      const { signedMarketContract, signedTokenContract } = contracts;
+
       let price = ethers.utils.parseUnits(resalePrice.matic, "ether");
-      const approvalTransaction = await tokenContract.giveResaleApproval(
+      const approvalTransaction = await signedTokenContract.giveResaleApproval(
         ticketId
       );
       await approvalTransaction.wait();
 
-      const resaleTransaction = await marketContract.listOnResale(
+      const resaleTransaction = await signedMarketContract.listOnResale(
         nftaddress,
         ticketId,
         price
       );
       await resaleTransaction.wait();
-
+      setLoadingState(true);
       router.push("/resale");
     } catch (error) {
-      console.error(error);
-      if (error.data) {
-        setErr(error.data.message);
-      } else {
-        setErr(error.message);
-      }
+      setLoadingState(true);
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
@@ -90,48 +92,81 @@ export default function resellTicket() {
     setResalePrice({ gbp: value, matic: maticPrice });
   }
 
+  if (!loadingState) {
+    return <h1 className="container display-1">Loading...</h1>;
+  }
+
+  if (!royaltyFee && err) {
+    return <p className="container text-red display-6">{err}</p>;
+  }
+
   return (
-    <div>
-      <h1>Create Resale listing for ticket: #{ticketId}</h1>
-      <div className="flex justify-center">
-        <div className="w-1/2 flex flex-col pb-12">
-          <label>
-            Royalty Fee
-            <input
-              value={`${royaltyFee}%`}
-              className="mt-4 border rounded p-4 bg-mid_grey"
-              disabled
-            />
-          </label>
-          <label>
-            Max Resale Price
-            <input
-              value={`${maxPrice.matic} MATIC`}
-              className="mt-4 border rounded p-4 bg-mid_grey"
-              disabled
-            />
-          </label>
-          <p>= £{maxPrice.gbp}</p>
-          {/** TODO - Declare which fields are required*/}
-          <input
-            placeholder="Ticket Price (£GBP)"
-            className="mt-4 border rounded p-4"
-            onChange={(e) => updatePrice(e.target.value)}
-          />
-          <p>= {resalePrice.matic} MATIC</p>
-          <button
-            onClick={listForResale}
-            className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
-          >
-            List
-          </button>
-          {err && (
-            <p style={{ height: "64px" }} className="text-red font-semibold">
-              {err}
-            </p>
-          )}
-        </div>
+    <div className="container">
+      <h1 className="text-center m-4">
+        Create Resale Listing for Ticket ID: #{ticketId}
+      </h1>
+      <label htmlFor="royalty" className="form-label">
+        Royalty Fee
+      </label>
+      <div className="input-group mb-3">
+        <input
+          className="form-control"
+          type="text"
+          value={royaltyFee}
+          aria-label="royalty"
+          disabled
+          readOnly
+        />
+        <span className="input-group-text" id="percent">
+          %
+        </span>
       </div>
+
+      <label htmlFor="resale" className="form-label">
+        Max Resale Price
+      </label>
+      <div className="input-group mb-3">
+        <span className="input-group-text" id="pound">
+          £
+        </span>
+        <input
+          className="form-control"
+          type="text"
+          value={maxPrice.gbp}
+          aria-label="resale"
+          disabled
+          readOnly
+        />
+      </div>
+      <div style={{ marginBottom: "20px" }} className="form-text">
+        = {maxPrice.matic} MATIC
+      </div>
+
+      <label htmlFor="price" className="form-label">
+        Choose Resale Price
+      </label>
+      <div className="input-group mb-3">
+        <span className="input-group-text" id="pound">
+          £
+        </span>
+        <input
+          type="text"
+          className="form-control"
+          aria-label="price"
+          aria-describedby="pound"
+          onChange={(e) => {
+            updatePrice(e.target.value);
+          }}
+          required
+        />
+      </div>
+      <div style={{ marginBottom: "20px" }} className="form-text">
+        = {resalePrice.matic} MATIC
+      </div>
+      <button onClick={listForResale} className="btn btn-lg btn-primary">
+        List
+      </button>
+      {err && <p className="text-red display-6">{err}</p>}
     </div>
   );
 }

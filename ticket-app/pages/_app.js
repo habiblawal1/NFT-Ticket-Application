@@ -1,17 +1,19 @@
-import "../styles/globals.css";
+import "../styles/globals.scss";
 import "tailwindcss/tailwind.css";
-
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import Layout from "../components/layout/Layout";
 import Head from "next/head";
+import { useEffect, useState } from "react";
 
 function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    import("bootstrap/dist/js/bootstrap");
+  }, []);
   return (
     <>
       <Head>
-        <meta
-          name="viewport"
-          content="minimum-scale=1, initial-scale=1, width=device-width"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>NFTickets</title>
       </Head>
       <Layout>

@@ -10,14 +10,15 @@ const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we 
 import { signers } from "../../components/contracts";
 
 export default function createEvent() {
-  //const [fileUrl, setFileUrl] = useState(null);
+  const [loadingState, setLoadingState] = useState(true);
   const [eventPic, setEventPic] = useState(null);
-  const [err, setErr] = useState([]);
+  const [err, setErr] = useState("");
   const [eventDate, setEventDate] = useState(formatDate(Date.now()));
   const [formInput, updateFormInput] = useState({
     name: "",
     description: "",
-    location: "",
+    address: "",
+    postcode: "",
   });
   const router = useRouter();
 
@@ -33,34 +34,38 @@ export default function createEvent() {
     return new Date(newDate);
   }
   async function uploadToPictureToIPFS() {
-    //TODO - If no file is added, then use placeholder picture instead. You can put the placeholder image in public, or upload one pic to ipfs and re-use that
+    const placeholderUrl =
+      "https://ipfs.infura.io/ipfs/QmZcjqFN4iEHSpXU3ou1LLMFNhiP1uXcpBobDJFgHfuABP";
     //Upload Event Picture
+    if (!eventPic) {
+      return placeholderUrl;
+    }
     try {
       const added = await client.add(eventPic, {
         progress: (prog) => console.log(`received: ${prog}`),
       });
       return `https://ipfs.infura.io/ipfs/${added.path}`;
     } catch (error) {
-      setErr((oldErr) => [...oldErr, error.message]);
-      console.log(err);
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
   async function uploadToIPFS() {
-    const { name, description, location } = formInput;
-    if (!name || !description || !location || !eventDate) {
+    const { name, description, address, postcode } = formInput;
+    if (!name || !description || !address || !postcode || !eventDate) {
       throw new Error("Please check you have completed all fields");
     }
 
     const fileUrl = await uploadToPictureToIPFS();
-    //TODO - Make fileURL upload optional, add validation checking for fields
-    //TODO - Form validation for location and deciding format to store location (e.g. maybe as a json object with city, postcode etc.)
     /* first, upload metadata to IPFS */
     const data = JSON.stringify({
       name,
       description,
       image: fileUrl,
-      location,
+      location: `${address}, ${postcode}`,
       eventDate: new Date(eventDate).toLocaleDateString(),
     });
 
@@ -71,12 +76,15 @@ export default function createEvent() {
       console.log("EVENT URL = ", url);
       return url;
     } catch (error) {
-      setErr((oldErr) => [...oldErr, error.message]);
-      console.log("Error uploading file: line 58", error);
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
     }
   }
 
   async function addEvent() {
+    setLoadingState(false);
     const contracts = await signers();
     const { signedMarketContract } = contracts;
     /* create the event  */
@@ -88,75 +96,121 @@ export default function createEvent() {
         Math.floor(new Date(eventDate).getTime() / 1000)
       );
       await transaction.wait();
+      setLoadingState(true);
       router.push("/events/my-events");
     } catch (error) {
-      setErr((oldErr) => [...oldErr, "Check console for new error with ETH"]);
       console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
+      setLoadingState(true);
     }
   }
 
+  if (!loadingState) {
+    return <h1 className="container display-1">Loading...</h1>;
+  }
+
   return (
-    <div>
-      <h1>Create Event Page</h1>
-      <div className="flex justify-center">
-        <div className="w-1/2 flex flex-col pb-12">
-          <input
-            placeholder="Event Name"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, name: e.target.value })
-            }
+    <div className="container">
+      <h1 className="text-center m-4">Create New Event</h1>
+      <div className="mb-3">
+        <label htmlFor="eventName" className="form-label">
+          Event Name
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="eventName"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, name: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="description" className="form-label">
+          Description
+        </label>
+        <textarea
+          id="description"
+          className="form-control"
+          aria-label="description"
+          rows="3"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, description: e.target.value })
+          }
+        ></textarea>
+      </div>
+      <label htmlFor="eventDate" className="form-label">
+        Start Date
+      </label>
+      <div className="input-group mb-3">
+        <DatePicker
+          id="eventDate"
+          className="form-control"
+          selected={eventDate}
+          onChange={(date) => setEventDate(formatDate(date))}
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="address" className="form-label">
+          Event Address
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="address"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, address: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="postcode" className="form-label">
+          Event Postcode
+        </label>
+        <input
+          type="text"
+          className="form-control"
+          id="postcode"
+          onChange={(e) =>
+            updateFormInput({ ...formInput, postcode: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="mb-3">
+        <label htmlFor="Picture">Event Picture</label>
+        <input
+          type="file"
+          name="Picture"
+          className="form-control"
+          onChange={(e) => setEventPic(e.target.files[0])}
+        />
+      </div>
+      <div>
+        {/**If there is a file uploaded then show a preview of it */}
+        {eventPic && (
+          <img
+            className="rounded mt-4"
+            width="350"
+            src={URL.createObjectURL(eventPic)}
           />
-          <textarea
-            placeholder="Event Description"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, description: e.target.value })
-            }
-          />
-          <p className="mt-4">Start Date:</p>
-          <div className="mt-1 border rounded p-4">
-            <DatePicker
-              selected={eventDate}
-              onChange={(date) => setEventDate(formatDate(date))}
-            />
-          </div>
-          <input
-            placeholder="Event Location"
-            className="mt-4 border rounded p-4"
-            onChange={(e) =>
-              updateFormInput({ ...formInput, location: e.target.value })
-            }
-          />
-          <div>
-            <label htmlFor="Picture">Event Picture: </label>
-            <input
-              type="file"
-              name="Picture"
-              className="my-4"
-              onChange={(e) => setEventPic(e.target.files[0])}
-            />
-          </div>
-          {/**If there is a file uploaded then show a preview of it */}
-          {eventPic && (
-            <img
-              className="rounded mt-4"
-              width="350"
-              src={URL.createObjectURL(eventPic)}
-            />
-          )}
-          <button
-            onClick={addEvent}
-            className="font-bold mt-4 bg-primary text-white rounded p-4 shadow-lg"
-          >
-            Create Event
-          </button>
-          <div>
-            {err.map((error) => (
-              <p className="mr-6 text-red">{error}</p>
-            ))}
-          </div>
-        </div>
+        )}
+      </div>
+      <button
+        type="submit"
+        onClick={addEvent}
+        style={{ marginTop: "20px" }}
+        className="btn btn-primary"
+      >
+        Create Event
+      </button>
+      <div>
+        <p className="display-6 text-red">{err}</p>
       </div>
     </div>
   );

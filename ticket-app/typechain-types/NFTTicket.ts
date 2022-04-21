@@ -33,7 +33,7 @@ export interface NFTTicketInterface extends utils.Interface {
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "burn(address,uint256,uint256)": FunctionFragment;
     "burnBatch(address,uint256[],uint256[])": FunctionFragment;
-    "createToken(uint64)": FunctionFragment;
+    "createToken(string,uint64)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
     "getRoleMemberCount(bytes32)": FunctionFragment;
@@ -52,7 +52,6 @@ export interface NFTTicketInterface extends utils.Interface {
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setTokenUri(uint256,string)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "unpause()": FunctionFragment;
@@ -93,7 +92,7 @@ export interface NFTTicketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createToken",
-    values: [BigNumberish]
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -157,10 +156,6 @@ export interface NFTTicketInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setTokenUri",
-    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -243,10 +238,6 @@ export interface NFTTicketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setTokenUri",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -440,6 +431,7 @@ export interface NFTTicket extends BaseContract {
     ): Promise<ContractTransaction>;
 
     createToken(
+      newUri: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -544,12 +536,6 @@ export interface NFTTicket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setTokenUri(
-      tokenId: BigNumberish,
-      newUri: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -606,6 +592,7 @@ export interface NFTTicket extends BaseContract {
   ): Promise<ContractTransaction>;
 
   createToken(
+    newUri: string,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -710,12 +697,6 @@ export interface NFTTicket extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setTokenUri(
-    tokenId: BigNumberish,
-    newUri: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   supportsInterface(
     interfaceId: BytesLike,
     overrides?: CallOverrides
@@ -772,6 +753,7 @@ export interface NFTTicket extends BaseContract {
     ): Promise<void>;
 
     createToken(
+      newUri: string,
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -869,12 +851,6 @@ export interface NFTTicket extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setTokenUri(
-      tokenId: BigNumberish,
-      newUri: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1037,6 +1013,7 @@ export interface NFTTicket extends BaseContract {
     ): Promise<BigNumber>;
 
     createToken(
+      newUri: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1144,12 +1121,6 @@ export interface NFTTicket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setTokenUri(
-      tokenId: BigNumberish,
-      newUri: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -1209,6 +1180,7 @@ export interface NFTTicket extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     createToken(
+      newUri: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1313,12 +1285,6 @@ export interface NFTTicket extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setTokenUri(
-      tokenId: BigNumberish,
-      newUri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

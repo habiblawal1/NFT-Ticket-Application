@@ -27,7 +27,7 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
         contractAddress = marketplaceAddress;
     }
 
-    function createToken(uint64 amount) public returns (uint) {
+    function createToken(string memory newUri, uint64 amount) public returns (uint) {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
 
@@ -35,6 +35,7 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
         setApprovalForAll(contractAddress, true);
         //Makes msg.sender the owner so that now they are the only ones capable of setting token uri
         _NFTInfo[newTokenId].owner = msg.sender;
+        _NFTInfo[newTokenId].uri = newUri;
         emit NFTTicketCreated(
             newTokenId
         );
@@ -51,13 +52,6 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
     function uri(uint256 tokenId) override public view returns (string memory) {
         require(bytes(_NFTInfo[tokenId].uri).length != 0, "No uri exists for the token, please create one using the setTokenUri function");
         return(_NFTInfo[tokenId].uri);
-    }
-
-    function setTokenUri(uint256 tokenId, string memory newUri) public{
-        require(_NFTInfo[tokenId].owner == msg.sender, "Only token owner can set uri");
-        //allow you to only ever set the token uri once by requiring that the string mapped to the tokenId is empty
-        require(bytes(_NFTInfo[tokenId].uri).length == 0, "You cannot set token uri twice");
-       _NFTInfo[tokenId].uri = newUri;
     }
 
     function giveResaleApproval(uint256 tokenId) public { 
