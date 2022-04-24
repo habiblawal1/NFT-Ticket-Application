@@ -39,7 +39,7 @@ const QR = (props) => {
     doc.text(60, 60, `Event: ${props.event} `);
     doc.text(60, 80, `Ticket: ${props.ticket} `);
     doc.addImage(qrCodeURL, "PNG", 180, 100, 100, 100);
-    doc.setFontSize(8.2);
+    doc.setFontSize(8);
     doc.text(2, 210, `${qr} `);
 
     // doc.text(60, 60, `Event: ${props.event} `);

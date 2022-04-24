@@ -132,7 +132,7 @@ export default function myEvents() {
                   </p>
                 </div>
                 <Link href={`/events/validate/${event.eventId}`}>
-                  <a>
+                  <a className="fw-bold">
                     Validate Event's Tickets{" "}
                     <i className="bi bi-arrow-right-circle-fill"></i>
                   </a>
