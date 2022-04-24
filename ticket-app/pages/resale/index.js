@@ -72,7 +72,7 @@ export default function myResaleListings() {
   }
 
   if (!loadingState) {
-    return <h1>Loading...</h1>;
+    return <h1 className="container display-1">Loading...</h1>;
   }
   if (err) {
     return <p className="container text-red display-6">{err}</p>;
