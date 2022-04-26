@@ -155,7 +155,7 @@ export default function validate() {
         <>
           <h3>Scanned Result:</h3>
           <div>
-            {id && <h3 className="text-primary">Ticket ID: {id}</h3>}
+            {id && <h3 className="text-primary">Ticket ID: #{id}</h3>}
             {sig && <h3 className="overflow-auto">Signature: {sig}</h3>}
             {!valErr && (
               <button onClick={verifyTicket} className="btn btn-primary">
