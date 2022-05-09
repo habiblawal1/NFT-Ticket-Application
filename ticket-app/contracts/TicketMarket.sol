@@ -15,9 +15,6 @@ contract TicketMarket is ERC1155Holder{
   Counters.Counter private _eventIds;
   Counters.Counter private _resaleIds;
 
-  //Used by tutorial as an address to receive listing fees - can't charge people as this is a FYP project unfortunately
-  address payable owner;
-
   mapping(uint256 => MarketEvent) private idToMarketEvent;
   mapping(uint256 => MarketTicket) private idToMarketTicket;
   mapping(uint256 => ResaleTicket) private idToResaleTicket;
@@ -289,11 +286,13 @@ contract TicketMarket is ERC1155Holder{
     return resaleId;
   }
 
- 
-
   /* Getters */
 
-  /* A view doesn't do any transactional stuff, i think its used when u return stuff idk */
+  function getEvent(uint256 _eventId) public view returns (MarketEvent memory) {
+    require(idToMarketEvent[_eventId].eventId > 0, "This event does not exist");
+    return idToMarketEvent[_eventId];
+  }
+
   /* Returns only events that a user has created */
   function getMyEvents() public view returns (MarketEvent[] memory) {
     //TODO - Don't show ones where date has passed
@@ -317,11 +316,6 @@ contract TicketMarket is ERC1155Holder{
       }
     }
     return userEvents;
-  }
-
-  function getEvent(uint256 _eventId) public view returns (MarketEvent memory) {
-    require(idToMarketEvent[_eventId].eventId > 0, "This event does not exist");
-    return idToMarketEvent[_eventId];
   }
 
    function getAllEvents() public view returns (MarketEvent[] memory) {

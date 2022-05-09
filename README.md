@@ -103,3 +103,5 @@ Hook YT tutorial
 Redux is a pattern and library for managing and updating application state, using events called "actions"
 
 Redux helps you manage "global" state - state that is needed across many parts of your application.
+
+//TODO - Current error check for if logged in works fine but really it should be for only when doing something that requires a signature. Should find a way to use global state to check login
