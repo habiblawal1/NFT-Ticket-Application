@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "../../styles/Card.module.scss";
 import axios from "axios";
 
-import { marketContract } from "../../components/contracts";
+import { marketContract } from "../../components/Contracts";
 
 export default function allEvents() {
   const router = useRouter();

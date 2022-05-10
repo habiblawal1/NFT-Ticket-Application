@@ -6,7 +6,7 @@ import axios from "axios";
 
 import PoundPrice from "../../components/price/Pound";
 
-import { tokenContract, signers } from "../../components/contracts";
+import { tokenContract, signers } from "../../components/Contracts";
 import { nftaddress } from "../../config";
 
 export default function myTickets() {
@@ -93,7 +93,10 @@ export default function myTickets() {
       ) : (
         <div className="row justify-content-center align-items-center">
           {tickets.map((ticket) => (
-            <div key={ticket.tokenId} className="card shadow">
+            <div
+              key={ticket.tokenId}
+              className="card border border-dark shadow"
+            >
               <div className="row card-body">
                 <div className="col-3 d-none d-md-block">
                   <img src={ticket.imageUri} className={styles.cardImgTop} />

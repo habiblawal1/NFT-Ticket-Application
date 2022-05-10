@@ -7,7 +7,7 @@ import axios from "axios";
 const QrReader = dynamic(() => import("react-qr-reader"), { ssr: false });
 
 import { nftaddress } from "../../../config";
-import { signers, marketContract } from "../../../components/contracts";
+import { signers } from "../../../components/Contracts";
 
 export default function validate() {
   const router = useRouter();

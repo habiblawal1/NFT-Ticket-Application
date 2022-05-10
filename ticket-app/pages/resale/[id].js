@@ -10,7 +10,7 @@ import {
   marketContract,
   tokenContract,
   signers,
-} from "../../components/contracts";
+} from "../../components/Contracts";
 
 export default function eventResaleListings() {
   const [event, setEvent] = useState();

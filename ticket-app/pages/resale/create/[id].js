@@ -6,7 +6,7 @@ import axios from "axios";
 import MaticPrice from "../../../components/price/Matic";
 import PoundPrice from "../../../components/price/Pound";
 import { nftaddress } from "../../../config";
-import { signers, tokenContract } from "../../../components/contracts";
+import { signers, tokenContract } from "../../../components/Contracts";
 
 export default function resellTicket() {
   const router = useRouter();

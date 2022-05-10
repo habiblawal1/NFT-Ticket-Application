@@ -1,4 +1,4 @@
-import { signers } from "./contracts";
+import { signers } from "./Contracts";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 

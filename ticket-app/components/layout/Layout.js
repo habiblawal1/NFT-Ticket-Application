@@ -1,6 +1,6 @@
 import styles from "../../styles/Layout.module.css";
 import Navbar from "./Navbar";
-import LoginStatus from "../loginStatus";
+import LoginStatus from "../LoginStatus";
 
 const Layout = (props) => {
   return (

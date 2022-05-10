@@ -32,7 +32,7 @@ describe("Market", function () {
       .connect(sellerAddress)
       .createEvent(
         "url/event/1.json",
-        Math.floor(new Date("2022-05-08, 23:59:59").getTime() / 1000)
+        Math.floor(new Date("2022-05-18, 23:59:59").getTime() / 1000)
       );
     let eventId = await createEventEvent.wait();
     console.log("EVENT 1", eventId.events[0].args);

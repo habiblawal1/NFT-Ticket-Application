@@ -11,8 +11,8 @@ const client = new NFTStorage({
 });
 
 import { nftaddress } from "../../../config";
-import { signers } from "../../../components/contracts";
-import { positiveInt } from "../../../components/validation";
+import { signers } from "../../../components/Contracts";
+import { positiveInt } from "../../../components/Validation";
 
 export default function createTicket() {
   const [err, setErr] = useState("");

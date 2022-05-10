@@ -9,7 +9,7 @@ import {
   signers,
   tokenContract,
   marketContract,
-} from "../../../components/contracts";
+} from "../../../components/Contracts";
 import { nftmarketaddress, nftaddress } from "../../../config";
 import PoundPrice from "../../../components/price/Pound";
 

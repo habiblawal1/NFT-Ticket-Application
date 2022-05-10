@@ -2,18 +2,16 @@ import React from "react";
 import Qrcode from "qrcode.react";
 import jsPDF from "jspdf";
 import { useState } from "react";
-import { ethers } from "ethers";
-import Web3Modal from "web3modal";
+
+import { signers } from "./Contracts";
 
 const QR = (props) => {
   const [show, setShow] = useState(false);
   const [qr, setQr] = useState("");
 
   async function calculateQR() {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
+    const contracts = await signers();
+    const { signer } = contracts;
 
     // const addr = await signer.getAddress();
     // const secondHalf = `${addr}-${props.tokenId}`;

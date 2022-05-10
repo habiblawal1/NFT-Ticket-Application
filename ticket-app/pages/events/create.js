@@ -7,7 +7,7 @@ import { useRouter } from "next/router"; //allows us to programatically route to
 
 const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we can use that sets and pins items to ipfs
 
-import { signers } from "../../components/contracts";
+import { signers } from "../../components/Contracts";
 
 export default function createEvent() {
   const [loadingState, setLoadingState] = useState(true);

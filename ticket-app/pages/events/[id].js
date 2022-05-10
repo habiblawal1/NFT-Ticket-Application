@@ -13,7 +13,7 @@ import {
   signers,
   tokenContract,
   marketContract,
-} from "../../components/contracts";
+} from "../../components/Contracts";
 
 export default function eventDetails() {
   const [event, setEvent] = useState(null);

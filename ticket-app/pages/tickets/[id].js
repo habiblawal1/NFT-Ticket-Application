@@ -9,7 +9,7 @@ import {
   signers,
   tokenContract,
   marketContract,
-} from "../../components/contracts";
+} from "../../components/Contracts";
 
 import PoundPrice from "../../components/price/Pound";
 

@@ -6,7 +6,7 @@ import styles from "../../styles/Card.module.scss";
 
 import PoundPrice from "../../components/price/Pound";
 
-import { signers, tokenContract } from "../../components/contracts";
+import { signers, tokenContract } from "../../components/Contracts";
 
 export default function myResaleListings() {
   const [err, setErr] = useState("");
