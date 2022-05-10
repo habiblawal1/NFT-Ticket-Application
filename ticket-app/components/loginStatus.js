@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { signers } from "./Contracts";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
@@ -40,6 +42,17 @@ const loginStatus = (props) => {
             Please try logging in again and then{" "}
             <span className="fw-bold">REFRESH</span> the page
           </h4>
+          <div className="mt-6">
+            <p className="fw-bold">Not sure how to use Metamask?</p>
+            <Link
+              href={`https://medium.com/@decryptmedia/metamask-the-beginners-guide-6111143f2581`}
+            >
+              <a className="mr-6">
+                Cick to learn more{" "}
+                <i className="bi bi-arrow-right-circle-fill"></i>
+              </a>
+            </Link>
+          </div>
         </div>
         <div className="col d-none d-md-block">
           <img className="img-fluid" src="/event.png" />
