@@ -274,11 +274,13 @@ export interface TicketMarketInterface extends utils.Interface {
     "MarketEventCreated(uint256,string,uint64,uint256,uint256,address)": EventFragment;
     "MarketTicketCreated(uint256,uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "ResaleTicketCreated(uint256,uint256,address,uint256,bool)": EventFragment;
+    "TicketValidated(uint256,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "MarketEventCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MarketTicketCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ResaleTicketCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TicketValidated"): EventFragment;
 }
 
 export type MarketEventCreatedEvent = TypedEvent<
@@ -325,6 +327,13 @@ export type ResaleTicketCreatedEvent = TypedEvent<
 
 export type ResaleTicketCreatedEventFilter =
   TypedEventFilter<ResaleTicketCreatedEvent>;
+
+export type TicketValidatedEvent = TypedEvent<
+  [BigNumber, string],
+  { tokenId: BigNumber; ownerAddress: string }
+>;
+
+export type TicketValidatedEventFilter = TypedEventFilter<TicketValidatedEvent>;
 
 export interface TicketMarket extends BaseContract {
   contractName: "TicketMarket";
@@ -684,7 +693,7 @@ export interface TicketMarket extends BaseContract {
       r: BytesLike,
       s: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<string>;
   };
 
   filters: {
@@ -738,6 +747,15 @@ export interface TicketMarket extends BaseContract {
       resalePrice?: null,
       sold?: null
     ): ResaleTicketCreatedEventFilter;
+
+    "TicketValidated(uint256,address)"(
+      tokenId?: BigNumberish | null,
+      ownerAddress?: null
+    ): TicketValidatedEventFilter;
+    TicketValidated(
+      tokenId?: BigNumberish | null,
+      ownerAddress?: null
+    ): TicketValidatedEventFilter;
   };
 
   estimateGas: {

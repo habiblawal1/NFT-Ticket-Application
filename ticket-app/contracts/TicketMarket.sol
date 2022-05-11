@@ -75,6 +75,11 @@ contract TicketMarket is ERC1155Holder{
     bool sold
   );
 
+  event TicketValidated (    
+    uint indexed tokenId,
+    address ownerAddress
+  );
+
   /* Places an item for sale on the marketplace */
   function createEvent(
     string memory uri, uint64 startDate
@@ -230,7 +235,7 @@ contract TicketMarket is ERC1155Holder{
     idToResaleTicket[_resaleId].sold = true;
   }
 
-  function validateTicket(address nftContract, uint256 tokenId, bytes32 hash, uint8 v, bytes32 r, bytes32 s) public{
+  function validateTicket(address nftContract, uint256 tokenId, bytes32 hash, uint8 v, bytes32 r, bytes32 s) public returns (address){
     //Only event owner can validate ticket
     require(idToMarketEvent[idToMarketTicket[tokenId].eventId].owner == msg.sender, "You do not the own the event for the ticket trying to be validated");
 
@@ -246,6 +251,13 @@ contract TicketMarket is ERC1155Holder{
     require(idToValidated[tokenId][signatureAddress]==false, "User has already validated ticket");
 
     idToValidated[tokenId][signatureAddress] = true;
+
+    emit TicketValidated(
+      tokenId,
+      signatureAddress
+    );
+
+    return signatureAddress;
   }
 
   function listOnResale(address nftContract, uint256 _tokenId, uint256 price) public returns (uint) {

@@ -42,8 +42,8 @@ export default function createTicket() {
   async function loadData() {
     let eventData = "";
     try {
-      const contracts = await signers();
-      const { signedMarketContract, signer } = contracts;
+      const signedContracts = await signers();
+      const { signedMarketContract, signer } = signedContracts;
       if (!Number.isInteger(parseInt(eventId))) {
         throw new Error("Event ID used to create ticket was not valid");
       }
@@ -148,8 +148,8 @@ export default function createTicket() {
       royaltyFee,
       maxResalePriceMATIC,
     } = formInput;
-    const contracts = await signers();
-    const { signedMarketContract, signedTokenContract } = contracts;
+    const getContracts = await signers();
+    const { signedMarketContract, signedTokenContract } = getContracts;
 
     try {
       setLoadingState(false);

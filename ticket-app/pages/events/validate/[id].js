@@ -57,8 +57,8 @@ export default function validate() {
       if (!Number.isInteger(parseInt(eventId))) {
         throw new Error(`Event ID '${eventId}' is not valid`);
       }
-      const contracts = await signers();
-      const { signer, signedMarketContract } = contracts;
+      const signedContracts = await signers();
+      const { signer, signedMarketContract } = signedContracts;
       const address = await signer.getAddress();
 
       console.log("GET EVENT DATA");
@@ -90,14 +90,24 @@ export default function validate() {
 
   async function verifyTicket() {
     try {
-      const contracts = await signers();
-      const { signedMarketContract } = contracts;
-      let verifiedAddress = ethers.utils.verifyMessage(id, sig);
-      await signedMarketContract.validateTicket(
+      const signedContracts = await signers();
+      const { signedMarketContract } = signedContracts;
+      const messageHash = ethers.utils.id(id);
+      const fullSig = ethers.utils.splitSignature(sig);
+      const validateTicketEvent = await signedMarketContract.validateTicket(
         nftaddress,
-        verifiedAddress,
-        id
+        id,
+        messageHash,
+        fullSig.v,
+        fullSig.r,
+        fullSig.s
       );
+      let verifiedAddress = await validateTicketEvent.wait();
+      verifiedAddress.events.forEach((element) => {
+        if (element.event == "TicketValidated") {
+          verifiedAddress = element.args.ownerAddress;
+        }
+      });
       //   let qty = await tokenContract.balanceOf(verifiedAddress, id);
       //   console.log(`Balance of ${verifiedAddress} is ${qty.toNumber()}`);
       setVer(

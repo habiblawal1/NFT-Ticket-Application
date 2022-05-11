@@ -511,21 +511,21 @@ describe("Ticket validation", function () {
     let messageHashBytes = ethers.utils.arrayify(messageHash);
 
     // Sign the binary data
-    let flatSig = await sellerAddress.signMessage(messageHashBytes);
+    let flatSig = await buyerAddress.signMessage(messageHashBytes);
 
     // For Solidity, we need the expanded-format of a signature
     let sig = ethers.utils.splitSignature(flatSig);
+    console.log("Sig = ", flatSig);
 
-    // Call the verifyHash function
-    //function validateTicket(address nftContract, uint256 tokenId, bytes32 hash, uint8 v, bytes32 r, bytes32 s) public{
-    await market
+    const validateTicketEvent = await market
       .connect(sellerAddress)
       .validateTicket(nftContract, tokenId, messageHash, sig.v, sig.r, sig.s);
-
-    // "0x14791697260E4c9A71f18484C9f997B308e59325"
-
-    //  await market
-    // .connect(sellerAddress)
-    // .validateTicket(nftContract, buyerAddress.address, 1);
+    let signatureAddress = await validateTicketEvent.wait();
+    signatureAddress.events.forEach((element) => {
+      if (element.event == "TicketValidated") {
+        signatureAddress = element.args.ownerAddress;
+      }
+    });
+    console.log(signatureAddress);
   });
 });

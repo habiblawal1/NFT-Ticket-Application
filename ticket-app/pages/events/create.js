@@ -85,8 +85,8 @@ export default function createEvent() {
 
   async function addEvent() {
     setLoadingState(false);
-    const contracts = await signers();
-    const { signedMarketContract } = contracts;
+    const signedContracts = await signers();
+    const { signedMarketContract } = signedContracts;
     /* create the event  */
     try {
       formatDate(eventDate);

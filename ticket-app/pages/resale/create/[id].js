@@ -28,8 +28,8 @@ export default function resellTicket() {
       if (!Number.isInteger(parseInt(ticketId))) {
         throw new Error("Ticket ID was not valid");
       }
-      const contracts = await signers();
-      const { signer } = contracts;
+      const signedContracts = await signers();
+      const { signer } = signedContracts;
       const address = signer.getAddress();
       const qty = await tokenContract.balanceOf(address, ticketId);
       if (qty < 1) {
