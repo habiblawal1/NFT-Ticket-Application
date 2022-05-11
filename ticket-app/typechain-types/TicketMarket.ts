@@ -119,7 +119,7 @@ export interface TicketMarketInterface extends utils.Interface {
     "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "onERC1155Received(address,address,uint256,uint256,bytes)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "validateTicket(address,address,uint256)": FunctionFragment;
+    "validateTicket(address,uint256,bytes32,uint8,bytes32,bytes32)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -197,7 +197,14 @@ export interface TicketMarketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "validateTicket",
-    values: [string, string, BigNumberish]
+    values: [
+      string,
+      BigNumberish,
+      BytesLike,
+      BigNumberish,
+      BytesLike,
+      BytesLike
+    ]
   ): string;
 
   decodeFunctionResult(
@@ -449,8 +456,11 @@ export interface TicketMarket extends BaseContract {
 
     validateTicket(
       nftContract: string,
-      userAddress: string,
       tokenId: BigNumberish,
+      hash: BytesLike,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -557,8 +567,11 @@ export interface TicketMarket extends BaseContract {
 
   validateTicket(
     nftContract: string,
-    userAddress: string,
     tokenId: BigNumberish,
+    hash: BytesLike,
+    v: BigNumberish,
+    r: BytesLike,
+    s: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -665,8 +678,11 @@ export interface TicketMarket extends BaseContract {
 
     validateTicket(
       nftContract: string,
-      userAddress: string,
       tokenId: BigNumberish,
+      hash: BytesLike,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -821,8 +837,11 @@ export interface TicketMarket extends BaseContract {
 
     validateTicket(
       nftContract: string,
-      userAddress: string,
       tokenId: BigNumberish,
+      hash: BytesLike,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -926,8 +945,11 @@ export interface TicketMarket extends BaseContract {
 
     validateTicket(
       nftContract: string,
-      userAddress: string,
       tokenId: BigNumberish,
+      hash: BytesLike,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
