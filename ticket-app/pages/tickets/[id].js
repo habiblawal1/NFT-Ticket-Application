@@ -30,8 +30,8 @@ export default function ticketDetails() {
       if (!Number.isInteger(parseInt(tokenId))) {
         throw new Error(`Ticket ID '${tokenId}' is not valid`);
       }
-      const contracts = await signers();
-      const { signer } = contracts;
+      const signedContracts = await signers();
+      const { signer } = signedContracts;
       const address = await signer.getAddress();
       let myBalance = await tokenContract.balanceOf(address, tokenId);
       myBalance = myBalance.toNumber();

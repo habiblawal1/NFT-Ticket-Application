@@ -39,8 +39,8 @@ export default function adminEvent() {
         throw new Error(`Event ID '${eventId}' is not valid`);
       }
 
-      const contracts = await signers();
-      const { signer, signedMarketContract } = contracts;
+      const signedContracts = await signers();
+      const { signer, signedMarketContract } = signedContracts;
       const address = await signer.getAddress();
 
       const data = await signedMarketContract.getEvent(eventId);

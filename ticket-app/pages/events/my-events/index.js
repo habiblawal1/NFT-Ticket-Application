@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "../../../styles/Card.module.scss";
 import axios from "axios";
 
-import { signers } from "../../../components/contracts";
+import { signers } from "../../../components/Contracts";
 
 export default function myEvents() {
   const router = useRouter();
@@ -18,8 +18,8 @@ export default function myEvents() {
 
   async function loadEvents() {
     try {
-      const contracts = await signers();
-      const { signedMarketContract } = contracts;
+      const signedContracts = await signers();
+      const { signedMarketContract } = signedContracts;
 
       const data = await signedMarketContract.getMyEvents();
       console.log(data);

@@ -19,8 +19,8 @@ export default function myResaleListings() {
 
   async function loadListings() {
     try {
-      const contracts = await signers();
-      const { signedMarketContract } = contracts;
+      const signedContracts = await signers();
+      const { signedMarketContract } = signedContracts;
       const data = await signedMarketContract.getMyResaleListings();
       console.log(data);
 

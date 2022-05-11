@@ -119,7 +119,7 @@ export interface TicketMarketInterface extends utils.Interface {
     "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "onERC1155Received(address,address,uint256,uint256,bytes)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "validateTicket(address,address,uint256)": FunctionFragment;
+    "validateTicket(address,uint256,bytes32,uint8,bytes32,bytes32)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -197,7 +197,14 @@ export interface TicketMarketInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "validateTicket",
-    values: [string, string, BigNumberish]
+    values: [
+      string,
+      BigNumberish,
+      BytesLike,
+      BigNumberish,
+      BytesLike,
+      BytesLike
+    ]
   ): string;
 
   decodeFunctionResult(
@@ -267,11 +274,13 @@ export interface TicketMarketInterface extends utils.Interface {
     "MarketEventCreated(uint256,string,uint64,uint256,uint256,address)": EventFragment;
     "MarketTicketCreated(uint256,uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "ResaleTicketCreated(uint256,uint256,address,uint256,bool)": EventFragment;
+    "TicketValidated(uint256,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "MarketEventCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MarketTicketCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ResaleTicketCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TicketValidated"): EventFragment;
 }
 
 export type MarketEventCreatedEvent = TypedEvent<
@@ -318,6 +327,13 @@ export type ResaleTicketCreatedEvent = TypedEvent<
 
 export type ResaleTicketCreatedEventFilter =
   TypedEventFilter<ResaleTicketCreatedEvent>;
+
+export type TicketValidatedEvent = TypedEvent<
+  [BigNumber, string],
+  { tokenId: BigNumber; ownerAddress: string }
+>;
+
+export type TicketValidatedEventFilter = TypedEventFilter<TicketValidatedEvent>;
 
 export interface TicketMarket extends BaseContract {
   contractName: "TicketMarket";
@@ -449,8 +465,11 @@ export interface TicketMarket extends BaseContract {
 
     validateTicket(
       nftContract: string,
-      userAddress: string,
       tokenId: BigNumberish,
+      hash: BytesLike,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -557,8 +576,11 @@ export interface TicketMarket extends BaseContract {
 
   validateTicket(
     nftContract: string,
-    userAddress: string,
     tokenId: BigNumberish,
+    hash: BytesLike,
+    v: BigNumberish,
+    r: BytesLike,
+    s: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -665,10 +687,13 @@ export interface TicketMarket extends BaseContract {
 
     validateTicket(
       nftContract: string,
-      userAddress: string,
       tokenId: BigNumberish,
+      hash: BytesLike,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<string>;
   };
 
   filters: {
@@ -722,6 +747,15 @@ export interface TicketMarket extends BaseContract {
       resalePrice?: null,
       sold?: null
     ): ResaleTicketCreatedEventFilter;
+
+    "TicketValidated(uint256,address)"(
+      tokenId?: BigNumberish | null,
+      ownerAddress?: null
+    ): TicketValidatedEventFilter;
+    TicketValidated(
+      tokenId?: BigNumberish | null,
+      ownerAddress?: null
+    ): TicketValidatedEventFilter;
   };
 
   estimateGas: {
@@ -821,8 +855,11 @@ export interface TicketMarket extends BaseContract {
 
     validateTicket(
       nftContract: string,
-      userAddress: string,
       tokenId: BigNumberish,
+      hash: BytesLike,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -926,8 +963,11 @@ export interface TicketMarket extends BaseContract {
 
     validateTicket(
       nftContract: string,
-      userAddress: string,
       tokenId: BigNumberish,
+      hash: BytesLike,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
