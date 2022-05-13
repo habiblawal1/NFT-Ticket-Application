@@ -1,11 +1,13 @@
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
+import secret from "../secret.json";
 
 import { nftaddress, nftmarketaddress } from "../config";
 import NFT from "../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
 import Market from "../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
 
-const provider = new ethers.providers.JsonRpcProvider();
+const providerUrl = secret.infuraURL;
+const provider = new ethers.providers.JsonRpcProvider(providerUrl);
 export const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
 export const marketContract = new ethers.Contract(
   nftmarketaddress,
