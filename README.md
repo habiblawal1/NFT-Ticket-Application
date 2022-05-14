@@ -36,6 +36,21 @@ Its used to see if another contract that you are talking to implements a certain
 - maxWidth is how big it'll stretch for the screen size
 - "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4" = If theres a small screen we'll show 2 cokumns and if its wide then 4 columns, and if really small then 1 column
 
+  theme: {
+  extend: {},
+  colors: {
+  primary: "#00ABFF",
+  secondary: "#EEE8A9",
+  red: "#FF0000",
+  black: "#000000",
+  white: "#FFFFFF",
+  green: "#29B706",
+  light_grey: "#E5E5E5",
+  mid_grey: "#C4C4C4",
+  dark_grey: "#A7A7A7",
+  },
+  },
+
 Mount = if a component is mounted it means it's added to the ui. Basically means initialising something
 
 Mount - Component Intitialized

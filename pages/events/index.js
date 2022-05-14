@@ -91,7 +91,7 @@ export default function allEvents() {
                 <div style={{ height: "60px", overflow: "auto" }}>
                   <h5 className="card-title text-center">
                     <span className="fw-bold text-primary">{event.name}</span> -
-                    ID: {event.eventId}
+                    ID: #{event.eventId}
                   </h5>
                 </div>
                 <div style={{ height: "64px", overflow: "auto" }}>
