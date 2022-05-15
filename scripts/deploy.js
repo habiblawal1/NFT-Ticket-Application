@@ -14,17 +14,13 @@ async function main() {
 
   // We get the contract to deploy
   const Market = await ethers.getContractFactory("TicketMarket");
-  console.log("Market deploy()");
   const market = await Market.deploy();
-  console.log("Market deployed()");
   await market.deployed();
   const marketAddress = market.address;
   console.log("TicketMarket Contract deployed to:", marketAddress);
 
   const NFT = await ethers.getContractFactory("NFTTicket");
-  console.log("Ticket deploy()");
   const nft = await NFT.deploy(marketAddress);
-  console.log("Ticket deployed()");
   await nft.deployed();
   const nftContract = nft.address;
   console.log("NFTTicket Contract deployed to:", nftContract);

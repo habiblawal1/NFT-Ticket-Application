@@ -209,7 +209,7 @@ export default function createTicket() {
   }
 
   if (!eventName && err.length > 0) {
-    return <p className="display-6 text-red">{err}</p>;
+    return <p className="display-6 text-danger">{err}</p>;
   }
 
   return (
@@ -341,7 +341,7 @@ export default function createTicket() {
         Create Tickets
       </button>
       <div>
-        <p className="display-6 text-red">{err}</p>
+        <p className="display-6 text-danger">{err}</p>
       </div>
     </div>
   );

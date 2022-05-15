@@ -7,3 +7,10 @@ export const nftmarketaddress = "0x26C7cb8d07D92C742b310C02716E726823C1Dc47";
 
 const dev = process.env.NODE_ENV !== "production";
 export const server = dev ? "http://localhost:3000" : "https://yourwebsite.com";
+
+// Market deploy()
+// Market deployed()
+// TicketMarket Contract deployed to: 0x7a8436A983707bA99813d21d0C7d0d035D5eaD21
+// Ticket deploy()
+// Ticket deployed()
+// NFTTicket Contract deployed to: 0x5Dde79546585866d45f73405B942cb0a2FB9F1D4

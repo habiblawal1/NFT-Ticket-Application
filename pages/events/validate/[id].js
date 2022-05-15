@@ -132,7 +132,7 @@ export default function validate() {
   if (err) {
     return (
       <div className="container">
-        <p className="text-red display-6">{err}</p>
+        <p className="text-danger display-6">{err}</p>
       </div>
     );
   }
@@ -172,12 +172,12 @@ export default function validate() {
                 Verfiy
               </button>
             )}
-            <h3 className="text-green display-6">{ver}</h3>
+            <h3 className="text-success display-6">{ver}</h3>
           </div>
         </>
       )}
 
-      {valErr && <p className="text-red display-6">{valErr}</p>}
+      {valErr && <p className="text-danger display-6">{valErr}</p>}
 
       {(valErr || ver) && (
         <h3>

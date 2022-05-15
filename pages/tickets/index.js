@@ -81,7 +81,7 @@ export default function myTickets() {
     return <h1 className="container display-1">Loading...</h1>;
   }
   if (err) {
-    <p className="container text-red display-6">{err}</p>;
+    <p className="container text-danger display-6">{err}</p>;
   }
   return (
     <div className="container justify-content-center align-items-center">

@@ -90,7 +90,7 @@ export default function ticketDetails() {
   if (err) {
     return (
       <div className="container text-center">
-        <p className="text-red display-6">{err}</p>
+        <p className="text-danger display-6">{err}</p>
         <p>
           <Link href={`/tickets/`}>My Tickets-&gt;</Link>
         </p>
@@ -168,7 +168,7 @@ export default function ticketDetails() {
                 </div>
                 <p className="fw-bold text-center">
                   <Link href={`/resale/create/${tokenId}`}>
-                    <a className="text-black">
+                    <a className="text-dark">
                       Resell Ticket{" "}
                       <i className="bi bi-arrow-right-circle-fill"></i>
                     </a>

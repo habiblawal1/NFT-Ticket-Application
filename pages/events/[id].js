@@ -148,7 +148,7 @@ export default function eventDetails() {
 
   if (err) {
     <div className="container text-center">
-      <p className="text-red display-6">{err}</p>
+      <p className="text-danger display-6">{err}</p>
     </div>;
   }
 
@@ -276,7 +276,7 @@ export default function eventDetails() {
           </div>
         </section>
 
-        {err && <p className="text-red display-6">{err}</p>}
+        {err && <p className="container text-danger display-6">{err}</p>}
       </>
     )
   );

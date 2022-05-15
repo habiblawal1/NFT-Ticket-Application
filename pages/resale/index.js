@@ -75,7 +75,7 @@ export default function myResaleListings() {
     return <h1 className="container display-1">Loading...</h1>;
   }
   if (err) {
-    return <p className="container text-red display-6">{err}</p>;
+    return <p className="container text-danger display-6">{err}</p>;
   }
 
   return (

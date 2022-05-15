@@ -37,8 +37,8 @@ const loginStatus = (props) => {
           <p className="lead">
             Providing extra trust and security for attending events
           </p>
-          <h2 className=" text-red">Failed to log into Metamask</h2>
-          <h4 className="text-red">
+          <h2 className=" text-danger">Failed to log into Metamask</h2>
+          <h4 className="text-danger">
             Please try logging in again and then{" "}
             <span className="fw-bold">REFRESH</span> the page
           </h4>

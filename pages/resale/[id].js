@@ -136,7 +136,7 @@ export default function eventResaleListings() {
 
   if (!resaleTickets.length) {
     return err ? (
-      <p className="container text-red display-6">{err}</p>
+      <p className="container text-danger display-6">{err}</p>
     ) : (
       <h1 className="container text-center display-6">
         No resale tickets available for the Ticket ID: {tokenId}
@@ -198,7 +198,7 @@ export default function eventResaleListings() {
           </div>
         </div>
       ))}
-      {err && <p className="text-red text-center display-6">{err}</p>}
+      {err && <p className="text-danger text-center display-6">{err}</p>}
     </div>
   );
 }

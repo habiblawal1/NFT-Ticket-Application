@@ -76,7 +76,7 @@ export default function myEvents() {
   if (err) {
     <div className="container text-center">
       <h1>Your Events</h1>
-      <p className="text-red display-6">{err}</p>
+      <p className="text-danger display-6">{err}</p>
     </div>;
   }
 

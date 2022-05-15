@@ -97,7 +97,7 @@ export default function resellTicket() {
   }
 
   if (!royaltyFee && err) {
-    return <p className="container text-red display-6">{err}</p>;
+    return <p className="container text-danger display-6">{err}</p>;
   }
 
   return (
@@ -166,7 +166,7 @@ export default function resellTicket() {
       <button onClick={listForResale} className="btn btn-lg btn-primary">
         List
       </button>
-      {err && <p className="text-red display-6">{err}</p>}
+      {err && <p className="text-danger display-6">{err}</p>}
     </div>
   );
 }

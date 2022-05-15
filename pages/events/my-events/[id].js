@@ -157,7 +157,7 @@ export default function adminEvent() {
   if (err) {
     return (
       <div className="container">
-        <p className="text-red display-6">{err}</p>
+        <p className="text-danger display-6">{err}</p>
       </div>
     );
   }
@@ -310,7 +310,7 @@ export default function adminEvent() {
           </button>
         </div>
 
-        {err && <p className="text-red display-6">{err}</p>}
+        {err && <p className="text-danger display-6">{err}</p>}
       </div>
     )
   );
