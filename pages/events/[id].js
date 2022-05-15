@@ -199,7 +199,7 @@ export default function eventDetails() {
                     <div className="w-50 text-center">
                       <h3>
                         <span className="fw-bold">{ticket.name}</span>
-                        {` - ID :${ticket.tokenId} `}
+                        {` - ID: #${ticket.tokenId} `}
                       </h3>
                       <div style={{ height: "55px", overflow: "auto" }}>
                         {ticket.description && <h6>{ticket.description}</h6>}
