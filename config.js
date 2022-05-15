@@ -11,4 +11,4 @@ export const nftaddress = "0x5Dde79546585866d45f73405B942cb0a2FB9F1D4";
 const dev = process.env.NODE_ENV !== "production";
 export const server = dev
   ? "http://localhost:3000"
-  : "https://nft-ticket-application.vercel.app";
+  : "https://nfticketing.vercel.app";
