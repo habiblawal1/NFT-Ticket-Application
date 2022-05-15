@@ -6,6 +6,9 @@
 - **npx hardhat node** = Run blockchain on local node
 - **npx hardhat run scripts/deploy.js --network localhost** = Initial startup scripts to upload my smart contracts for ticketing app
 - **npm run dev** = Start up application
+- **npx hardhat run scripts/deploy.js --network mumbai** = Initial startup scripts to upload my smart contracts for ticketing app
+- **npx hardhat verify --network mumbai DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1"** = Verify contract
+- npx prettier --write 'contracts/\*_/_.sol' = Run prettier on code to auto format it
 
 ## IERC1155Receiver
 
@@ -34,6 +37,21 @@ Its used to see if another contract that you are talking to implements a certain
 - Justufy-center centers all elwmwnnts within tag
 - maxWidth is how big it'll stretch for the screen size
 - "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4" = If theres a small screen we'll show 2 cokumns and if its wide then 4 columns, and if really small then 1 column
+
+  theme: {
+  extend: {},
+  colors: {
+  primary: "#00ABFF",
+  secondary: "#EEE8A9",
+  red: "#FF0000",
+  black: "#000000",
+  white: "#FFFFFF",
+  green: "#29B706",
+  light_grey: "#E5E5E5",
+  mid_grey: "#C4C4C4",
+  dark_grey: "#A7A7A7",
+  },
+  },
 
 Mount = if a component is mounted it means it's added to the ui. Basically means initialising something
 
@@ -105,3 +123,50 @@ Redux is a pattern and library for managing and updating application state, usin
 Redux helps you manage "global" state - state that is needed across many parts of your application.
 
 //TODO - Current error check for if logged in works fine but really it should be for only when doing something that requires a signature. Should find a way to use global state to check login
+
+# Advanced Sample Hardhat Project
+
+This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+
+The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+
+Try running some of the following tasks:
+
+```shell
+npx hardhat accounts
+npx hardhat compile
+npx hardhat clean
+npx hardhat test
+npx hardhat node
+npx hardhat help
+REPORT_GAS=true npx hardhat test
+npx hardhat coverage
+npx hardhat run scripts/deploy.ts
+TS_NODE_FILES=true npx ts-node scripts/deploy.ts
+npx eslint '**/*.{js,ts}'
+npx eslint '**/*.{js,ts}' --fix
+npx prettier '**/*.{json,sol,md}' --check
+npx prettier '**/*.{json,sol,md}' --write
+npx solhint 'contracts/**/*.sol'
+npx solhint 'contracts/**/*.sol' --fix
+```
+
+# Etherscan verification
+
+To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
+
+In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
+
+```shell
+hardhat run --network ropsten scripts/sample-script.ts
+```
+
+Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+
+```shell
+npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+```
+
+# Performance optimizations
+
+For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
