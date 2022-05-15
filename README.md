@@ -7,7 +7,7 @@
 - **npx hardhat run scripts/deploy.js --network localhost** = Initial startup scripts to upload my smart contracts for ticketing app
 - **npm run dev** = Start up application
 - **npx hardhat run scripts/deploy.js --network mumbai** = Initial startup scripts to upload my smart contracts for ticketing app
-- **npx hardhat verify --network mainnet DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1"** = Verify contract
+- **npx hardhat verify --network mumbai DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1"** = Verify contract
 - npx prettier --write 'contracts/\*_/_.sol' = Run prettier on code to auto format it
 
 ## IERC1155Receiver
