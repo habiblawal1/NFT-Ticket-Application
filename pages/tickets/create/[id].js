@@ -73,7 +73,7 @@ export default function createTicket() {
 
   async function getPlaceholderImage() {
     const imageOriginUrl =
-      "https://ipfs.io/ipfs/bafkreibmj25canr2btdofjrek7djq4ghn5nwzhlh5t2uf2n6ad4nved4la";
+      "https://ipfs.io/ipfs/bafkreiaigok4ksrkoxv2duyh2tmkom3gawurroggyyh5zpd2ikhq4umdp4";
     const r = await fetch(imageOriginUrl);
     if (!r.ok) {
       throw new Error(`error fetching image: [${r.statusCode}]: ${r.status}`);

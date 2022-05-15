@@ -5,3 +5,20 @@ export const positiveInt = (arr) => {
     }
   });
 };
+
+function getExtension(filename) {
+  const parts = filename.split(".");
+  return parts[parts.length - 1];
+}
+
+export function isValidImage(filename) {
+  const ext = getExtension(filename);
+  switch (ext.toLowerCase()) {
+    case "jpg":
+    case "jpeg":
+    case "gif":
+    case "png":
+      return true;
+  }
+  return false;
+}
