@@ -8,6 +8,7 @@ import { useRouter } from "next/router"; //allows us to programatically route to
 const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we can use that sets and pins items to ipfs
 
 import { signers } from "../../components/Contracts";
+import { isValidImage } from "../../components/Validation";
 
 export default function createEvent() {
   const [loadingState, setLoadingState] = useState(true);
@@ -55,7 +56,14 @@ export default function createEvent() {
 
   async function uploadToIPFS() {
     const { name, description, address, postcode } = formInput;
-    if (!name || !description || !address || !postcode || !eventDate) {
+    if (
+      !name ||
+      !description ||
+      !address ||
+      !postcode ||
+      !eventDate ||
+      !eventPic
+    ) {
       throw new Error("Please check you have completed all fields");
     }
 
@@ -104,6 +112,16 @@ export default function createEvent() {
         ? setErr(error.message)
         : setErr(error.data.message);
       setLoadingState(true);
+    }
+  }
+
+  function handleFileInput(file) {
+    if (isValidImage(file.name)) {
+      setEventPic(file);
+      setErr("");
+    } else {
+      setEventPic(null);
+      setErr("Please upload a JPEG, PNG or GIF file");
     }
   }
 
@@ -188,7 +206,7 @@ export default function createEvent() {
           type="file"
           name="Picture"
           className="form-control"
-          onChange={(e) => setEventPic(e.target.files[0])}
+          onChange={(e) => handleFileInput(e.target.files[0])}
         />
       </div>
       <div>
