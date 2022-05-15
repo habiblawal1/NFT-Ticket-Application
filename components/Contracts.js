@@ -6,7 +6,6 @@ import NFT from "../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
 import Market from "../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
 
 const providerUrl = process.env.NEXT_PUBLIC_INFURA_URL;
-console.log("Provider URL = ", providerUrl);
 const provider = new ethers.providers.JsonRpcProvider(providerUrl);
 export const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
 export const marketContract = new ethers.Contract(

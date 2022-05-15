@@ -139,15 +139,15 @@ export default function myEvents() {
                 </Link>
               </div>
               <div className="card-footer bg-primary">
-                <p className="text-light fw-bold">
+                <p className="small text-light fw-bold">
                   Tickets Supplied: {event.ticketTotal}
                 </p>
                 {event.ticketRemaining > 0 ? (
-                  <p className="text-cream fw-bold">
+                  <p className="small text-cream fw-bold">
                     Tickets Remaining: {event.ticketRemaining}
                   </p>
                 ) : (
-                  <p className="text-light fw-bold">
+                  <p className="small text-light fw-bold">
                     Tickets Remaining: {event.ticketRemaining}
                   </p>
                 )}
