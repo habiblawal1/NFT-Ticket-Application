@@ -218,7 +218,7 @@ export default function adminEvent() {
                     <div className="w-50 text-center">
                       <h3>
                         <span className="fw-bold">{ticket.name}</span>
-                        {` - ID :${ticket.tokenId} `}
+                        {` - ID: #${ticket.tokenId} `}
                       </h3>
                       <div style={{ height: "55px", overflow: "auto" }}>
                         {ticket.description && <h6>{ticket.description}</h6>}
@@ -232,7 +232,7 @@ export default function adminEvent() {
                     </div>
                     <div className="w-50 justify-content-center align-items-center text-center">
                       <div className="d-flex justify-content-between">
-                        <div className="w-50">
+                        <div className="w-48">
                           <div>
                             <h6> Royalty Fee: {ticket.royaltyFee}%</h6>
                             <h6> Purchase Limit: {ticket.limit}</h6>
@@ -247,16 +247,16 @@ export default function adminEvent() {
                             </h6>
                           </div>
                         </div>
-                        <div className="text-center p-2 m-2 bg-primary w-50">
-                          <p className="text-light fw-bold">
+                        <div className="text-center p-2 m-2 bg-primary w-52">
+                          <p className="small text-light fw-bold">
                             Tickets Supplied: {ticket.supply}
                           </p>
                           {ticket.remaining > 0 ? (
-                            <p className="text-cream fw-bold">
+                            <p className="small text-cream fw-bold">
                               Tickets Remaining: {ticket.remaining}
                             </p>
                           ) : (
-                            <p className="text-light fw-bold">
+                            <p className="small text-light fw-bold">
                               Tickets Remaining: {ticket.remaining}
                             </p>
                           )}
