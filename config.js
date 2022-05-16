@@ -5,8 +5,14 @@
 // export const nftaddress = "0x55bEE48806F2c935B5Bc6e364d1082d85E13cdE8";
 // export const nftmarketaddress = "0x26C7cb8d07D92C742b310C02716E726823C1Dc47";
 
-export const nftmarketaddress = "0x7a8436A983707bA99813d21d0C7d0d035D5eaD21";
-export const nftaddress = "0x5Dde79546585866d45f73405B942cb0a2FB9F1D4";
+// export const nftmarketaddress = "0x7a8436A983707bA99813d21d0C7d0d035D5eaD21";
+// export const nftaddress = "0x5Dde79546585866d45f73405B942cb0a2FB9F1D4";
+
+export const nftmarketaddress = "0xC67343CAffd07388274cc40a9a344212b2287E4a";
+export const nftaddress = "0xd084dd18E0555544a3B85513c3E3f1C87A6c958B";
+
+// TicketMarket Contract deployed to: 0xC67343CAffd07388274cc40a9a344212b2287E4a
+// NFTTicket Contract deployed to: 0xd084dd18E0555544a3B85513c3E3f1C87A6c958B
 
 const dev = process.env.NODE_ENV !== "production";
 export const server = dev

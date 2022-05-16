@@ -168,8 +168,6 @@ export default function createTicket() {
       });
       console.log("Token ID = ", tokenId);
 
-      //TODO - Redirect people to page
-
       const marketTransaction = await signedMarketContract.createMarketTicket(
         eventId,
         tokenId,
