@@ -33,7 +33,7 @@ export default function resellTicket() {
       const address = signer.getAddress();
       const qty = await tokenContract.balanceOf(address, ticketId);
       if (qty < 1) {
-        throw new Error(`You do not own the Ticked ID: ${ticketId}`);
+        throw new Error(`You do not own the Ticket ID: ${ticketId}`);
       }
       const ticketUri = await tokenContract.uri(ticketId);
       const ticketRequest = await axios.get(ticketUri);
