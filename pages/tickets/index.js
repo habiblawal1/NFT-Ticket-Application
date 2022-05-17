@@ -107,7 +107,7 @@ export default function myTickets() {
                       <span className="fw-bold text-primary">
                         {ticket.eventName}
                       </span>{" "}
-                      - ID: {ticket.eventId}
+                      - ID: #{ticket.eventId}
                     </h3>
                   </div>
                   <div

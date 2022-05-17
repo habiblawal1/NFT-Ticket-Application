@@ -32,7 +32,8 @@ export default function adminEvent() {
       await loadTickets();
     }
     setLoadingState(true);
-  } //TODO - Will show theres tickets tickets supplied and remaining but then won't show that there's any ticketts left in marketplace
+  }
+
   async function loadEvent() {
     try {
       if (!Number.isInteger(parseInt(eventId))) {

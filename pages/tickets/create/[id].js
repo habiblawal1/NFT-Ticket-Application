@@ -29,6 +29,7 @@ export default function createTicket() {
     maxResalePriceMATIC: "0",
   });
   const [eventName, setEventName] = useState("");
+  const [eventPic, setEventPic] = useState("");
   const router = useRouter();
   const eventId = router.query["id"];
   // url: "ipfs://bafyreih6tmlwwzkphuhenrby6diek3oke6xxphvzxaq4bijtlex2gyfliq/metadata.json";
@@ -61,6 +62,7 @@ export default function createTicket() {
       const eventRequest = await axios.get(eventUri);
       eventData = eventRequest.data;
       setEventName(eventData.name);
+      setEventPic(eventData.image);
     } catch (error) {
       console.log(error);
       error.data === undefined
@@ -72,8 +74,7 @@ export default function createTicket() {
   }
 
   async function getPlaceholderImage() {
-    const imageOriginUrl =
-      "https://ipfs.io/ipfs/bafkreiaigok4ksrkoxv2duyh2tmkom3gawurroggyyh5zpd2ikhq4umdp4";
+    const imageOriginUrl = eventPic;
     const r = await fetch(imageOriginUrl);
     if (!r.ok) {
       throw new Error(`error fetching image: [${r.statusCode}]: ${r.status}`);
@@ -166,8 +167,6 @@ export default function createTicket() {
         }
       });
       console.log("Token ID = ", tokenId);
-
-      //TODO - Redirect people to page
 
       const marketTransaction = await signedMarketContract.createMarketTicket(
         eventId,

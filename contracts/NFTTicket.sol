@@ -68,26 +68,3 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
         return;
     }
 }
-
-/**
-    Marketplace{
-        All events
-    }
-    Event{
-        Name
-        Description
-        Start Date
-        Creator
-    }
-    Ticket{
-        Event ID
-        Price
-        Owner
-        *Availability
-    }
-    *Create an empty event
-    *We must map all the events to the correct creater
-    //Withdraw is used to make sure you are the only one who can withdraw from a contract
-    Ticket contract just mints the required amount of your asset with an ID alongside it, e.g. 1 for SWORD, 2 for ARMOUR
-    https://www.youtube.com/watch?v=PakCemMvY58&list=LL&index=20
- */
