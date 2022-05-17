@@ -1,3 +1,71 @@
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+
+require("@nomiclabs/hardhat-waffle");
+
+describe("NFTTicket", async function () {
+  it("It should correctly create an NFT", async function () {
+    const Market = await ethers.getContractFactory("TicketMarket");
+    const market = await Market.deploy();
+    await market.deployed();
+    const marketAddress = market.address;
+
+    const NFT = await ethers.getContractFactory("NFTTicket");
+    const nft = await NFT.deploy(marketAddress);
+    await nft.deployed();
+    const nftContract = nft.address;
+
+    const [_, buyerAddress, buyerAddress2, sellerAddress, sellerAddress2] =
+      await ethers.getSigners();
+
+    const createTokenEvent = await nft
+      .connect(sellerAddress)
+      .createToken("url/1.json", 10);
+    let tokenId = await createTokenEvent.wait();
+    tokenId.events.forEach((element) => {
+      if (element.event == "NFTTicketCreated") {
+        tokenId = element.args.tokenId.toNumber();
+      }
+    });
+    const tokenUri = await nft.uri(tokenId);
+    console.log("Token ID = ", tokenId);
+    console.log("Token URL = ", tokenUri);
+    expect(tokenUri).to.equal("url/1.json");
+  });
+
+  it("It should correctly mint extra quantity of a token", async function () {
+    const Market = await ethers.getContractFactory("TicketMarket");
+    const market = await Market.deploy();
+    await market.deployed();
+    const marketAddress = market.address;
+
+    const NFT = await ethers.getContractFactory("NFTTicket");
+    const nft = await NFT.deploy(marketAddress);
+    await nft.deployed();
+    const nftContract = nft.address;
+
+    const [_, buyerAddress, buyerAddress2, sellerAddress, sellerAddress2] =
+      await ethers.getSigners();
+
+    const createTokenEvent = await nft
+      .connect(sellerAddress)
+      .createToken("url/1.json", 5);
+    let tokenId = await createTokenEvent.wait();
+    tokenId.events.forEach((element) => {
+      if (element.event == "NFTTicketCreated") {
+        tokenId = element.args.tokenId.toNumber();
+      }
+    });
+    let tknQty = await nft.balanceOf(sellerAddress.address, tokenId);
+    console.log("Token ID = ", tokenId);
+    console.log("Initial Tokens Qty = ", tknQty.toNumber());
+    await nft.connect(sellerAddress).addTokens(tokenId, 10);
+    tknQty = await nft.balanceOf(sellerAddress.address, tokenId);
+    console.log("New Tokens Qty = ", tknQty.toNumber());
+    expect(tknQty).to.equal(15);
+  });
+});
+
 describe("General test of all functions", function () {
   it("It should create events, tickets, and execute ticket sales", async function () {
     const Market = await ethers.getContractFactory("TicketMarket");
