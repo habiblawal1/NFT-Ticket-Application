@@ -4,20 +4,22 @@ const { ethers } = require("hardhat");
 require("@nomiclabs/hardhat-waffle");
 
 describe("NFTTicket", async function () {
-  it("It should correctly create an NFT", async function () {
+  let market;
+  let nft;
+  let sellerAddress;
+  beforeEach(async function () {
     const Market = await ethers.getContractFactory("TicketMarket");
-    const market = await Market.deploy();
+    market = await Market.deploy();
     await market.deployed();
-    const marketAddress = market.address;
 
     const NFT = await ethers.getContractFactory("NFTTicket");
-    const nft = await NFT.deploy(marketAddress);
+    nft = await NFT.deploy(market.address);
     await nft.deployed();
-    const nftContract = nft.address;
 
-    const [_, buyerAddress, buyerAddress2, sellerAddress, sellerAddress2] =
-      await ethers.getSigners();
+    [sellerAddress] = await ethers.getSigners();
+  });
 
+  it("It should correctly create an NFT", async function () {
     const createTokenEvent = await nft
       .connect(sellerAddress)
       .createToken("url/1.json", 10);
@@ -34,19 +36,6 @@ describe("NFTTicket", async function () {
   });
 
   it("It should correctly mint extra quantity of a token", async function () {
-    const Market = await ethers.getContractFactory("TicketMarket");
-    const market = await Market.deploy();
-    await market.deployed();
-    const marketAddress = market.address;
-
-    const NFT = await ethers.getContractFactory("NFTTicket");
-    const nft = await NFT.deploy(marketAddress);
-    await nft.deployed();
-    const nftContract = nft.address;
-
-    const [_, buyerAddress, buyerAddress2, sellerAddress, sellerAddress2] =
-      await ethers.getSigners();
-
     const createTokenEvent = await nft
       .connect(sellerAddress)
       .createToken("url/1.json", 5);
