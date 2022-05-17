@@ -27,15 +27,12 @@ export default function myTickets() {
       const ticketContractData = await signedMarketContract.getMyTickets(
         nftaddress
       );
-      console.log(ticketContractData);
       const myTickets = await Promise.all(
         ticketContractData.map(async (i) => {
           const tokenId = i.tokenId.toNumber();
-          console.log(i.eventId.toNumber());
           const tokenUri = await tokenContract.uri(tokenId);
           const ticketRequest = await axios.get(tokenUri);
           const ticketData = ticketRequest.data;
-          console.log("Ticket Data: ", ticketData);
 
           const eventId = i.eventId.toNumber();
           const eventContractData = await signedMarketContract.getEvent(
@@ -44,8 +41,6 @@ export default function myTickets() {
           const eventUri = await eventContractData.uri;
           const eventRequest = await axios.get(eventUri);
           const eventData = eventRequest.data;
-          // console.log("Event Data: ", eventData);
-          // console.log("Ticket Data: ", ticketData);
 
           let price = ethers.utils.formatUnits(i.price.toString(), "ether");
           let gbpPrice = await PoundPrice(price);
@@ -66,7 +61,6 @@ export default function myTickets() {
           return _ticket;
         })
       );
-      console.log("Tickets: ", myTickets);
       setTickets(myTickets);
     } catch (error) {
       console.log(error);

@@ -46,19 +46,15 @@ export default function adminEvent() {
 
       const data = await signedMarketContract.getEvent(eventId);
       if (data.owner != address) {
-        console.log(data.owner);
-        console.log(address);
         throw new Error(`You do not not own the Event ID #${eventId}`);
       }
       const eventUri = await data.uri;
       if (!eventUri) {
         throw new Error("Could not find Event URI");
       }
-      console.log("URI = ", eventUri);
       const eventRequest = await axios.get(eventUri);
       const eventData = eventRequest.data;
 
-      //console.log("EVENT DATA = ", eventData);
       const currEvent = {
         eventId: data.eventId.toNumber(),
         name: eventData.name,
@@ -67,7 +63,7 @@ export default function adminEvent() {
         location: eventData.location,
         startDate: eventData.eventDate,
       };
-      console.log("Event: ", currEvent);
+
       setEvent(currEvent);
       return true;
     } catch (error) {
@@ -112,7 +108,6 @@ export default function adminEvent() {
           return _ticket;
         })
       );
-      console.log("Tickets: ", eventTickets);
       setTickets(eventTickets);
     } catch (error) {
       console.log(error);

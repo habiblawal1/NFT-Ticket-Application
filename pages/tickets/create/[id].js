@@ -166,7 +166,6 @@ export default function createTicket() {
           tokenId = element.args.tokenId.toNumber();
         }
       });
-      console.log("Token ID = ", tokenId);
 
       const marketTransaction = await signedMarketContract.createMarketTicket(
         eventId,

@@ -52,8 +52,6 @@ export default function ticketDetails() {
       const eventUri = await eventContractData.uri;
       const eventRequest = await axios.get(eventUri);
       const eventData = eventRequest.data;
-      // console.log("Event Data: ", eventData);
-      // console.log("Ticket Data: ", ticketData);
 
       let price = ticketData.properties.price;
       let gbpPrice = await PoundPrice(price);
@@ -72,8 +70,6 @@ export default function ticketDetails() {
         gbpPrice,
         quantity: myBalance,
       };
-
-      console.log(_ticket);
       setTicket(_ticket);
     } catch (error) {
       console.log(error);

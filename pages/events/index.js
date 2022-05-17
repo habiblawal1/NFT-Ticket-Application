@@ -25,12 +25,10 @@ export default function allEvents() {
               `Event URI does not exist for Event Id ${i.eventId.toNumber()}`
             );
           }
-          console.log("URI = ", eventUri);
           const eventRequest = await axios.get(eventUri);
           const eventData = eventRequest.data;
           const soldOut =
             i.ticketTotal.toNumber() - i.ticketsSold.toNumber() == 0;
-          console.log("EVENT DATA = ", eventData);
           let currEvent = {
             eventId: i.eventId.toNumber(),
             name: eventData.name,
@@ -44,7 +42,6 @@ export default function allEvents() {
           return currEvent;
         })
       );
-      console.log("All Events: ", allEvents);
       setEvents(allEvents);
       setLoadingState(true);
     } catch (error) {

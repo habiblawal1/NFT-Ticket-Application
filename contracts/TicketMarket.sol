@@ -83,8 +83,6 @@ contract TicketMarket is ERC1155Holder {
     {
         // check if thic fucntion caller is not an zero address account
         require(msg.sender != address(0));
-        console.log(uint64(block.timestamp));
-        console.log(startDate);
         require(
             (uint64(block.timestamp) <= startDate),
             "Date has already passed"
@@ -320,7 +318,6 @@ contract TicketMarket is ERC1155Holder {
         );
 
         address signatureAddress = ecrecover(messageDigest, v, r, s);
-        console.log("Signature address = ", signatureAddress);
 
         //user must own token
         require(

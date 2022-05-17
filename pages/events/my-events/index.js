@@ -22,7 +22,6 @@ export default function myEvents() {
       const { signedMarketContract } = signedContracts;
 
       const data = await signedMarketContract.getMyEvents();
-      console.log(data);
 
       const allEvents = await Promise.all(
         data.map(async (i) => {
@@ -36,7 +35,6 @@ export default function myEvents() {
           const eventData = eventRequest.data;
           let ticketRemaining =
             i.ticketTotal.toNumber() - i.ticketsSold.toNumber();
-          console.log("EVENT DATA = ", eventData);
           let currEvent = {
             eventId: i.eventId.toNumber(),
             name: eventData.name,
@@ -48,16 +46,9 @@ export default function myEvents() {
             ticketRemaining,
             owner: i.owner,
           };
-          console.log(
-            "Event ",
-            currEvent.eventId,
-            " owner = ",
-            currEvent.owner
-          );
           return currEvent;
         })
       );
-      console.log("ALL EVENTS: ", allEvents);
       setEvents(allEvents);
       setLoadingState(true);
     } catch (error) {

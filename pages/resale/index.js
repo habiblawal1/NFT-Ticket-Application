@@ -22,23 +22,19 @@ export default function myResaleListings() {
       const signedContracts = await signers();
       const { signedMarketContract } = signedContracts;
       const data = await signedMarketContract.getMyResaleListings();
-      console.log(data);
 
       const allListings = await Promise.all(
         data.map(async (i) => {
           let tokenId = i.tokenId.toNumber();
           const ticketUri = await tokenContract.uri(tokenId);
-          console.log("Ticket URI: ", ticketUri);
           const ticketRequest = await axios.get(ticketUri);
           const ticketData = ticketRequest.data;
 
           let eventId = ticketData.properties.eventId;
           const currEvent = await signedMarketContract.getEvent(eventId);
           const eventUri = currEvent.uri;
-          console.log("Event URI: ", eventUri);
           const eventRequest = await axios.get(eventUri);
           const eventData = eventRequest.data;
-          console.log(i.resalePrice.toString());
           let price = ethers.utils.formatUnits(
             i.resalePrice.toString(),
             "ether"
@@ -59,7 +55,6 @@ export default function myResaleListings() {
           return currListing;
         })
       );
-      console.log("Your Listings: ", allListings);
       setResaleTickets(allListings);
       setLoadingState(true);
     } catch (error) {

@@ -4,10 +4,6 @@ const Matic = async (price) => {
     if (!price || !(price > 0)) {
       return "0";
     }
-    console.log(
-      "Server string = ",
-      `'${server}/api/conversion/matic/${price}'`
-    );
     const res = await fetch(`${server}/api/conversion/matic/${price}`);
     const data = await res.json();
     if (res.status == 500) {

@@ -39,7 +39,6 @@ export default function eventResaleListings() {
   async function loadEvent() {
     try {
       const ticketUri = await tokenContract.uri(tokenId);
-      console.log("Ticket URI: ", ticketUri);
       const ticketRequest = await axios.get(ticketUri);
       const ticketData = ticketRequest.data;
 

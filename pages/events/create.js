@@ -81,7 +81,7 @@ export default function createEvent() {
       const added = await client.add(data);
       const url = `https://ipfs.infura.io/ipfs/${added.path}`;
       /* after metadata is uploaded to IPFS, return the URL to use it in the transaction */
-      console.log("EVENT URL = ", url);
+      console.log("Event URL = ", url);
       return url;
     } catch (error) {
       console.log(error);

@@ -1,6 +1,5 @@
 import { server } from "../../config";
 const Pound = async (price) => {
-  console.log("Server string = ", `'${server}/api/conversion/gbp/${price}'`);
   try {
     if (!price || !(price > 0)) {
       return 0;

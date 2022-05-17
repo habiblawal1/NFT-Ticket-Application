@@ -34,7 +34,6 @@ export default function validate() {
   const handleScanWebCam = (result) => {
     if (result) {
       setTicket(result);
-      console.log("SCANNED");
       setVer("");
       setValErr("");
       scannedTicket();
@@ -61,10 +60,7 @@ export default function validate() {
       const { signer, signedMarketContract } = signedContracts;
       const address = await signer.getAddress();
 
-      console.log("GET EVENT DATA");
       const data = await signedMarketContract.getEvent(eventId);
-      console.log("EVENT DATA");
-      console.log(data);
       if (data.owner != address) {
         console.log(data.owner);
         console.log(address);
@@ -74,7 +70,6 @@ export default function validate() {
       if (!eventUri) {
         throw new Error("Could not find Event URI");
       }
-      console.log("URI = ", eventUri);
       const eventRequest = await axios.get(eventUri);
       const eventData = eventRequest.data;
       setEventName(eventData.name);
@@ -108,8 +103,6 @@ export default function validate() {
           verifiedAddress = element.args.ownerAddress;
         }
       });
-      //   let qty = await tokenContract.balanceOf(verifiedAddress, id);
-      //   console.log(`Balance of ${verifiedAddress} is ${qty.toNumber()}`);
       setVer(
         `SUCCESS! Ticket #${id} successully verified for Account ${verifiedAddress}`
       );
