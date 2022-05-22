@@ -33,7 +33,7 @@ export default function Home() {
             href={`https://medium.com/@biocoin/why-people-shouldnt-be-afraid-of-crypto-currencies-4834e456d67b`}
           >
             <a className="mr-6">
-              Cick to learn more{" "}
+              Click to learn more{" "}
               <i className="bi bi-arrow-right-circle-fill"></i>
             </a>
           </Link>
