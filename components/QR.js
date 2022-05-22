@@ -9,6 +9,7 @@ import { signers } from "./Contracts";
 const QR = (props) => {
   const [show, setShow] = useState(false);
   const [qr, setQr] = useState("");
+  const [err, setErr] = useState("");
 
   const createSplitSignature = async (message) => {
     const signedContracts = await signers();
@@ -24,9 +25,17 @@ const QR = (props) => {
   };
 
   async function calculateQR() {
-    const signedsecondHalf = await createSplitSignature(props.tokenId);
-    setQr(`${props.tokenId}-${signedsecondHalf}`);
-    setShow(true);
+    try {
+      setErr("");
+      const signedsecondHalf = await createSplitSignature(props.tokenId);
+      setQr(`${props.tokenId}-${signedsecondHalf}`);
+      setShow(true);
+    } catch (error) {
+      console.log(error);
+      error.data === undefined
+        ? setErr(error.message)
+        : setErr(error.data.message);
+    }
   }
 
   const downloadQR = () => {
@@ -53,13 +62,16 @@ const QR = (props) => {
   return (
     <div>
       {!show ? (
-        <button
-          onClick={calculateQR}
-          style={{ backgroundColor: "#eee8a9" }}
-          className="btn text-dark p-4 fw-bold shadow-lg"
-        >
-          Click to Reveal QR Code
-        </button>
+        <div className="container text-center">
+          <button
+            onClick={calculateQR}
+            style={{ backgroundColor: "#eee8a9" }}
+            className="btn text-dark p-4 fw-bold shadow-lg"
+          >
+            Click to Reveal QR Code
+          </button>
+          <p className=" text-danger mt-3">{err}</p>
+        </div>
       ) : (
         <>
           <div className="flex justify-center">
