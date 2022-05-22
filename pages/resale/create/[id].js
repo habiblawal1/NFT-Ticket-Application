@@ -42,7 +42,6 @@ export default function resellTicket() {
       const gbpMaxPrice = await PoundPrice(maxResalePrice);
       setMaxPrice({ matic: maxResalePrice, gbp: gbpMaxPrice });
       setRoyaltyFee(ticketData.properties.royaltyFee);
-      console.log(ticketData);
     } catch (error) {
       console.log(error);
       error.data === undefined
@@ -60,7 +59,6 @@ export default function resellTicket() {
       if (resalePrice.gbp > maxPrice.gbp) {
         throw new Error("Resale price must be less than the max price");
       }
-      console.log("RESALE GBP = ", resalePrice.gbp);
       const contracts = await signers();
       const { signedMarketContract, signedTokenContract } = contracts;
 

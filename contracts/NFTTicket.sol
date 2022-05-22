@@ -54,7 +54,7 @@ contract NFTTicket is ERC1155PresetMinterPauser, Ownable {
     function uri(uint256 tokenId) public view override returns (string memory) {
         require(
             bytes(_NFTInfo[tokenId].uri).length != 0,
-            "No uri exists for the token, please create one using the setTokenUri function"
+            "No uri exists for the token"
         );
         return (_NFTInfo[tokenId].uri);
     }

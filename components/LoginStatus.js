@@ -12,6 +12,9 @@ const loginStatus = (props) => {
   useEffect(() => {
     async function checkSigner() {
       try {
+        if (!window.ethereum) {
+          throw new Error("No provider found");
+        }
         await signers();
         setLoggedIn(true);
       } catch (error) {
