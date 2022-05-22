@@ -51,7 +51,7 @@ const loginStatus = (props) => {
               href={`https://medium.com/@decryptmedia/metamask-the-beginners-guide-6111143f2581`}
             >
               <a className="mr-6">
-                Cick to learn more{" "}
+                Click to learn more{" "}
                 <i className="bi bi-arrow-right-circle-fill"></i>
               </a>
             </Link>
