@@ -62,7 +62,7 @@ export default function createEvent() {
       !address ||
       !postcode ||
       !eventDate ||
-      !eventPic
+      eventPic == "Please upload a JPEG, PNG or GIF file"
     ) {
       throw new Error("Please check you have completed all fields");
     }
