@@ -6,7 +6,7 @@
 - **npx hardhat node** = Run blockchain on local node
 - **npx hardhat run scripts/deploy.js --network localhost** = Initial startup scripts to upload my smart contracts for ticketing app
 - **npm run dev** = Start up application
-- **npx hardhat run scripts/deploy.js --network mumbai** = Initial startup scripts to upload my smart contracts for ticketing app
+- **npx hardhat run scripts/deploy.js --network mumbai** = Deploy scripts to hardhat
 - **npx hardhat verify --network mumbai DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1"** = Verify contract
 - npx prettier --write 'contracts/\*_/_.sol' = Run prettier on code to auto format it
 
