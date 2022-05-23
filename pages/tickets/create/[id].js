@@ -203,11 +203,11 @@ export default function createTicket() {
   }
 
   if (!loadingState) {
-    return <h1 className="px-20 display-1">Loading...</h1>;
+    return <h1 className="container px-20 display-1">Loading...</h1>;
   }
 
   if (!eventName && err.length > 0) {
-    return <p className="display-6 text-danger">{err}</p>;
+    return <p className="container display-6 text-danger">{err}</p>;
   }
 
   return (

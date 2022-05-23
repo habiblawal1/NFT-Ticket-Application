@@ -67,7 +67,6 @@ export default function resellTicket() {
         ticketId
       );
       await approvalTransaction.wait();
-
       const resaleTransaction = await signedMarketContract.listOnResale(
         nftaddress,
         ticketId,
