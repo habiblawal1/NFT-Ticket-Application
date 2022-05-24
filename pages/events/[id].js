@@ -43,11 +43,9 @@ export default function eventDetails() {
       if (!eventUri) {
         throw new Error(`Could not find URI for the Event ID #${eventId}`);
       }
-      console.log("URI = ", eventUri);
       const eventRequest = await axios.get(eventUri);
       const eventData = eventRequest.data;
 
-      //console.log("EVENT DATA = ", eventData);
       const currEvent = {
         eventId: data.eventId.toNumber(),
         name: eventData.name,
@@ -57,7 +55,6 @@ export default function eventDetails() {
         startDate: eventData.eventDate,
         owner: data.owner,
       };
-      console.log("Event: ", currEvent);
       setEvent(currEvent);
     } catch (error) {
       console.log(error);
@@ -87,7 +84,6 @@ export default function eventDetails() {
             : (resaleAvail = false);
           let price = ethers.utils.formatUnits(i.price.toString(), "ether");
           let gbpPrice = await PoundPrice(price);
-          console.log("In Pounds", gbpPrice);
           let qty = await tokenContract.balanceOf(nftmarketaddress, tokenId);
           let myQty = await tokenContract.balanceOf(address, tokenId);
           let _ticket = {
