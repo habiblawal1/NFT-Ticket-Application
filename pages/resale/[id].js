@@ -46,11 +46,9 @@ export default function eventResaleListings() {
       const thisEvent = await marketContract.getEvent(eventId);
 
       const eventUri = thisEvent.uri;
-      console.log("Event URI: ", eventUri);
       const eventRequest = await axios.get(eventUri);
       const eventData = eventRequest.data;
 
-      console.log("EVENT DATA = ", eventData);
       const currEvent = {
         eventId,
         name: eventData.name,
@@ -61,8 +59,6 @@ export default function eventResaleListings() {
         name: ticketData.name,
         description: ticketData.description,
       };
-      console.log("Event: ", currEvent);
-      console.log("Ticket: ", currTicket);
       setEvent(currEvent);
       setTicket(currTicket);
     } catch (error) {
@@ -82,7 +78,6 @@ export default function eventResaleListings() {
             i.resalePrice.toString(),
             "ether"
           );
-          console.log("SELLER = ", i.seller);
           let gbpPrice = await PoundPrice(price);
           let _ticket = {
             resaleId: i.resaleId.toNumber(),
@@ -93,7 +88,6 @@ export default function eventResaleListings() {
           return _ticket;
         })
       );
-      console.log("Resale Tickets: ", tickets);
       setResaleTickets(tickets);
     } catch (error) {
       console.log(error);

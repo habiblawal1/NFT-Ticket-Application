@@ -45,8 +45,6 @@ export default function ticketDetails() {
       const ticketRequest = await axios.get(ticketUri);
       const ticketData = ticketRequest.data;
       const eventId = ticketData.properties.eventId;
-      console.log("Event Id: ", eventId);
-      console.log(ticketData);
 
       const eventContractData = await marketContract.getEvent(eventId);
       const eventUri = await eventContractData.uri;
