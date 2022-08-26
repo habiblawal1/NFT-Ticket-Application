@@ -5,8 +5,8 @@
 // export const nftmarketaddress = "0xD542F8f9fc40d4038AEab4CF151FD93AbEA775D0";
 // export const nftaddress = "0x03Ea715E4061a0676DF074d270d4aAE7ac98bE24";
 
-export const nftmarketaddress = "0xdbe31c39173bB483c4fdAC08047B417262C6fC55";
-export const nftaddress = "0x6d0da96bedECe96015eb28b74d1E8B4BAfAE1497";
+export const nftmarketaddress = "0xb29f8654AB112Faf5C0D3F00DA60F1714212B200";
+export const nftaddress = "0xbA43A2c5bF07230beFC88C0B6759b31045a113e3";
 
 const dev = process.env.NODE_ENV !== "production";
 export const server = dev
