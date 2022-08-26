@@ -43,7 +43,6 @@ const QR = (props) => {
       .getElementById("qrCode")
       .toDataURL("image/png")
       .replace("image/png", "image/octet-stream");
-    console.log(qrCodeURL);
 
     let doc = new jsPDF("portrait", "px", "a4", "false");
     //first param is margin, second param is length down
