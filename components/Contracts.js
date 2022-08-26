@@ -6,7 +6,7 @@ import NFT from "../artifacts/contracts/NFTTicket.sol/NFTTicket.json";
 import Market from "../artifacts/contracts/TicketMarket.sol/TicketMarket.json";
 
 const providerUrl = process.env.NEXT_PUBLIC_INFURA_URL;
-const provider = new ethers.providers.JsonRpcProvider();
+const provider = new ethers.providers.JsonRpcProvider(providerUrl);
 //used to access contract functions which do not require a signature
 export const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
 export const marketContract = new ethers.Contract(

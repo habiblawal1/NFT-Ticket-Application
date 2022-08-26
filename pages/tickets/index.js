@@ -26,7 +26,6 @@ export default function myTickets() {
       const ticketContractData = await signedMarketContract.getMyTickets(
         nftaddress
       );
-
       const myTickets = await Promise.all(
         ticketContractData.map(async (i) => {
           const tokenId = i.tokenId.toNumber();
@@ -40,6 +39,7 @@ export default function myTickets() {
             eventId
           );
           const eventUri = await eventContractData.uri;
+          console.log(eventUri);
           const eventRequest = await axios.get(eventUri);
           const eventData = eventRequest.data;
 
