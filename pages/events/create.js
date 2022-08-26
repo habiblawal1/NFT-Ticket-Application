@@ -2,10 +2,27 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
-import { create as ipfsHttpClient } from "ipfs-http-client";
 import { useRouter } from "next/router"; //allows us to programatically route to different routes and read values off of route uri
 
-const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we can use that sets and pins items to ipfs
+const ipfsClient = require("ipfs-http-client");
+
+// const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0"); //a url we can use that sets and pins items to ipfs
+const auth =
+  "Basic " +
+  Buffer.from(
+    process.env.NEXT_PUBLIC_INFURA_PROJECT_ID +
+      ":" +
+      process.env.NEXT_PUBLIC_INFURA_PROJECT_SECRET
+  ).toString("base64");
+const client = ipfsClient.create({
+  host: "ipfs.infura.io",
+  port: 5001,
+  protocol: "https",
+  apiPath: "/api/v0",
+  headers: {
+    authorization: auth,
+  },
+});
 
 import { signers } from "../../components/Contracts";
 import { isValidImage } from "../../components/Validation";
@@ -36,7 +53,7 @@ export default function createEvent() {
   }
   async function uploadToPictureToIPFS() {
     const placeholderUrl =
-      "https://ipfs.infura.io/ipfs/QmZcjqFN4iEHSpXU3ou1LLMFNhiP1uXcpBobDJFgHfuABP";
+      "https://nfticketing.infura-ipfs.io/ipfs/QmZcjqFN4iEHSpXU3ou1LLMFNhiP1uXcpBobDJFgHfuABP";
     //Upload Event Picture
     if (!eventPic) {
       return placeholderUrl;
@@ -45,7 +62,7 @@ export default function createEvent() {
       const added = await client.add(eventPic, {
         progress: (prog) => console.log(`received: ${prog}`),
       });
-      return `https://ipfs.infura.io/ipfs/${added.path}`;
+      return `https://nfticketing.infura-ipfs.io/ipfs/${added.path}`;
     } catch (error) {
       console.log(error);
       error.data === undefined
@@ -79,7 +96,7 @@ export default function createEvent() {
 
     try {
       const added = await client.add(data);
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
+      const url = `https://nfticketing.infura-ipfs.io/ipfs/${added.path}`;
       /* after metadata is uploaded to IPFS, return the URL to use it in the transaction */
       console.log("Event URL = ", url);
       return url;

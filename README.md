@@ -32,7 +32,7 @@
 
 ## Local compilation of code
 
-1. Run the command "npx hardhat node" and do not kill terminal while running the app is it locally runs the blockchain
+1. Run the command "npx hardhat node" and do not kill terminal while running the app as is it locally runs the blockchain
 2. On a second terminal run the command "npx hardhat run scripts/deploy.js --network localhost" to run intial startup scripts
 3. Run "npm run dev" to startup web application
 4. Switch the network on Metamask to Localhost 8545
